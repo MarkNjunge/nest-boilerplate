@@ -27,7 +27,7 @@ The starter uses the [config](https://www.npmjs.com/package/config) module to ma
 
 Default config vaues are found in [default.json](./config/default.json).  
 You can override these values by creating a `local.json` file.  
-You can also use environment variables by creating a `.env` file. See the variable mappings [here](./config/custom-environment-variables)
+You can also use environment variables by creating a `.env` file. See the variable mappings [here](./config/custom-environment-variables.json).
 
 ## Logging
 
