@@ -1,5 +1,7 @@
 # Nest Starter
 
+[![Build Status](https://travis-ci.com/MarkNjunge/nest-starter.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-starter)
+
 A [NestJS](https://nestjs.com/) starter.
 
 ## Installation
