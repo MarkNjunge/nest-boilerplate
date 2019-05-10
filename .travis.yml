@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - "10.15.3"
+sudo: required
+cache: yarn
+install:
+  - yarn
+script:
+  - yarn test
