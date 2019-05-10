@@ -1,7 +1,5 @@
 import { NestFactory } from "@nestjs/core";
-import * as winston from "winston";
-import * as moment from "moment";
-import { CustomLogger } from "./common/CustomLogger";
+import { CustomLogger, initializeWinston } from "./common/CustomLogger";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
@@ -32,19 +30,3 @@ async function bootstrap() {
   });
 }
 bootstrap();
-
-function initializeWinston() {
-  const { combine, timestamp, printf, colorize } = winston.format;
-
-  const myFormat = printf(({ level, message, timestamp }) => {
-    const m = moment(timestamp);
-    const formattedTimestamp = m.format("YYYY-MM-DD HH:mm:ss.SSS");
-    return `${formattedTimestamp} | ${level}: ${message}`;
-  });
-
-  winston.configure({
-    level: "debug",
-    format: combine(timestamp(), colorize({ all: true }), myFormat),
-    transports: [new winston.transports.Console()],
-  });
-}
