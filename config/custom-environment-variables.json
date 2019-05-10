@@ -1,0 +1,4 @@
+{
+  "env": "NODE_ENV",
+  "port": "PORT"
+}
