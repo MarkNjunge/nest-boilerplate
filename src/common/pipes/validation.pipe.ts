@@ -18,6 +18,10 @@ export class ValidationPipe implements PipeTransform<any> {
       return value;
     }
 
+    if (value == null) {
+      value = {};
+    }
+
     const object = plainToClass(metatype, value);
     const errors = await validate(object, {
       forbidUnknownValues: true,
