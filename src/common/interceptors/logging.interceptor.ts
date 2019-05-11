@@ -7,7 +7,8 @@ import {
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { CustomLogger } from "../CustomLogger";
-import { Request, Response } from "express";
+import { FastifyReply, FastifyRequest } from "fastify";
+import { ServerResponse, IncomingMessage } from "http";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -18,10 +19,10 @@ export class LoggingInterceptor implements NestInterceptor {
   }
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
-    const request = ctx.getRequest<Request>();
-    const response = ctx.getResponse<Response>();
-    const method = request.method;
-    const url = request.url;
+    const request = ctx.getRequest<FastifyRequest<IncomingMessage>>();
+    const response = ctx.getResponse<FastifyReply<ServerResponse>>();
+    const method = request.req.method;
+    const url = request.req.url;
 
     const now = Date.now();
     return next
@@ -29,7 +30,7 @@ export class LoggingInterceptor implements NestInterceptor {
       .pipe(
         tap(() =>
           this.logger.log(
-            `${method} ${url} - ${response.statusCode} - ${Date.now() - now}ms`,
+            `${method} ${url} - ${response.res.statusCode} - ${Date.now() - now}ms`,
             context.getClass().name,
           ),
         ),
