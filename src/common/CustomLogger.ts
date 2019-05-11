@@ -25,8 +25,8 @@ export class CustomLogger implements LoggerService {
 export function initializeWinston() {
   const { combine, timestamp, printf, colorize } = winston.format;
 
-  const myFormat = printf(({ level, message, timestamp }) => {
-    const m = moment(timestamp);
+  const myFormat = printf(({ level, message, logTimestamp }) => {
+    const m = moment(logTimestamp);
     const formattedTimestamp = m.format("YYYY-MM-DD HH:mm:ss.SSS");
     return `${formattedTimestamp} | ${level}: ${message}`;
   });

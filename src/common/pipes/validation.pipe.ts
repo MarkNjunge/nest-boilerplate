@@ -14,6 +14,10 @@ export class ValidationPipe implements PipeTransform<any> {
       return value;
     }
 
+    if (value == null) {
+      value = {};
+    }
+
     const object = plainToClass(metatype, value);
     const errors = await validate(object, {
       forbidUnknownValues: true,
@@ -33,8 +37,8 @@ export class ValidationPipe implements PipeTransform<any> {
     return value;
   }
 
-  private toValidate(metatype: Function): boolean {
-    const types: Function[] = [String, Boolean, Number, Array, Object];
+  private toValidate(metatype: any): boolean {
+    const types: Array<() => any> = [String, Boolean, Number, Array, Object];
     return !types.includes(metatype);
   }
 }
