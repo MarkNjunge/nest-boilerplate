@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "docs": "npx compodoc -p tsconfig.json -s",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
     "start:dev": "nodemon",
@@ -39,6 +40,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "@compodoc/compodoc": "^1.1.10",
     "@nestjs/testing": "^6.0.0",
     "@types/jest": "^23.3.13",
     "@types/node": "^10.12.18",
