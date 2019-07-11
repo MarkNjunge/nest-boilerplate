@@ -14,7 +14,7 @@ export class AppController {
 
   @Post("/")
   @UseGuards(AuthGuard)
-  async logout(@Body() dto: UserDto): Promise<UserDto> {
-    return dto;
+  async createUser(@Body() dto: UserDto): Promise<UserDto> {
+    return this.appService.createUser(dto);
   }
 }

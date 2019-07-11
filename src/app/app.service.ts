@@ -11,7 +11,7 @@ export class AppService {
     return "Hello World!";
   }
 
-  async user(userDto: UserDto): Promise<UserDto> {
+  async createUser(userDto: UserDto): Promise<UserDto> {
     this.logger.debug(JSON.stringify(userDto));
     return userDto;
   }
