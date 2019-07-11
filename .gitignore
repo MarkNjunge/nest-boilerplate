@@ -213,3 +213,4 @@ $RECYCLE.BIN/
 
 .env
 config/local.json
+dist
