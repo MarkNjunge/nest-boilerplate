@@ -5,26 +5,27 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 import { ValidationPipe } from "./common/pipes/validation.pipe";
 import { config } from "./common/Config";
-import * as rateLimit from "express-rate-limit";
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from "@nestjs/platform-fastify";
+import * as fastifyRateLimit from "fastify-rate-limit";
 
 async function bootstrap() {
   initializeWinston();
 
-  const app = await NestFactory.create(AppModule, {
-    logger: new CustomLogger("NestApplication"),
-  });
-
-  app.use(
-    rateLimit({
-      windowMs: 1000 * 60,
-      max: 100,
-      message: {
-        statusCode: 429,
-        error: "Too Many Requests",
-        message: "Rate limit exceeded, retry in 1 minute",
-      },
-    }),
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+    {
+      logger: new CustomLogger("NestApplication"),
+    },
   );
+
+  app.register(fastifyRateLimit, {
+    max: 100,
+    timeWindow: 1000 * 60,
+  });
 
   app.enableCors({
     origin: "*",

@@ -4,6 +4,8 @@
 
 A [NestJS](https://nestjs.com/) starter.
 
+See Express branch [here](https://github.com/MarkNjunge/nest-starter/tree/express-adapter).
+
 ## Installation
 
 ```bash
