@@ -18,7 +18,7 @@ describe("AppController", () => {
   });
 
   describe("root", () => {
-    it('should return "Hello World!"', () => {
+    it("should return 'Hello World!'", () => {
       jest
         .spyOn(appService, "getHello")
         .mockImplementation(() => "Hello World!");
