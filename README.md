@@ -6,6 +6,15 @@ A [NestJS](https://nestjs.com/) starter.
 
 See Express branch [here](https://github.com/MarkNjunge/nest-starter/tree/express-adapter).
 
+## Features
+
+- Setting config through environment variables or a json file.
+- Logging using [Winston](https://www.npmjs.com/package/winston).
+- Validating request bodies.
+- Exception handling.
+- Testing.
+- Docker support.
+
 ## Installation
 
 ```bash
