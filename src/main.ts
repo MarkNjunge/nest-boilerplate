@@ -5,11 +5,13 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 import { ValidationPipe } from "./common/pipes/validation.pipe";
 import { config } from "./common/Config";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
+import * as fs from "fs";
 
 async function bootstrap() {
   initializeWinston();
@@ -21,6 +23,14 @@ async function bootstrap() {
       logger: new CustomLogger("NestApplication"),
     },
   );
+
+  const options = new DocumentBuilder()
+    .setTitle("nest-starter")
+    .setDescription("nest-starter API description")
+    .setVersion(getCurrentApiVersion())
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup("docs", app, document);
 
   app.register(fastifyRateLimit, {
     max: 100,
@@ -44,3 +54,8 @@ async function bootstrap() {
   });
 }
 bootstrap();
+
+function getCurrentApiVersion(): string {
+  const data = fs.readFileSync(__dirname + "\\..\\package.json");
+  return JSON.parse(data.toString()).version;
+}
