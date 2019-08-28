@@ -13,6 +13,7 @@ import {
 import * as fastifyRateLimit from "fastify-rate-limit";
 import * as fs from "fs";
 import { AuthGuard } from "./common/guards/auth.guard";
+import { ErrorFilter } from "./common/filters/error.filter";
 
 async function bootstrap() {
   initializeWinston();
@@ -45,6 +46,7 @@ async function bootstrap() {
   });
 
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new ErrorFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalGuards(new AuthGuard());
