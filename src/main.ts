@@ -45,8 +45,8 @@ async function bootstrap() {
     allowedHeaders: "*",
   });
 
-  app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalFilters(new ErrorFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalGuards(new AuthGuard());
