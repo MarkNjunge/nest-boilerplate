@@ -10,16 +10,13 @@ import { plainToClass } from "class-transformer";
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {
+    // Account for an empty request body
     if (value == null) {
       value = {};
     }
 
     if (!metatype || !this.toValidate(metatype)) {
       return value;
-    }
-
-    if (value == null) {
-      value = {};
     }
 
     const object = plainToClass(metatype, value);
