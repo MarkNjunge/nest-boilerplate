@@ -1,6 +1,7 @@
 import { LoggerService } from "@nestjs/common";
 import * as winston from "winston";
 import * as moment from "moment";
+import { config } from "./Config";
 
 export class CustomLogger implements LoggerService {
   constructor(private readonly name: string = "Application") {}
@@ -27,7 +28,7 @@ export function initializeWinston() {
 
   const myFormat = printf(({ level, message, logTimestamp }) => {
     const m = moment(logTimestamp);
-    const formattedTimestamp = m.format("YYYY-MM-DD HH:mm:ss.SSS");
+    const formattedTimestamp = m.format(config.loggerTimestampFormat);
     return `${formattedTimestamp} | ${level}: ${message}`;
   });
 

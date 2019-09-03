@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { validate } from "class-validator";
 import { plainToClass } from "class-transformer";
+import { config } from "./../Config";
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
@@ -21,9 +22,9 @@ export class ValidationPipe implements PipeTransform<any> {
 
     const object = plainToClass(metatype, value);
     const errors = await validate(object, {
-      forbidUnknownValues: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidUnknownValues: config.validatorForbidUnknown,
+      whitelist: config.validatorForbidUnknown,
+      forbidNonWhitelisted: config.validatorForbidUnknown,
     });
 
     if (errors.length > 0) {

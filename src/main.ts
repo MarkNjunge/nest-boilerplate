@@ -12,7 +12,6 @@ import {
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
 import * as fs from "fs";
-import { AuthGuard } from "./common/guards/auth.guard";
 import { ErrorFilter } from "./common/filters/error.filter";
 
 async function bootstrap() {
@@ -32,17 +31,17 @@ async function bootstrap() {
     .setVersion(getCurrentApiVersion())
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup("docs", app, document);
+  SwaggerModule.setup(config.swaggerEndpoint, app, document);
 
   app.register(fastifyRateLimit, {
-    max: 100,
-    timeWindow: 1000 * 60,
+    max: config.rateLimitMax,
+    timeWindow: config.rateLimitTimeWindow,
   });
 
   app.enableCors({
-    origin: "*",
-    methods: "*",
-    allowedHeaders: "*",
+    origin: config.corsOrigin,
+    methods: config.corsMethods,
+    allowedHeaders: config.corsHeaders,
   });
 
   app.useGlobalFilters(new ErrorFilter());

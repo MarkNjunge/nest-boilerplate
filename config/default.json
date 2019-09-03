@@ -1,4 +1,12 @@
 {
   "env": "development",
-  "port": 3000
+  "port": 3000,
+  "swaggerEndpoint": "docs",
+  "rateLimitMax": 100,
+  "rateLimitTimeWindow": "1m",
+  "corsOrigin": "*",
+  "corsMethods": "*",
+  "corsHeaders": "*",
+  "validatorForbidUnknown": true,
+  "loggerTimestampFormat": "YYYY-MM-DD HH:mm:ss.SSS"
 }
