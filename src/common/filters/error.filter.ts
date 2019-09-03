@@ -14,7 +14,7 @@ export class ErrorFilter implements ExceptionFilter {
   logger: CustomLogger;
 
   constructor() {
-    this.logger = new CustomLogger("HttpExceptionFilter");
+    this.logger = new CustomLogger("ErrorFilter");
   }
 
   catch(error: Error, host: ArgumentsHost) {
