@@ -74,7 +74,6 @@ export class ValidationPipe implements PipeTransform<any> {
           constraints: Object.values(child.constraints),
         });
       } else {
-        // TODO
         return this.getValidationErrorsFromChildren(
           `${parent}.${child.property}`,
           child.children,
