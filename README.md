@@ -1,6 +1,7 @@
 # Nest Starter
 
 [![Build Status](https://travis-ci.com/MarkNjunge/nest-starter.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-starter)
+![](https://github.com/MarkNjunge/nest-starter/workflows/Main%20Workflow/badge.svg)
 
 A [NestJS](https://nestjs.com/) starter.
 
