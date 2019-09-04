@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/MarkNjunge/nest-starter.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-starter)
 ![](https://github.com/MarkNjunge/nest-starter/workflows/Main%20Workflow/badge.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/MarkNjunge/nest-starter/badge.svg)](https://snyk.io/test/github/MarkNjunge/nest-starter)
 
 A [NestJS](https://nestjs.com/) starter.
 
