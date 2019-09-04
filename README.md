@@ -194,3 +194,5 @@ $ yarn run test:cov
 # CI
 
 [Travis CI config](./.travis.yml)
+
+[Github Actions config](./.github/workflows/main-workflow.yml)

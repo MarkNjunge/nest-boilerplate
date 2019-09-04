@@ -1,0 +1,19 @@
+name: Main Workflow
+on: [push]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "10.15.3"
+      - name: lint and test
+        env:
+          CI: true
+        run: |
+          yarn install
+          yarn lint
+          yarn test
