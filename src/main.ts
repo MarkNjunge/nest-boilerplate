@@ -11,7 +11,6 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
-import * as fs from "fs";
 import { ErrorFilter } from "./common/filters/error.filter";
 
 async function bootstrap() {
@@ -28,7 +27,7 @@ async function bootstrap() {
   const options = new DocumentBuilder()
     .setTitle("nest-starter")
     .setDescription("nest-starter API description")
-    .setVersion(getCurrentApiVersion())
+    .setVersion(process.env.npm_package_version)
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup(config.swaggerEndpoint, app, document);
@@ -56,8 +55,3 @@ async function bootstrap() {
   });
 }
 bootstrap();
-
-function getCurrentApiVersion(): string {
-  const data = fs.readFileSync(__dirname + "\\..\\package.json");
-  return JSON.parse(data.toString()).version;
-}
