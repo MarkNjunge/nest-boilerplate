@@ -140,21 +140,22 @@ An example of a response to an invalid body,
 
 ## Exception Handling
 
-All non HttpExceptions are caught and returns as a 500 response.
+All non HttpExceptions are caught and returned as a 500 response.
 
 It is possible to thow exceptions in two ways:
 
 ```Typescript
-throw new HttpException("Route requires authenticaiton", HttpStatus.UNAUTHORIZED);
+throw new ApiException(HttpStatus.UNAUTHORIZED, "Route requires authenticaiton");
 ```
 
 If you want to add more information to the error
 
 ```Typescript
-throw new HttpException(
-    { message: "Route requires authenticaiton", meta: { key: "value" } },
-    HttpStatus.UNAUTHORIZED,
-);
+throw new ApiException(
+      HttpStatus.UNAUTHORIZED,
+      "Route requires authenticaiton",
+      { key: "value" },
+    );
 ```
 
 Predefied error classes can also be used. See [NestJS HTTP Exceptions documentation](https://docs.nestjs.com/exception-filters#http-exceptions)
