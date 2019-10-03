@@ -33,6 +33,11 @@ export class ErrorFilter implements ExceptionFilter {
     };
     this.logger.error(JSON.stringify(logMessage), null, stackTop);
 
+    const method = request.req.method;
+    const url = request.req.url;
+    const requestTime = request.params.requestTime;
+    this.logger.log(`${method} ${url} - ${HttpStatus.INTERNAL_SERVER_ERROR} - ${Date.now() - requestTime}ms`, "TRACE");
+
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
       ...logMessage,
     });

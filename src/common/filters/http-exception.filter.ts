@@ -33,7 +33,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message,
       meta,
     };
+
     this.logger.error(JSON.stringify(logMessage), null, stackTop);
+
+    const method = request.req.method;
+    const url = request.req.url;
+    const requestTime = request.params.requestTime;
+    this.logger.log(`${method} ${url} - ${status} - ${Date.now() - requestTime}ms`, "TRACE");
 
     response.status(status).send({
       ...logMessage,

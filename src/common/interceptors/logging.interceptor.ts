@@ -24,14 +24,17 @@ export class LoggingInterceptor implements NestInterceptor {
     const method = request.req.method;
     const url = request.req.url;
 
-    const now = Date.now();
+    const requestTime = Date.now();
+
+    // Add request time to params to be used in exception filters
+    request.params.requestTime = requestTime;
+
     return next
       .handle()
       .pipe(
         tap(() =>
           this.logger.log(
-            `${method} ${url} - ${response.res.statusCode} - ${Date.now() - now}ms`,
-            context.getClass().name,
+            `${method} ${url} - ${response.res.statusCode} - ${Date.now() - requestTime}ms`,
           ),
         ),
       );

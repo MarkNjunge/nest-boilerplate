@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   UseGuards,
-  UnauthorizedException,
 } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { UserDto } from "./dto/user.dto";
