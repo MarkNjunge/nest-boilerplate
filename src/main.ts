@@ -48,7 +48,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen(config.port).then(() => {
+  await app.listen(config.port, "0.0.0.0").then(() => {
     new CustomLogger("Application").log(
       `Server started on port ${config.port}`,
     );
