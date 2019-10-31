@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { CustomLogger, initializeWinston } from "./common/CustomLogger";
 import { AppModule } from "./app.module";
-import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
+import { AllExceptionsFilter } from "./common/filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 import { ValidationPipe } from "./common/pipes/validation.pipe";
 import { config } from "./common/Config";
@@ -11,7 +11,6 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
-import { ErrorFilter } from "./common/filters/error.filter";
 
 async function bootstrap() {
   initializeWinston();
@@ -43,8 +42,7 @@ async function bootstrap() {
     allowedHeaders: config.corsHeaders,
   });
 
-  app.useGlobalFilters(new ErrorFilter());
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(new ValidationPipe());
 
