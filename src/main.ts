@@ -23,13 +23,7 @@ async function bootstrap() {
     },
   );
 
-  const options = new DocumentBuilder()
-    .setTitle("nest-starter")
-    .setDescription("nest-starter API description")
-    .setVersion(process.env.npm_package_version)
-    .build();
-  const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup(config.swaggerEndpoint, app, document);
+  intializeSwagger(app);
 
   app.register(fastifyRateLimit, {
     max: config.rateLimitMax,
@@ -50,3 +44,15 @@ async function bootstrap() {
   new CustomLogger("Application").log(`Server started on port ${config.port}`);
 }
 bootstrap();
+
+function intializeSwagger(app: NestFastifyApplication) {
+  const options = new DocumentBuilder()
+    .setTitle("JustJava API")
+    .setDescription("JustJava API")
+    .setContactEmail("mark.kamau@outlook.com")
+    .setSchemes(process.env.NODE_ENV === "production" ? "https" : "http")
+    .build();
+
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup("docs", app, document);
+}
