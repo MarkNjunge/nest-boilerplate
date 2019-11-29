@@ -2,8 +2,11 @@
   "env": "development",
   "port": 3000,
   "swaggerEndpoint": "docs",
-  "rateLimitMax": 100,
-  "rateLimitTimeWindow": "1m",
+  "rateLimit": {
+    "enabled": true,
+    "max": 100,
+    "timeWindow": "1m"
+  },
   "corsOrigin": "*",
   "corsMethods": "*",
   "corsHeaders": "*",

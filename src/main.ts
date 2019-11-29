@@ -25,10 +25,12 @@ async function bootstrap() {
 
   intializeSwagger(app);
 
-  app.register(fastifyRateLimit, {
-    max: config.rateLimitMax,
-    timeWindow: config.rateLimitTimeWindow,
-  });
+  if (config.rateLimit.enabled === true) {
+    app.register(fastifyRateLimit, {
+      max: config.rateLimit.max,
+      timeWindow: config.rateLimit.timeWindow,
+    });
+  }
 
   app.enableCors({
     origin: config.corsOrigin,
