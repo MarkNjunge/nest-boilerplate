@@ -1,7 +1,10 @@
 {
   "env": "development",
   "port": 3000,
-  "swaggerEndpoint": "docs",
+  "swagger": {
+    "enabled": true,
+    "endpoint": "docs"
+  },
   "rateLimit": {
     "enabled": true,
     "max": 100,

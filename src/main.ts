@@ -4,7 +4,7 @@ import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 import { ValidationPipe } from "./common/pipes/validation.pipe";
-import { config } from "./common/Config";
+import { config, configAsBoolean } from "./common/Config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import {
   FastifyAdapter,
@@ -48,13 +48,17 @@ async function bootstrap() {
 bootstrap();
 
 function intializeSwagger(app: NestFastifyApplication) {
+  if (configAsBoolean(config.swagger.enabled) === false) {
+    return;
+  }
+
   const options = new DocumentBuilder()
-    .setTitle("JustJava API")
-    .setDescription("JustJava API")
+    .setTitle("NestStarter")
+    .setDescription("NestStarter")
     .setContactEmail("mark.kamau@outlook.com")
     .setSchemes(process.env.NODE_ENV === "production" ? "https" : "http")
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup("docs", app, document);
+  SwaggerModule.setup(config.swagger.endpoint, app, document);
 }
