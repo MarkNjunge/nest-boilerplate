@@ -1,15 +1,22 @@
-FROM node:10.16.3-alpine
+# Builder image
+FROM node:12.14.1-alpine3.9 as builder
 
-# Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy source
 COPY . .
 
-# Install dependencies
-RUN yarn
+RUN yarn install
 
-# Create dist folder
 RUN yarn build
 
-CMD [ "node", "dist/main.js" ]
+# Final image
+FROM node:12.14.1-alpine3.9
+
+WORKDIR /app
+
+COPY --from=builder /app/dist /app
+COPY --from=builder /app/config config
+COPY --from=builder /app/package.json .
+COPY --from=builder /app/node_modules node_modules
+
+CMD [ "node", "main.js" ]

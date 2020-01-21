@@ -181,6 +181,12 @@ Run
 docker run -p 3000:3000 nest-starter
 ```
 
+Docker Compose
+
+```
+docker-compose up -d
+```
+
 ## Testing
 
 ```bash
