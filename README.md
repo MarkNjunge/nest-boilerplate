@@ -43,13 +43,16 @@ $ yarn run start:prod
 ## Config
 
 The [config](https://www.npmjs.com/package/config) package to manage configs.
-Default config values are found in [default.json](./config/default.json).  
-You can override these values by creating a `local.json` file.  
-You can also use environment variables by creating a `.env` file. See the variable mappings [here](./config/custom-environment-variables.json).
+
+Default config values are found in [default.json](./config/default.json). These values can be overrited using a `./config/local.json` file, `.env` file or setting environment variables.
+
+See the environment variable mappings in [./config/custom-environment-variables.json](./config/custom-environment-variables.json).
 
 ## Swagger
 
-Swagger documentation is automatically generated from the routes. They are available at `/docs` (configurable in [config](./config/default.json)).
+Swagger documentation is automatically generated from the routes.
+
+See config in [./config/default.json](./config/default.json).
 
 ## Logging
 
@@ -61,6 +64,8 @@ For example,
 
 ```Typescript
 logger: CustomLogger = new CustomLogger("AppService");
+
+// ...
 
 this.logger.debug("Hello!");
 ```
@@ -102,7 +107,7 @@ app.useGlobalGuards(new AuthGuard());
 ## Rate Limiting
 
 A rate limiter is configured using [fastify-rate-limit](https://github.com/fastify/fastify-rate-limit).  
-It defaults to 100 request per minute (configurable in [config](./config/default.json)).
+It defaults to 100 request per minute per IP (configurable in [./config/default.json](./config/default.json)).
 
 ## Request Body Validation
 
@@ -202,6 +207,8 @@ $ yarn run test:cov
 
 # CI
 
-[Travis CI config](./.travis.yml)
+[Travis CI config](./.travis.yml)  
+[![Build Status](https://travis-ci.com/MarkNjunge/nest-starter.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-starter)
 
-[Github Actions config](./.github/workflows/main-workflow.yml)
+[Github Actions config](./.github/workflows/main-workflow.yml)  
+![](https://github.com/MarkNjunge/nest-starter/workflows/Main%20Workflow/badge.svg)
