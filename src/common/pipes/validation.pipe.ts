@@ -22,9 +22,9 @@ export class ValidationPipe implements PipeTransform<any> {
 
     const object = plainToClass(metatype, value);
     const errors = await validate(object, {
-      forbidUnknownValues: config.validatorForbidUnknown,
-      whitelist: config.validatorForbidUnknown,
-      forbidNonWhitelisted: config.validatorForbidUnknown,
+      forbidUnknownValues: config.validator.forbidUnknown,
+      whitelist: config.validator.forbidUnknown,
+      forbidNonWhitelisted: config.validator.forbidUnknown,
     });
 
     if (errors.length > 0) {

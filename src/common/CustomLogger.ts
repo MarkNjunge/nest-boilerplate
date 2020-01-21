@@ -52,7 +52,7 @@ export function initializeWinston() {
 
   const myFormat = printf(({ level, message, logTimestamp }) => {
     const m = moment(logTimestamp);
-    const formattedTimestamp = m.format(config.loggerTimestampFormat);
+    const formattedTimestamp = m.format(config.logging.timestampFormat);
     return `${formattedTimestamp} | ${level}: ${message}`;
   });
 

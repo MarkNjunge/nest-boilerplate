@@ -35,9 +35,9 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: config.corsOrigin,
-    methods: config.corsMethods,
-    allowedHeaders: config.corsHeaders,
+    origin: config.cors.origin,
+    methods: config.cors.methods,
+    allowedHeaders: config.cors.allowedHeaders,
   });
 
   app.useGlobalFilters(new AllExceptionsFilter());

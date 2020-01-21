@@ -7,11 +7,9 @@ export interface Config {
   port: number;
   swagger: Swagger;
   rateLimit: RateLimit;
-  corsOrigin: string;
-  corsMethods: string;
-  corsHeaders: string;
-  validatorForbidUnknown: boolean;
-  loggerTimestampFormat: string;
+  cors: Cors;
+  validator: Validator;
+  logging: Logging;
 }
 
 export class Swagger {
@@ -23,6 +21,20 @@ interface RateLimit {
   enabled: boolean;
   max: number;
   timeWindow: string;
+}
+
+interface Cors {
+  origin: string;
+  methods: string;
+  allowedHeaders: string;
+}
+
+interface Validator {
+  forbidUnknown: true;
+}
+
+interface Logging {
+  timestampFormat: string;
 }
 
 export const config: Config = configPackage;

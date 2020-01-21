@@ -10,9 +10,15 @@
     "max": 100,
     "timeWindow": "1m"
   },
-  "corsOrigin": "*",
-  "corsMethods": "*",
-  "corsHeaders": "*",
-  "validatorForbidUnknown": true,
-  "loggerTimestampFormat": "YYYY-MM-DD HH:mm:ss.SSS"
+  "cors": {
+    "origin": "*",
+    "methods": "*",
+    "allowedHeaders": "*"
+  },
+  "validator": {
+    "forbidUnknown": true
+  },
+  "logging": {
+    "timestampFormat": "YYYY-MM-DD HH:mm:ss.SSS"
+  }
 }

@@ -4,5 +4,21 @@
   "swagger": {
     "enabled": "SWAGGER_ENBLED",
     "endpoint": "SWAGGER_ENDPOINT"
+  },
+  "rateLimit": {
+    "enabled": "RATE_LIMIT_ENABLED",
+    "max": "RATE_LIMIT_MAX",
+    "timeWindow": "RATE_LIMIT_TIME_WINDOW"
+  },
+  "cors": {
+    "origin": "CORS_ORIGIN",
+    "methods": "CORS_METHOD",
+    "allowedHeaders": "CORS_HEADERS"
+  },
+  "validator": {
+    "forbidUnknown": "VALIDATOR_FORBID_UNKNOWN"
+  },
+  "logging": {
+    "timestampFormat": "LOGGING_TIMESTAMP_FORMAT"
   }
 }
