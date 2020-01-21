@@ -14,12 +14,14 @@ import * as fastifyRateLimit from "fastify-rate-limit";
 
 async function bootstrap() {
   initializeWinston();
+  const logger = new CustomLogger("Application");
+  logger.log("****** Starting API ******");
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
     {
-      logger: new CustomLogger("NestApplication"),
+      logger: false,
     },
   );
 
@@ -43,7 +45,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   await app.listen(config.port, "0.0.0.0");
-  new CustomLogger("Application").log(`Server started on port ${config.port}`);
+  logger.log(`Started on port ${config.port}`);
 }
 bootstrap();
 

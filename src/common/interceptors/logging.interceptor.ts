@@ -15,14 +15,12 @@ export class LoggingInterceptor implements NestInterceptor {
   logger: CustomLogger;
 
   constructor() {
-    this.logger = new CustomLogger("TRACE");
+    this.logger = new CustomLogger("ROUTE");
   }
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<FastifyRequest<IncomingMessage>>();
     const response = ctx.getResponse<FastifyReply<ServerResponse>>();
-    const method = request.req.method;
-    const url = request.req.url;
 
     const requestTime = Date.now();
 
@@ -33,9 +31,7 @@ export class LoggingInterceptor implements NestInterceptor {
       .handle()
       .pipe(
         tap(() =>
-          this.logger.log(
-            `${method} ${url} - ${response.res.statusCode} - ${Date.now() - requestTime}ms`,
-          ),
+          this.logger.logRoute(request, response.res.statusCode, requestTime),
         ),
       );
   }

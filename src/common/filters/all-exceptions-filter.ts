@@ -39,16 +39,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       meta,
     };
 
-    this.logger.error(JSON.stringify(logMessage), null, stackTop);
-
-    const method = request.req.method;
-    const url = request.req.url;
-    const requestTime = request.params.requestTime;
-
-    this.logger.log(
-      `${method} ${url} - ${status} - ${Date.now() - requestTime}ms`,
-      "TRACE",
-    );
+    this.logger.error(message, e.stack, stackTop);
+    this.logger.logRoute(request, status, null);
 
     response.status(status).send({
       ...logMessage,
