@@ -3,7 +3,10 @@
   "port": 3000,
   "swagger": {
     "enabled": true,
-    "endpoint": "docs"
+    "endpoint": "docs",
+    "title": "nest-starter",
+    "description": "A starter template for NestJS with support for swagger, config, logging, validation, exception handling, docker, testing and CI.",
+    "contactEmail": "contact@marknjunge.com"
   },
   "rateLimit": {
     "enabled": true,

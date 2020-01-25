@@ -58,9 +58,9 @@ function intializeSwagger(app: NestFastifyApplication) {
   }
 
   const options = new DocumentBuilder()
-    .setTitle("NestStarter")
-    .setDescription("NestStarter")
-    .setContactEmail("mark.kamau@outlook.com")
+    .setTitle(config.swagger.title)
+    .setDescription(config.swagger.description)
+    .setContactEmail(config.swagger.contactEmail)
     .setSchemes(process.env.NODE_ENV === "production" ? "https" : "http")
     .build();
 

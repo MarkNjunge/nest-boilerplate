@@ -15,6 +15,9 @@ export interface Config {
 export class Swagger {
   enabled: boolean;
   endpoint: string;
+  title: string;
+  description: string;
+  contactEmail: string;
 }
 
 interface RateLimit {
