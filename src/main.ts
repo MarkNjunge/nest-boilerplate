@@ -11,6 +11,7 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
+import * as helmet from "helmet";
 
 async function bootstrap() {
   initializeWinston();
@@ -39,6 +40,8 @@ async function bootstrap() {
     methods: config.cors.methods,
     allowedHeaders: config.cors.allowedHeaders,
   });
+
+  app.use(helmet());
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
