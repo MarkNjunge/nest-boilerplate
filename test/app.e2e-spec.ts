@@ -8,7 +8,7 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { initializeWinston } from "../src/common/CustomLogger";
-import { UserDto } from "../src/app/dto/user.dto";
+import { UserDto } from "../src/users/dto/user.dto";
 
 describe("AppController (e2e)", () => {
   let app: INestApplication;

@@ -1,7 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { UserDto } from "./dto/user.dto";
 
 describe("AppController", () => {
   let appController: AppController;
@@ -24,17 +23,6 @@ describe("AppController", () => {
         .mockImplementation(() => "Hello World!");
 
       expect(appController.getHello()).toBe("Hello World!");
-    });
-
-    it("should return body", async () => {
-      const userDto = new UserDto();
-      userDto.username = "Mark";
-
-      jest
-        .spyOn(appService, "createUser")
-        .mockImplementation(() => Promise.resolve(userDto));
-
-      expect(await appController.createUser(userDto)).toBe(userDto);
     });
   });
 });
