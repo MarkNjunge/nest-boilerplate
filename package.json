@@ -1,7 +1,7 @@
 {
   "name": "nest-starter",
   "version": "0.1.0",
-  "description": "A starter template for NestJS with support for swagger, config, logging, validation, exception handling, docker, testing and CI.",
+  "description": "A starter template for NestJS with support for database, swagger, config, logging, validation, exception handling, docker, testing and CI.",
   "author": "Mark Njung'e",
   "license": "MIT",
   "scripts": {
@@ -13,9 +13,13 @@
     "start:debug": "nodemon --config nodemon-debug.json",
     "prestart:prod": "rimraf dist && npm run build",
     "start:prod": "node dist/main.js",
+    "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -n",
+    "migration:create": "ts-node ./node_modules/typeorm/cli.js migration:create -n",
+    "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
+    "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "lint:fix": "tslint --fix -p tsconfig.json -c tslint.json",
-    "test": "jest",
+    "test": "jest --verbose",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -26,6 +30,7 @@
     "@nestjs/core": "^6.0.0",
     "@nestjs/platform-fastify": "^6.1.1",
     "@nestjs/swagger": "^3.1.0",
+    "@nestjs/typeorm": "^6.2.0",
     "class-transformer": "^0.2.2",
     "class-validator": "^0.9.1",
     "config": "^3.1.0",
@@ -34,8 +39,10 @@
     "fastify-swagger": "^2.4.0",
     "helmet": "^3.21.2",
     "moment": "^2.24.0",
+    "pg": "^7.17.1",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^6.3.3",
+    "typeorm": "^0.2.22",
     "winston": "^3.2.1"
   },
   "devDependencies": {

@@ -1,6 +1,10 @@
 {
   "env": "NODE_ENV",
   "port": "PORT",
+  "db": {
+    "url": "DB_URL",
+    "ssl": "DB_SSL"
+  },
   "swagger": {
     "enabled": "SWAGGER_ENBLED",
     "endpoint": "SWAGGER_ENDPOINT"

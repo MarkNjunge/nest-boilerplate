@@ -11,6 +11,7 @@ See Express branch [here](https://github.com/MarkNjunge/nest-starter/tree/expres
 ## Features
 
 - [Config](#config)
+- [Database](#database)
 - [Swagger (API docs)](#swagger)
 - [Logging](#logging)
 - [Auth guard](#auth-guard)
@@ -44,9 +45,27 @@ $ yarn run start:prod
 
 The [config](https://www.npmjs.com/package/config) package to manage configs.
 
-Default config values are found in [default.json](./config/default.json). These values can be overrited using a `./config/local.json` file, `.env` file or setting environment variables.
+Default config values are found in [default.json](./config/default.json). These values can be overridden using a `./config/local.json` file, `.env` file or setting environment variables.
 
 See the environment variable mappings in [./config/custom-environment-variables.json](./config/custom-environment-variables.json).
+
+## Database
+
+Typeorm is used for database operations.
+
+It uses PostgreSQL by default but that can be changed by changing the `type` in [./src/app.module.ts](./src/app.module.ts).  
+See [TypeORM documentation](https://typeorm.io/#/) for supported databases.
+
+### Migrations
+
+Typeorm is configured to use migrations instead of `synchronize: true`.
+
+To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by inspecting your entities, the cli needs extra configuration. Create a `.env` file based off [.env.sample](.env.sample).
+
+You can then generate migrations using `yarn migration:generate <your_migration_name>`.  
+You can also use `yarn migration:generate <your_migration_name>` to only create the file.
+
+You can then run the migration using `yarn migration:run` or simply start the server.
 
 ## Swagger
 

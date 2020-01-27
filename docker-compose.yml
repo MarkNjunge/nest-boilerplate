@@ -1,14 +1,34 @@
 version: "3"
 services:
-  app:
+  nest-starter:
     container_name: nest-starter
     restart: always
     build: .
+    image: nest-starter
+    depends_on:
+      - postgres
     ports:
       - "3000:3000"
     environment:
       - PORT=3000
+      - DB_URL=postgres://postgres:postgres@postgres:5432/nest-starter
     networks:
       - nest-starter
+  postgres:
+    image: postgres:11.2
+    container_name: nest-starter_pgsql
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=nest-starter
+    volumes:
+      - nest-starter-data:/var/lib/postgresql/data
+    networks:
+      - nest-starter
+volumes:
+  nest-starter-data:
 networks:
   nest-starter:

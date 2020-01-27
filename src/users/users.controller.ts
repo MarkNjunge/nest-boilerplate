@@ -8,6 +8,9 @@ import {
   ApiOperation,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
+import { CreateUserDto } from "./dto/CreateUser.dto";
+import { CreateAddressDto } from "./dto/CreateAddress.dto";
+import { AddressDto } from "./dto/address.dto";
 
 @Controller("users")
 @ApiUseTags("Users")
@@ -27,9 +30,23 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: "The record has been successfully created.",
+    type: UserDto,
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
-  async createUser(@Body() dto: UserDto): Promise<UserDto> {
+  async createUser(@Body() dto: CreateUserDto): Promise<UserDto> {
     return this.usersService.createUser(dto);
+  }
+
+  @Post("/addresses")
+  @UseGuards(AuthGuard)
+  @ApiOperation({ title: "Create an address" })
+  @ApiResponse({
+    status: 201,
+    description: "The record has been successfully created.",
+    type: AddressDto,
+  })
+  @ApiBadRequestResponse({ description: "Missing or too many params" })
+  async createAddress(@Body() dto: CreateAddressDto): Promise<AddressDto> {
+    return this.usersService.createAddress(dto);
   }
 }

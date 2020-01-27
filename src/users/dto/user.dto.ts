@@ -1,16 +1,13 @@
-import { IsNotEmpty, ValidateNested } from "class-validator";
 import { ApiModelProperty } from "@nestjs/swagger";
 import { AddressDto } from "./address.dto";
-import { Type } from "class-transformer";
 
 export class UserDto {
-  @IsNotEmpty()
+  @ApiModelProperty()
+  id: number;
+
   @ApiModelProperty()
   username: string;
 
-  @IsNotEmpty()
-  @ApiModelProperty()
-  @ValidateNested({ each: true })
-  @Type(() => AddressDto)
-  address: AddressDto;
+  @ApiModelProperty({ type: AddressDto, isArray: true })
+  addresses: AddressDto[];
 }

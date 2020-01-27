@@ -1,6 +1,10 @@
 {
   "env": "development",
   "port": 3000,
+  "db": {
+    "url": "postgres://username:password@host:port/database",
+    "ssl": false
+  },
   "swagger": {
     "enabled": true,
     "endpoint": "docs",

@@ -1,12 +1,16 @@
 import { IsNotEmpty } from "class-validator";
 import { ApiModelProperty } from "@nestjs/swagger";
 
-export class CountryDto {
+export class CreateAddressDto {
   @IsNotEmpty()
   @ApiModelProperty()
-  name: string;
+  userId: number;
 
   @IsNotEmpty()
   @ApiModelProperty()
-  code: string;
+  city: string;
+
+  @IsNotEmpty()
+  @ApiModelProperty()
+  country: string;
 }

@@ -5,11 +5,17 @@ import * as configPackage from "config";
 export interface Config {
   env: string;
   port: number;
+  db: Db;
   swagger: Swagger;
   rateLimit: RateLimit;
   cors: Cors;
   validator: Validator;
   logging: Logging;
+}
+
+interface Db {
+  url: string;
+  ssl: boolean;
 }
 
 export class Swagger {
