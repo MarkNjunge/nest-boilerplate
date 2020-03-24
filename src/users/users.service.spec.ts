@@ -4,6 +4,8 @@ import { getRepositoryToken } from "@nestjs/typeorm";
 import { UserEntity } from "./entitiy/User.entity";
 import { Repository } from "typeorm";
 import { AddressEntity } from "./entitiy/Address.entity";
+import { CreateUserDto } from "./dto/CreateUser.dto";
+import { UserDto } from "./dto/user.dto";
 
 describe("UsersService", () => {
   let usersService: UsersService;
@@ -12,12 +14,18 @@ describe("UsersService", () => {
 
   const createAddressDto = { city: "Nairobi", country: "Kenya", userId: 1 };
   const address = { id: 1, city: "Nairobi", country: "Kenya" };
-  const createUserDto = {
+  const createUserDto: CreateUserDto = {
     username: "Mark",
+    contact: {
+      email: "mark@mail.com",
+    },
   };
-  const user = {
+  const user: UserDto = {
     id: 1,
     username: "Mark",
+    contact: {
+      email: "mark@mail.com",
+    },
     addresses: [],
   };
 

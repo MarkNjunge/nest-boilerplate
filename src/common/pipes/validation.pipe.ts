@@ -30,7 +30,7 @@ export class ValidationPipe implements PipeTransform<any> {
     if (errors.length > 0) {
       // Top-level errors
       const topLevelErrors = errors
-        .filter(v => v.constraints)
+        .filter(v => v.constraints) // Top-level errors have the constraints here
         .map(error => {
           return {
             property: error.property,
@@ -41,7 +41,7 @@ export class ValidationPipe implements PipeTransform<any> {
       // Nested errors
       const nestedErrors = [];
       errors
-        .filter(v => !v.constraints)
+        .filter(v => !v.constraints) // Nested errors do not have constraints here
         .forEach(error => {
           const validationErrors = this.getValidationErrorsFromChildren(
             error.property,

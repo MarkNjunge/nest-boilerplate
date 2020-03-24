@@ -1,8 +1,16 @@
-import { IsNotEmpty } from "class-validator";
-import { ApiModelProperty } from "@nestjs/swagger";
+import { IsNotEmpty, ValidateNested } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { CreateContactDto } from "./CreateContactDto";
+import { Type } from "class-transformer";
 
 export class CreateUserDto {
   @IsNotEmpty()
-  @ApiModelProperty()
+  @ApiProperty()
   username: string;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  @ValidateNested({ each: true })
+  @Type(() => CreateContactDto)
+  contact: CreateContactDto;
 }

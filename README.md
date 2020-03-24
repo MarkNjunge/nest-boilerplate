@@ -4,9 +4,9 @@
 ![](https://github.com/MarkNjunge/nest-starter/workflows/Main%20Workflow/badge.svg)
 [![Known Vulnerabilities](https://snyk.io/test/github/MarkNjunge/nest-starter/badge.svg)](https://snyk.io/test/github/MarkNjunge/nest-starter)
 
-A [NestJS](https://nestjs.com/) starter.
+A starter for [NestJS](https://nestjs.com/), using Fastify.
 
-See Express branch [here](https://github.com/MarkNjunge/nest-starter/tree/express-adapter) (outdated, but works).
+See Express branch [here](https://github.com/MarkNjunge/nest-starter/tree/express-adapter) (**extremely outdated**).
 
 ## Features
 
@@ -43,75 +43,73 @@ $ yarn run start:prod
 
 ## Config
 
-The [config](https://www.npmjs.com/package/config) package to manage configs.
+The [node-config](https://www.npmjs.com/package/config) package to manage configs.
 
-Default config values are found in [default.json](./config/default.json). These values can be overridden using a `./config/local.json` file, `.env` file or setting environment variables.
+Default config values are found in [default.json](./config/default.json).  
+These values can be overridden by:
 
-See the environment variable mappings in [./config/custom-environment-variables.json](./config/custom-environment-variables.json).
+- Creating a `local.json` file in _config/_
+- Creating a `.env` file in the projcect directory.
+- Setting environment variables. See the environment variable mappings in [custom-environment-variables.json](./config/custom-environment-variables.json).
 
 ## Database
 
-Typeorm is used for database operations.
+[Typeorm](https://typeorm.io/) is used for database operations.
 
-It uses PostgreSQL by default but that can be changed by changing the `type` in [./src/app.module.ts](./src/app.module.ts).  
+It uses PostgreSQL by default, but that can be changed by changing the `type` in [app.module.ts](./src/app.module.ts).  
 See [TypeORM documentation](https://typeorm.io/#/) for supported databases.
 
 ### Migrations
 
 Typeorm is configured to use migrations instead of `synchronize: true`.
 
-To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by inspecting your entities, the cli needs extra configuration. Create a `.env` file based off [.env.sample](.env.sample).
+To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by inspecting your entities, the cli needs to be configured. Create a `.env` file based on [.env.sample](.env.sample).
 
 You can then generate migrations using `yarn migration:generate <your_migration_name>`.  
-You can also use `yarn migration:generate <your_migration_name>` to only create the file.
+You can also use `yarn migration:create <your_migration_name>` to only create the file.
 
-You can then run the migration using `yarn migration:run` or simply start the server.
+When the server starts, migrations will run automatically, or, you can run the migrations using `yarn migration:run`
 
 ## Swagger
 
 Swagger documentation is automatically generated from the routes.
 
-See config in [./config/default.json](./config/default.json).
+See config in [default.json](./config/default.json).
 
 ## Logging
 
 A custom logger is implemented using [winston](https://www.npmjs.com/package/winston).
 
-Create a logger using `new CustomLogger()`. A parameter can be passed into the constructor and will be used as a tag (defaults to "Application").
+Create a logger using `new CustomLogger()`.  
+A parameter can be passed into the constructor and to be used as a tag (defaults to "Application").
 
 For example,
 
 ```Typescript
-logger: CustomLogger = new CustomLogger("AppService");
-
-// ...
-
-this.logger.debug("Hello!");
+const logger =  new CustomLogger("AppService");
 ```
 
-will output
+```typescript
+this.logger.debug("Hello!");
 
-```bash
-2019-05-10 19:47:21.570 | debug: [AppService] Hello!
+// Output:
+// 2019-05-10 19:47:21.570 | debug: [AppService] Hello!
 ```
 
 A custom tag can also be passed into the log functions.
 
 ```Typescript
 this.logger.debug("Hello!", "AppService.getHello");
-```
 
-will output
-
-```bash
-2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
+// Output
+// 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
 ```
 
 ## Auth Guard
 
 An authentication guard is available in [auth.guard.ts](./src/common/guards/auth.guard.ts)
 
-It can be enabled but adding a `UseGuards` decorator
+It can be enabled by adding a `UseGuards` decorator to a controller or route
 
 ```Typescript
 @UseGuards(AuthGuard)
@@ -126,7 +124,7 @@ app.useGlobalGuards(new AuthGuard());
 ## Rate Limiting
 
 A rate limiter is configured using [fastify-rate-limit](https://github.com/fastify/fastify-rate-limit).  
-It defaults to 100 request per minute per IP (configurable in [./config/default.json](./config/default.json)).
+It defaults to 100 request per minute per IP (configurable in [default.json](./config/default.json)).
 
 ## Request Body Validation
 
@@ -164,32 +162,25 @@ An example of a response to an invalid body,
 
 ## Exception Handling
 
-All non HttpExceptions are caught and returned as a 500 response.
+All non HttpException errors are caught and returned as a 500 response.
 
-It is possible to thow exceptions in two ways:
-
-```Typescript
-throw new ApiException(HttpStatus.UNAUTHORIZED, "Route requires authenticaiton");
-```
-
-If you want to add more information to the error
+Exceptions can be thrown using Nest's [Built-in HTTP Exceptions](https://docs.nestjs.com/exception-filters#built-in-http-exceptions)
 
 ```Typescript
-throw new ApiException(
-      HttpStatus.UNAUTHORIZED,
-      "Route requires authenticaiton",
-      { key: "value" },
-    );
-```
-
-Predefied error classes can also be used. See [NestJS HTTP Exceptions documentation](https://docs.nestjs.com/exception-filters#http-exceptions)
-
-```Typescript
-throw new UnauthorizedException({
-  message: "Route requires authenticaiton",
-  meta: { key: "value" },
+throw new ForbiddenException({
+  message: "Forbidden",
+  meta: { reason: "Token does not have access to resource" },
 });
 ```
+
+or using the HttpException class
+
+```typescript
+throw new HttpException({ message: "Misdirected Request" }, 421);
+```
+
+**\*** The `meta` field is optional.  
+**\*** All fields other than `message` and `meta` will be ignored.
 
 ## Docker
 

@@ -1,12 +1,12 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class AddressDto {
-  @ApiModelProperty()
+  @ApiProperty()
   id: number;
 
-  @ApiModelProperty()
+  @ApiProperty()
   city: string;
 
-  @ApiModelProperty()
+  @ApiProperty()
   country: string;
 }

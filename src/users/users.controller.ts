@@ -4,8 +4,8 @@ import { AuthGuard } from "../common/guards/auth.guard";
 import {
   ApiResponse,
   ApiBadRequestResponse,
-  ApiUseTags,
   ApiOperation,
+  ApiTags,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/CreateUser.dto";
@@ -13,12 +13,12 @@ import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
 
 @Controller("users")
-@ApiUseTags("Users")
+@ApiTags("Users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get("/")
-  @ApiOperation({ title: "Get all users" })
+  @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
   async getAllUsers() {
     return this.usersService.getAllUsers();
@@ -26,10 +26,10 @@ export class UsersController {
 
   @Post("/")
   @UseGuards(AuthGuard)
-  @ApiOperation({ title: "Create a user" })
+  @ApiOperation({ summary: "Create a user" })
   @ApiResponse({
     status: 201,
-    description: "The record has been successfully created.",
+    description: "The user has been created successfully.",
     type: UserDto,
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
@@ -39,13 +39,13 @@ export class UsersController {
 
   @Post("/addresses")
   @UseGuards(AuthGuard)
-  @ApiOperation({ title: "Create an address" })
+  @ApiOperation({ summary: "Create an address" })
   @ApiResponse({
     status: 201,
-    description: "The record has been successfully created.",
+    description: "The address has been created successfully.",
     type: AddressDto,
   })
-  @ApiBadRequestResponse({ description: "Missing or too many params" })
+  @ApiBadRequestResponse({ description: "Bad Request" })
   async createAddress(@Body() dto: CreateAddressDto): Promise<AddressDto> {
     return this.usersService.createAddress(dto);
   }

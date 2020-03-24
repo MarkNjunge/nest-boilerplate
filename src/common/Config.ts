@@ -18,12 +18,18 @@ interface Db {
   ssl: boolean;
 }
 
-export class Swagger {
+export interface Swagger {
   enabled: boolean;
   endpoint: string;
   title: string;
   description: string;
-  contactEmail: string;
+  contact: SwaggerContact;
+}
+
+export interface SwaggerContact {
+  name: string;
+  url: string;
+  email: string;
 }
 
 interface RateLimit {

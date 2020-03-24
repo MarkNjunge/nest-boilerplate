@@ -60,8 +60,11 @@ function intializeSwagger(app: NestFastifyApplication) {
   const options = new DocumentBuilder()
     .setTitle(config.swagger.title)
     .setDescription(config.swagger.description)
-    .setContactEmail(config.swagger.contactEmail)
-    .setSchemes(process.env.NODE_ENV === "production" ? "https" : "http")
+    .setContact(
+      config.swagger.contact.name,
+      config.swagger.contact.url,
+      config.swagger.contact.email,
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

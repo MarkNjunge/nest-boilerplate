@@ -1,13 +1,17 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { AddressDto } from "./address.dto";
+import { ContactDto } from "./contact.dto";
 
 export class UserDto {
-  @ApiModelProperty()
+  @ApiProperty()
   id: number;
 
-  @ApiModelProperty()
+  @ApiProperty()
   username: string;
 
-  @ApiModelProperty({ type: AddressDto, isArray: true })
+  @ApiProperty()
+  contact: ContactDto;
+
+  @ApiProperty({ type: AddressDto, isArray: true })
   addresses: AddressDto[];
 }

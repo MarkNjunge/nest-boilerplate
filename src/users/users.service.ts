@@ -27,11 +27,10 @@ export class UsersService {
   async createUser(dto: CreateUserDto): Promise<UserDto> {
     this.logger.debug(`Creating user ${JSON.stringify(dto)}`);
 
-    const user = new UserEntity();
-    user.username = dto.username;
+    const user = UserEntity.fromCreateDto(dto);
 
     const created = await this.usersRepository.save(user);
-    return { id: created.id, username: created.username, addresses: [] };
+    return created;
   }
 
   async createAddress(dto: CreateAddressDto): Promise<AddressDto> {
