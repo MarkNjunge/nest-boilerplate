@@ -17,7 +17,7 @@ export class ContactEntity {
   email: string;
 
   @OneToOne(
-    type => UserEntity,
+    () => UserEntity,
     user => user.contact,
     {
       nullable: false,

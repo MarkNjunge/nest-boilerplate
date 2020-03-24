@@ -18,7 +18,7 @@ export class UserEntity {
   username: string;
 
   @OneToMany(
-    type => AddressEntity,
+    () => AddressEntity,
     address => address.user,
     {
       eager: true,
@@ -28,7 +28,7 @@ export class UserEntity {
   addresses: AddressEntity[];
 
   @OneToOne(
-    type => ContactEntity,
+    () => ContactEntity,
     contact => contact.user,
     {
       eager: true,
