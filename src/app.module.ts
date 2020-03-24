@@ -1,12 +1,9 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app/app.controller";
 import { AppService } from "./app/app.service";
-import { UsersController } from "./users/users.controller";
-import { UsersService } from "./users/users.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { config } from "./common/Config";
-import { UserEntity } from "./users/entitiy/User.entity";
-import { AddressEntity } from "./users/entitiy/Address.entity";
+import { UsersModule } from "./users/users.module";
 import * as path from "path";
 
 @Module({
@@ -22,9 +19,9 @@ import * as path from "path";
         ssl: config.db.ssl,
       },
     }),
-    TypeOrmModule.forFeature([UserEntity, AddressEntity]),
+    UsersModule,
   ],
-  controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
