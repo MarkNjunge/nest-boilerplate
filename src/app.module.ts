@@ -18,6 +18,7 @@ import * as path from "path";
       extra: {
         ssl: config.db.ssl,
       },
+      keepConnectionAlive: true,
     }),
     UsersModule,
   ],
