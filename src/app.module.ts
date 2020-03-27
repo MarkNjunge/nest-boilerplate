@@ -12,7 +12,7 @@ import * as path from "path";
       type: "postgres",
       url: config.db.url,
       entities: [path.join(__dirname, "./**/*.entity{.ts,.js}")],
-      migrations: [path.join(__dirname, "./migration/*{.ts,.js}")],
+      migrations: [path.join(__dirname, "./db/migration/*{.ts,.js}")],
       migrationsRun: true,
       synchronize: false,
       extra: {
