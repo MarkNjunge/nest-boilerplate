@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional } from "class-validator";
 
-export class ApiRespnseDto {
+export class ApiResponseDto {
   @ApiProperty()
   status: number;
 
