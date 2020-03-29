@@ -9,6 +9,8 @@ import {
 } from "@nestjs/platform-fastify";
 import { initializeWinston } from "../src/common/logging/CustomLogger";
 import { UserDto } from "../src/users/dto/user.dto";
+import { ValidationPipe } from "../src/common/pipes/validation.pipe";
+import { CreateUserDto } from "src/users/dto/CreateUser.dto";
 
 describe("AppController (e2e)", () => {
   let app: INestApplication;
@@ -34,33 +36,39 @@ describe("AppController (e2e)", () => {
     app = module.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
     );
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
     // Wait for fastify
-    await app
-      .getHttpAdapter()
-      .getInstance()
-      .ready();
+    await app.getHttpAdapter().getInstance().ready();
 
     server = app.getHttpServer();
   });
 
   it("GET /", () => {
-    return request(server)
-      .get("/")
-      .expect(200)
-      .expect(appService.getHello());
+    return request(server).get("/").expect(200).expect(appService.getHello());
   });
 
-  it("POST /", () => {
-    const userDto = new UserDto();
-    userDto.username = "Mark";
+  describe("users", () => {
+    it("POST /users", (done) => {
+      const dto: CreateUserDto = {
+        username: "mark",
+        contact: { email: "mark@mail.com" },
+      };
+      const res = {
+        username: "mark",
+        contact: { email: "mark@mail.com", id: 1 },
+        id: 1,
+      };
 
-    return request(server)
-      .post("/")
-      .send(userDto)
-      .expect(201)
-      .expect(JSON.stringify(userDto));
+      return request(server)
+        .post("/users")
+        .send(dto)
+        .set("x-api-key", "api-key")
+        .expect("Content-Type", /json/)
+        .expect(201, done);
+      // .expect(JSON.stringify(res));
+    });
   });
 
   afterAll(async () => {
