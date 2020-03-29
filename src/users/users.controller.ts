@@ -50,7 +50,7 @@ export class UsersController {
     return this.usersService.createUser(dto);
   }
 
-  @Post("/addresses")
+  @Post(":id/addresses")
   @UseGuards(AuthGuard)
   @ApiSecurity("x-api-key")
   @ApiOperation({ summary: "Create an address" })
@@ -60,8 +60,11 @@ export class UsersController {
     type: AddressDto,
   })
   @ApiBadRequestResponse({ description: "Bad Request" })
-  async createAddress(@Body() dto: CreateAddressDto): Promise<AddressDto> {
-    return this.usersService.createAddress(dto);
+  async createAddress(
+    @Param("id") id: number,
+    @Body() dto: CreateAddressDto,
+  ): Promise<AddressDto> {
+    return this.usersService.createAddress(id, dto);
   }
 
   @Put(":id")

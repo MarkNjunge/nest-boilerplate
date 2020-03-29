@@ -36,18 +36,15 @@ export class UsersService {
     return created;
   }
 
-  async createAddress(dto: CreateAddressDto): Promise<AddressDto> {
+  async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
     this.logger.debug(`Creating address ${JSON.stringify(dto)}`);
 
-    const user = new UserEntity();
-    user.id = dto.userId;
-    const address = new AddressEntity();
-    address.city = dto.city;
-    address.country = dto.country;
-    address.user = user;
+    const address = AddressEntity.fromCreateDto(id, dto);
 
     const created = await this.addressesRepository.save(address);
-    return { id: created.id, city: created.city, country: created.country };
+    console.log(created);
+    delete created.user;
+    return created;
   }
 
   async updateUser(id: number, dto: UpdateUserDto) {

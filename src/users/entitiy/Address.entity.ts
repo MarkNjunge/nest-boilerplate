@@ -6,6 +6,7 @@ import {
   ManyToOne,
 } from "typeorm";
 import { UserEntity } from "./User.entity";
+import { CreateAddressDto } from "../dto/CreateAddress.dto";
 
 @Entity({ name: "addresses" })
 export class AddressEntity {
@@ -24,4 +25,15 @@ export class AddressEntity {
   })
   @JoinColumn({ name: "user_id" })
   user: UserEntity;
+
+  static fromCreateDto(userId: number, dto: CreateAddressDto): AddressEntity {
+    const user = new UserEntity();
+    user.id = userId;
+    const address = new AddressEntity();
+    address.city = dto.city;
+    address.country = dto.country;
+    address.user = user;
+
+    return address;
+  }
 }
