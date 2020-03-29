@@ -1,6 +1,7 @@
 {
   "env": "NODE_ENV",
   "port": "PORT",
+  "apiKey": "API_KEY",
   "db": {
     "url": "DB_URL",
     "ssl": "DB_SSL"

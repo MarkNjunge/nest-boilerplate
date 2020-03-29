@@ -1,7 +1,13 @@
-import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
 import { Observable } from "rxjs";
 import { IncomingMessage } from "http";
 import { FastifyRequest } from "fastify";
+import { config } from "../Config";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -16,8 +22,13 @@ export class AuthGuard implements CanActivate {
 }
 
 async function validateRequest(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   request: FastifyRequest<IncomingMessage>,
 ): Promise<boolean> {
+  const apiKey = request.headers["x-api-key"];
+
+  if (apiKey !== config.apiKey) {
+    throw new ForbiddenException({ message: "Invalid api key" });
+  }
+
   return true;
 }

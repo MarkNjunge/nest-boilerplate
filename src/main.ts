@@ -72,6 +72,11 @@ function intializeSwagger(app: NestFastifyApplication) {
       config.swagger.contact.url,
       config.swagger.contact.email,
     )
+    .addSecurity("x-api-key", {
+      type: "apiKey",
+      in: "header",
+      name: "x-api-key",
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

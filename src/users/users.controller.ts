@@ -6,6 +6,7 @@ import {
   ApiBadRequestResponse,
   ApiOperation,
   ApiTags,
+  ApiSecurity,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/CreateUser.dto";
@@ -26,6 +27,7 @@ export class UsersController {
 
   @Post("/")
   @UseGuards(AuthGuard)
+  @ApiSecurity("x-api-key")
   @ApiOperation({ summary: "Create a user" })
   @ApiResponse({
     status: 201,
@@ -39,6 +41,7 @@ export class UsersController {
 
   @Post("/addresses")
   @UseGuards(AuthGuard)
+  @ApiSecurity("x-api-key")
   @ApiOperation({ summary: "Create an address" })
   @ApiResponse({
     status: 201,

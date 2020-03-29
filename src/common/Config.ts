@@ -5,6 +5,7 @@ import * as configPackage from "config";
 export interface Config {
   env: string;
   port: number;
+  apiKey: string;
   db: Db;
   swagger: Swagger;
   rateLimit: RateLimit;
