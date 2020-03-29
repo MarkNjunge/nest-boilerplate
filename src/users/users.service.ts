@@ -8,6 +8,9 @@ import { CreateUserDto } from "./dto/CreateUser.dto";
 import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
 import { AddressEntity } from "./entitiy/Address.entity";
+import { ApiResponseDto } from "src/common/dto/ApiResponse.dto";
+import { UpdateContactDto } from "./dto/UpdateContact.dto";
+import { UpdateUserDto } from "./dto/UpdateUser.dto";
 
 @Injectable()
 export class UsersService {
@@ -45,5 +48,21 @@ export class UsersService {
 
     const created = await this.addressesRepository.save(address);
     return { id: created.id, city: created.city, country: created.country };
+  }
+
+  async updateUser(id: number, dto: UpdateUserDto) {
+    this.logger.log(`Updating user ${id}: ${JSON.stringify(dto)}`);
+
+    // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
+    const existing = await this.usersRepository.findOne({ id });
+    const updated = UserEntity.fromUpdateDto(dto);
+    await this.usersRepository.merge(existing, updated);
+    return this.usersRepository.save(existing);
+  }
+
+  async deleteUser(userId: number) {
+    this.logger.debug(`Deleting user ${userId}`);
+
+    return this.usersRepository.delete({ id: userId });
   }
 }

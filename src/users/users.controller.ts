@@ -1,4 +1,13 @@
-import { Controller, Post, UseGuards, Body, Get } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Body,
+  Get,
+  Param,
+  Delete,
+  Put,
+} from "@nestjs/common";
 import { UserDto } from "../users/dto/user.dto";
 import { AuthGuard } from "../common/guards/auth.guard";
 import {
@@ -12,6 +21,8 @@ import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/CreateUser.dto";
 import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
+import { ApiResponseDto } from "../common/dto/ApiResponse.dto";
+import { UpdateUserDto } from "./dto/UpdateUser.dto";
 
 @Controller("users")
 @ApiTags("Users")
@@ -51,5 +62,36 @@ export class UsersController {
   @ApiBadRequestResponse({ description: "Bad Request" })
   async createAddress(@Body() dto: CreateAddressDto): Promise<AddressDto> {
     return this.usersService.createAddress(dto);
+  }
+
+  @Put(":id")
+  @UseGuards(AuthGuard)
+  @ApiSecurity("x-api-key")
+  @ApiOperation({ summary: "Update a user" })
+  @ApiResponse({
+    status: 200,
+    description: "The user has been updated",
+    type: ApiResponseDto,
+  })
+  async updateUser(
+    @Param("id") id: number,
+    @Body() dto: UpdateUserDto,
+  ): Promise<ApiResponseDto> {
+    await this.usersService.updateUser(id, dto);
+    return { status: 200, message: "User updated" };
+  }
+
+  @Delete(":id")
+  @UseGuards(AuthGuard)
+  @ApiSecurity("x-api-key")
+  @ApiOperation({ summary: "Delete a user" })
+  @ApiResponse({
+    status: 200,
+    description: "The user has been deleted",
+    type: ApiResponseDto,
+  })
+  async deleteUser(@Param("id") id: number): Promise<ApiResponseDto> {
+    await this.usersService.deleteUser(id);
+    return { status: 200, message: "User deleted" };
   }
 }
