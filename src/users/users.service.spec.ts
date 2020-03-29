@@ -6,14 +6,19 @@ import { Repository } from "typeorm";
 import { AddressEntity } from "./entitiy/Address.entity";
 import { CreateUserDto } from "./dto/CreateUser.dto";
 import { UserDto } from "./dto/user.dto";
+import { CreateAddressDto } from "./dto/CreateAddress.dto";
+import { AddressDto } from "./dto/address.dto";
 
 describe("UsersService", () => {
   let usersService: UsersService;
   let usersRepository: Repository<UserEntity>;
   let addressRepository: Repository<AddressEntity>;
 
-  const createAddressDto = { city: "Nairobi", country: "Kenya", userId: 1 };
-  const address = { id: 1, city: "Nairobi", country: "Kenya" };
+  const createAddressDto: CreateAddressDto = {
+    city: "Nairobi",
+    country: "Kenya",
+  };
+  const address: AddressDto = { id: 1, city: "Nairobi", country: "Kenya" };
   const createUserDto: CreateUserDto = {
     username: "Mark",
     contact: {
@@ -77,7 +82,7 @@ describe("UsersService", () => {
         .spyOn(addressRepository, "save")
         .mockImplementation(() => Promise.resolve(address as AddressEntity));
 
-      const actual = await usersService.createAddress(createAddressDto);
+      const actual = await usersService.createAddress(1, createAddressDto);
       expect(actual).toEqual(address);
     });
   });

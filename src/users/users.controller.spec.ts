@@ -6,13 +6,18 @@ import { UserEntity } from "./entitiy/User.entity";
 import { Repository } from "typeorm";
 import { AddressEntity } from "./entitiy/Address.entity";
 import { UserDto } from "./dto/user.dto";
+import { CreateAddressDto } from "./dto/CreateAddress.dto";
+import { AddressDto } from "./dto/address.dto";
 
 describe("Users Controller", () => {
   let usersController: UsersController;
   let usersService: UsersService;
 
-  const createAddressDto = { city: "Nairobi", country: "Kenya", userId: 1 };
-  const address = { id: 1, city: "Nairobi", country: "Kenya" };
+  const createAddressDto: CreateAddressDto = {
+    city: "Nairobi",
+    country: "Kenya",
+  };
+  const address: AddressDto = { id: 1, city: "Nairobi", country: "Kenya" };
   const createUserDto = {
     username: "Mark",
     contact: {
@@ -78,7 +83,7 @@ describe("Users Controller", () => {
         .spyOn(usersService, "createAddress")
         .mockImplementation(() => Promise.resolve(address));
 
-      expect(await usersController.createAddress(createAddressDto)).toBe(
+      expect(await usersController.createAddress(1, createAddressDto)).toBe(
         address,
       );
     });
