@@ -10,7 +10,7 @@
     "docs": "npx compodoc -p tsconfig.json -s",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest build --webpack --webpackPath webpack-hmr.config.js",
+    "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -n",
@@ -63,14 +63,12 @@
     "nodemon": "^1.18.9",
     "prettier": "^2.0.2",
     "rimraf": "^2.6.2",
-    "start-server-webpack-plugin": "^2.2.5",
     "supertest": "^3.4.1",
     "ts-jest": "25.2.1",
     "ts-loader": "6.2.1",
     "ts-node": "8.6.2",
     "tsconfig-paths": "3.9.0",
-    "typescript": "3.7.4",
-    "webpack-node-externals": "^1.7.2"
+    "typescript": "3.7.4"
   },
   "jest": {
     "moduleFileExtensions": [

@@ -14,8 +14,6 @@ import * as fastifyRateLimit from "fastify-rate-limit";
 import * as helmet from "helmet";
 import { requestTimeMiddleware } from "./common/middleware/request-time.middleware";
 
-declare const module: any;
-
 async function bootstrap() {
   initializeWinston();
   const logger = new CustomLogger("Application");
@@ -53,11 +51,6 @@ async function bootstrap() {
 
   await app.listen(config.port, "0.0.0.0");
   logger.log(`Started on port ${config.port}`);
-
-  if (module.hot) {
-    module.hot.accept();
-    module.hot.dispose(() => app.close());
-  }
 }
 bootstrap();
 

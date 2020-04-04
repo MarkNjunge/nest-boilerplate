@@ -21,7 +21,6 @@ import { ContactEntity } from "./users/entitiy/Contact.entity";
       extra: {
         ssl: config.db.ssl,
       },
-      keepConnectionAlive: true,
     }),
     UsersModule,
   ],
