@@ -20,7 +20,7 @@ export class seed1580125276613 implements MigrationInterface {
       "INSERT INTO public.users (username) VALUES('Flora');",
     );
     await queryRunner.query(
-      "INSERT INTO public.addresses (city, country, user_id) VALUES('Cairo', 'Egypy', 3);",
+      "INSERT INTO public.addresses (city, country, user_id) VALUES('Cairo', 'Egypt', 3);",
     );
   }
 
