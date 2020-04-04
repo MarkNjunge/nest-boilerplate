@@ -46,7 +46,7 @@ export class CustomLogger implements LoggerService {
     const tag = "ROUTE";
     const requestTime = request.headers["x-request-time"];
     const requestTimeISO = moment(requestTime).toISOString();
-    const duration = Date.now() - requestTime;
+    const duration = moment().valueOf() - requestTime;
 
     let data = {
       tag,
