@@ -96,13 +96,42 @@ this.logger.debug("Hello!");
 // 2019-05-10 19:47:21.570 | debug: [AppService] Hello!
 ```
 
-A custom tag can also be passed into the log functions.
+A custom tag can be passed into the log functions.
 
 ```Typescript
 this.logger.debug("Hello!", "AppService.getHello");
 
 // Output
 // 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
+```
+
+Extra data can be passed into the log functions. This data will not be printed to the console. To access it, a custom transport is needed. See [SampleTransport](./src/common/logging/Sample.transport.ts) for an example.
+
+```Typescript
+this.logger.debug("Hello!", "AppService.getHello", { user: "mark" });
+
+// Output
+// 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
+```
+
+#### Sensitive parameters
+
+Sensitive parameters specified in the config option `logging.sensitiveParams` will be replaced with the value in `logging.replacementString`.
+
+See [remove-sensitive.ts](src\common\logging\remove-sensitive.ts)
+
+```json
+Before
+{
+  "username": "mark",
+  "password": "abc123"
+}
+
+After
+{
+  "username": "mark",
+  "password": "REDACTED"
+}
 ```
 
 ## Auth Guard
@@ -165,6 +194,12 @@ An example of a response to an invalid body,
 All non HttpException errors are caught and returned as a 500 response.
 
 Exceptions can be thrown using Nest's [Built-in HTTP Exceptions](https://docs.nestjs.com/exception-filters#built-in-http-exceptions)
+
+```Typescript
+throw new ForbiddenException("Forbidden");
+```
+
+or
 
 ```Typescript
 throw new ForbiddenException({

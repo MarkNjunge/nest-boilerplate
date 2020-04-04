@@ -1,5 +1,5 @@
 import { NestFactory } from "@nestjs/core";
-import { CustomLogger, initializeWinston } from "./common/CustomLogger";
+import { CustomLogger, initializeWinston } from "./common/logging/CustomLogger";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
@@ -12,6 +12,7 @@ import {
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
 import * as helmet from "helmet";
+import { requestTimeMiddleware } from "./common/middleware/request-time.middleware";
 
 declare const module: any;
 
@@ -48,6 +49,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(new ValidationPipe());
+  app.use(requestTimeMiddleware);
 
   await app.listen(config.port, "0.0.0.0");
   logger.log(`Started on port ${config.port}`);

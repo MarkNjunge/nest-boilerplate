@@ -42,7 +42,8 @@
     "reflect-metadata": "^0.1.12",
     "rxjs": "^6.3.3",
     "typeorm": "^0.2.22",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "winston-transport": "^4.3.0"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.10",

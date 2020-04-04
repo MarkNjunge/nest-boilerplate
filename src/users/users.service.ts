@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { UserDto } from "./dto/user.dto";
-import { CustomLogger } from "../common/CustomLogger";
+import { CustomLogger } from "../common/logging/CustomLogger";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserEntity } from "./entitiy/User.entity";
@@ -8,8 +8,6 @@ import { CreateUserDto } from "./dto/CreateUser.dto";
 import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
 import { AddressEntity } from "./entitiy/Address.entity";
-import { ApiResponseDto } from "src/common/dto/ApiResponse.dto";
-import { UpdateContactDto } from "./dto/UpdateContact.dto";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
 
 @Injectable()
@@ -28,7 +26,7 @@ export class UsersService {
   }
 
   async createUser(dto: CreateUserDto): Promise<UserDto> {
-    this.logger.debug(`Creating user ${JSON.stringify(dto)}`);
+    this.logger.debug(`Creating user ${dto.username}`, null, dto);
 
     const user = UserEntity.fromCreateDto(dto);
 
@@ -37,7 +35,7 @@ export class UsersService {
   }
 
   async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
-    this.logger.debug(`Creating address ${JSON.stringify(dto)}`);
+    this.logger.debug(`Creating address for user ${id}`, null, dto);
 
     const address = AddressEntity.fromCreateDto(id, dto);
 
@@ -48,7 +46,7 @@ export class UsersService {
   }
 
   async updateUser(id: number, dto: UpdateUserDto) {
-    this.logger.log(`Updating user ${id}: ${JSON.stringify(dto)}`);
+    this.logger.log(`Updating user ${id}`, null, dto);
 
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
     const existing = await this.usersRepository.findOne({ id });
@@ -58,7 +56,7 @@ export class UsersService {
   }
 
   async deleteUser(userId: number) {
-    this.logger.debug(`Deleting user ${userId}`);
+    this.logger.debug(`Deleting user ${userId}`, null, { userId });
 
     return this.usersRepository.delete({ id: userId });
   }

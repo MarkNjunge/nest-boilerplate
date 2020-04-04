@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { CustomLogger } from "../CustomLogger";
+import { CustomLogger } from "../logging/CustomLogger";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { ServerResponse, IncomingMessage } from "http";
 
@@ -22,17 +22,8 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = ctx.getRequest<FastifyRequest<IncomingMessage>>();
     const response = ctx.getResponse<FastifyReply<ServerResponse>>();
 
-    const requestTime = Date.now();
-
-    // Add request time to params to be used in exception filters
-    request.params.requestTime = requestTime;
-
     return next
       .handle()
-      .pipe(
-        tap(() =>
-          this.logger.logRoute(request, response.res.statusCode, requestTime),
-        ),
-      );
+      .pipe(tap((data) => this.logger.logRoute(request, response, data)));
   }
 }

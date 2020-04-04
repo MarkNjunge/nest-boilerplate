@@ -31,6 +31,8 @@
     "forbidUnknown": true
   },
   "logging": {
-    "timestampFormat": "YYYY-MM-DD HH:mm:ss.SSS"
+    "timestampFormat": "YYYY-MM-DD HH:mm:ss.SSS",
+    "sensitiveParams": ["password"],
+    "replacementString": "REDACTED"
   }
 }

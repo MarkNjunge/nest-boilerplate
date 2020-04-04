@@ -51,6 +51,8 @@ interface Validator {
 
 interface Logging {
   timestampFormat: string;
+  sensitiveParams: string[];
+  replacementString: string;
 }
 
 export const config: Config = configPackage;

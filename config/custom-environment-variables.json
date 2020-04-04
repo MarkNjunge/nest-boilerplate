@@ -24,6 +24,7 @@
     "forbidUnknown": "VALIDATOR_FORBID_UNKNOWN"
   },
   "logging": {
-    "timestampFormat": "LOGGING_TIMESTAMP_FORMAT"
+    "timestampFormat": "LOGGING_TIMESTAMP_FORMAT",
+    "sensitiveParams": "LOGGING_SENSITVE_PARAMS"
   }
 }
