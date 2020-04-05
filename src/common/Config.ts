@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import * as configPackage from "config";
 
-export interface Config {
+interface Config {
   env: string;
   port: number;
   apiKey: string;
@@ -19,7 +19,7 @@ interface Db {
   ssl: boolean;
 }
 
-export interface Swagger {
+interface Swagger {
   enabled: boolean;
   endpoint: string;
   title: string;
@@ -27,7 +27,7 @@ export interface Swagger {
   contact: SwaggerContact;
 }
 
-export interface SwaggerContact {
+interface SwaggerContact {
   name: string;
   url: string;
   email: string;
