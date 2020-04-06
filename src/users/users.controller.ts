@@ -81,7 +81,7 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
   ): Promise<ApiResponseDto> {
     await this.usersService.updateUser(id, dto);
-    return { status: 200, message: "User updated" };
+    return { message: "User updated" };
   }
 
   @Delete(":id")
@@ -95,6 +95,6 @@ export class UsersController {
   })
   async deleteUser(@Param("id") id: number): Promise<ApiResponseDto> {
     await this.usersService.deleteUser(id);
-    return { status: 200, message: "User deleted" };
+    return { message: "User deleted" };
   }
 }
