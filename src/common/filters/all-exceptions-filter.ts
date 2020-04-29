@@ -35,7 +35,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const message = e.message;
     const logMessage: ApiResponseDto = {
-      status,
       message,
     };
 
