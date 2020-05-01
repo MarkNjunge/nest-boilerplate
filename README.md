@@ -204,6 +204,7 @@ or
 ```Typescript
 throw new ForbiddenException({
   message: "Forbidden",
+  code: ErrorCodes.RESTRICTED,
   meta: { reason: "Token does not have access to resource" },
 });
 ```
@@ -211,11 +212,14 @@ throw new ForbiddenException({
 or using the HttpException class
 
 ```typescript
-throw new HttpException({ message: "Misdirected Request" }, 421);
+throw new HttpException(
+  { message: "Misdirected Request", code: ErrorCodes.MISDIRECTED },
+  421,
+);
 ```
 
-**\*** The `meta` field is optional.  
-**\*** All fields other than `message` and `meta` will be ignored.
+**\*** The `meta` and `code` fields are optional.  
+**\*** All fields other than `message`, `code`, and `meta` will be ignored.
 
 ## Docker
 

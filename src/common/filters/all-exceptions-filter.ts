@@ -8,7 +8,8 @@ import {
 import { FastifyReply, FastifyRequest } from "fastify";
 import { ServerResponse, IncomingMessage } from "http";
 import { CustomLogger } from "../logging/CustomLogger";
-import { ApiResponseDto } from "../dto/ApiResponse.dto";
+import { ApiErrorDto } from "../dto/ApiError.dto";
+import { ErrorCodes } from "../error-codes";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -34,19 +35,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.res.statusCode = status;
 
     const message = e.message;
-    const logMessage: ApiResponseDto = {
+    const apiError: ApiErrorDto = {
+      status,
       message,
+      code: ErrorCodes.INTERNAL_ERROR,
     };
+    if (e instanceof HttpException && (e.getResponse() as any).code) {
+      apiError.code = (e.getResponse() as any).code;
+    }
 
     if (e instanceof HttpException && (e.getResponse() as any).meta) {
-      logMessage.meta = (e.getResponse() as any).meta;
+      apiError.meta = (e.getResponse() as any).meta;
     }
 
     this.logger.error(message, stackTop, { stacktrace: e.stack });
-    this.logger.logRoute(request, response, { ...logMessage });
+    this.logger.logRoute(request, response, { ...apiError });
 
-    response.status(status).send({
-      ...logMessage,
-    });
+    response.status(status).send(apiError);
   }
 }
