@@ -36,15 +36,16 @@ export class CustomLogger implements LoggerService {
     winston.verbose({ message: `[${name || this.name}] ${message}`, data });
   }
   logRoute(
-    request: FastifyRequest<IncomingMessage>,
-    response: FastifyReply<ServerResponse>,
+    request: FastifyRequest,
+    response: FastifyReply,
     responseBody?: any,
   ) {
-    const statusCode = response.res.statusCode;
-    const method = request.req.method;
-    const url = request.req.url;
+    const statusCode = response.statusCode;
+    const method = request.method;
+    const url = request.url;
     const tag = "ROUTE";
-    const requestTime = request.headers["x-request-time"];
+
+    const requestTime = parseInt(request.headers["x-request-time"] as string);
     const requestTimeISO = moment(requestTime).toISOString();
     const duration = moment().valueOf() - requestTime;
 

@@ -10,7 +10,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import * as fastifyRateLimit from "fastify-rate-limit";
+// import * as fastifyRateLimit from "fastify-rate-limit";
 import * as helmet from "helmet";
 import { requestTimeMiddleware } from "./common/middleware/request-time.middleware";
 
@@ -30,10 +30,10 @@ async function bootstrap() {
   intializeSwagger(app);
 
   if (config.rateLimit.enabled === true) {
-    app.register(fastifyRateLimit, {
-      max: config.rateLimit.max,
-      timeWindow: config.rateLimit.timeWindow,
-    });
+    // app.register(fastifyRateLimit(), {
+    //   max: 1,
+    //   timeWindow: config.rateLimit.timeWindow,
+    // });
   }
 
   app.enableCors({

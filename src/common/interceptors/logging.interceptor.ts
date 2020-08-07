@@ -19,8 +19,8 @@ export class LoggingInterceptor implements NestInterceptor {
   }
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
-    const request = ctx.getRequest<FastifyRequest<IncomingMessage>>();
-    const response = ctx.getResponse<FastifyReply<ServerResponse>>();
+    const request = ctx.getRequest<FastifyRequest>();
+    const response = ctx.getResponse<FastifyReply>();
 
     return next
       .handle()

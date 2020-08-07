@@ -21,8 +21,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   catch(e: HttpException | Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<FastifyReply<ServerResponse>>();
-    const request = ctx.getRequest<FastifyRequest<IncomingMessage>>();
+    const response = ctx.getResponse<FastifyReply>();
+    const request = ctx.getRequest<FastifyRequest>();
 
     // Get the location where the error was thrown from to use as a logging tag
     const stackTop = e.stack.split("\n")[1].split("at ")[1].split(" ")[0];
@@ -32,7 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       e instanceof HttpException
         ? e.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
-    response.res.statusCode = status;
+    response.statusCode = status;
 
     const message = e.message;
     const apiError: ApiErrorDto = {

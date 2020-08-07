@@ -3,11 +3,11 @@ import { ServerResponse, IncomingMessage } from "http";
 import * as moment from "moment";
 
 export function requestTimeMiddleware(
-  request: FastifyRequest<IncomingMessage>,
-  _response: FastifyReply<ServerResponse>,
+  request: FastifyRequest,
+  _response: FastifyReply,
   next: Function,
 ) {
   const requestTime = moment().valueOf();
-  request.headers["x-request-time"] = requestTime;
+  request.headers["x-request-time"] = requestTime.toString();
   next();
 }

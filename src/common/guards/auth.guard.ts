@@ -15,16 +15,12 @@ export class AuthGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const request: FastifyRequest<IncomingMessage> = context
-      .switchToHttp()
-      .getRequest();
+    const request: FastifyRequest = context.switchToHttp().getRequest();
     return validateRequest(request);
   }
 }
 
-async function validateRequest(
-  request: FastifyRequest<IncomingMessage>,
-): Promise<boolean> {
+async function validateRequest(request: FastifyRequest): Promise<boolean> {
   const apiKey = request.headers["x-api-key"];
 
   if (apiKey !== config.apiKey) {
