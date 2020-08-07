@@ -3,17 +3,22 @@ on: [push]
 
 jobs:
   test:
-    name: Test
+    name: Lint & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
           node-version: "12.14.1"
-      - name: lint and test
+      - name: Install dependencies
+          env:
+            CI: true
+          run: yarn install
+      - name: Run lint
         env:
           CI: true
-        run: |
-          yarn install
-          yarn lint
-          yarn test
+        run: yarn lint
+      - name: Run Test
+        env:
+          CI: true
+        run: yarn test
