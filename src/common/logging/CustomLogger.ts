@@ -2,7 +2,6 @@ import { LoggerService } from "@nestjs/common";
 import * as winston from "winston";
 import * as moment from "moment";
 import { config } from "../Config";
-import { IncomingMessage, ServerResponse } from "http";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import { removeSensitiveParams } from "./remove-sensitive";

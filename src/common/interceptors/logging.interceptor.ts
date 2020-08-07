@@ -8,7 +8,6 @@ import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { CustomLogger } from "../logging/CustomLogger";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { ServerResponse, IncomingMessage } from "http";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

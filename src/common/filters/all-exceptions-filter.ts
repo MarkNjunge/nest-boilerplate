@@ -6,7 +6,6 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { ServerResponse, IncomingMessage } from "http";
 import { CustomLogger } from "../logging/CustomLogger";
 import { ApiErrorDto } from "../dto/ApiError.dto";
 import { ErrorCodes } from "../error-codes";

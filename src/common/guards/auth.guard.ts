@@ -5,7 +5,6 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { Observable } from "rxjs";
-import { IncomingMessage } from "http";
 import { FastifyRequest } from "fastify";
 import { config } from "../Config";
 import { ErrorCodes } from "../error-codes";
