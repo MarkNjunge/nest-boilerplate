@@ -22,9 +22,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "snyk-protect": "snyk protect",
-    "prepare": "yarn run snyk-protect"
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^7.4.2",
@@ -45,8 +43,7 @@
     "rxjs": "^6.6.2",
     "typeorm": "0.2.25",
     "winston": "^3.3.3",
-    "winston-transport": "^4.4.0",
-    "snyk": "^1.370.0"
+    "winston-transport": "^4.4.0"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.11",
@@ -95,6 +92,5 @@
       "pre-commit": "yarn lint",
       "pre-push": "yarn test"
     }
-  },
-  "snyk": true
+  }
 }
