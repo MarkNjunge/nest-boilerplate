@@ -38,7 +38,7 @@ async function bootstrap() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     app.register(fastifyRateLimit, {
-      max: 1,
+      max: config.rateLimit.max,
       timeWindow: config.rateLimit.timeWindow,
     });
   }
