@@ -10,8 +10,8 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-// import * as fastifyRateLimit from "fastify-rate-limit";
-import * as helmet from "helmet";
+import * as fastifyRateLimit from "fastify-rate-limit";
+import * as helmet from "fastify-helmet";
 import { requestTimeMiddleware } from "./common/middleware/request-time.middleware";
 
 async function bootstrap() {
@@ -27,22 +27,23 @@ async function bootstrap() {
     },
   );
 
-  intializeSwagger(app);
-
-  if (config.rateLimit.enabled === true) {
-    // app.register(fastifyRateLimit(), {
-    //   max: 1,
-    //   timeWindow: config.rateLimit.timeWindow,
-    // });
-  }
-
+  app.register(helmet);
   app.enableCors({
     origin: config.cors.origin,
     methods: config.cors.methods,
     allowedHeaders: config.cors.allowedHeaders,
   });
 
-  app.use(helmet());
+  if (config.rateLimit.enabled === true) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    app.register(fastifyRateLimit, {
+      max: 1,
+      timeWindow: config.rateLimit.timeWindow,
+    });
+  }
+
+  intializeSwagger(app);
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
