@@ -27,7 +27,25 @@ async function bootstrap() {
     },
   );
 
-  app.register(helmet);
+  // This config is based off the helmet source code.
+  // 'unsafe-inline' has been added to 'default-src' and 'script-src' for Swagger to work
+  app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'", "'unsafe-inline'"],
+        baseUri: ["'self'"],
+        blockAllMixedContent: [],
+        fontSrc: ["'self'", "https:", "data:"],
+        frameAncestors: ["'self'"],
+        imgSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  });
   app.enableCors({
     origin: config.cors.origin,
     methods: config.cors.methods,
