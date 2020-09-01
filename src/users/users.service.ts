@@ -40,7 +40,6 @@ export class UsersService {
     const address = AddressEntity.fromCreateDto(id, dto);
 
     const created = await this.addressesRepository.save(address);
-    console.log(created);
     delete created.user;
     return created;
   }
