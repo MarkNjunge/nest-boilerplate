@@ -1,7 +1,0 @@
-{
-  "apiKey": "api-key",
-  "db": {
-    "url": "postgres://postgres:postgres@localhost:5432/nest-starter-e2e",
-    "ssl": false
-  }
-}

@@ -1,0 +1,6 @@
+{
+  "db": {
+    "url": "postgres://username:password@host:port/test_database",
+    "ssl": false
+  }
+}
