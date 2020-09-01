@@ -17,17 +17,14 @@ describe("AppController (e2e)", () => {
   let app: INestApplication;
   let server: HttpServer;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Prevents Winston error 'Attempt to write logs with no transports'
-    console.log(process.env.NODE_ENV);
     winston.configure({
       level: "debug",
       format: winston.format.simple(),
       transports: [new BlankTransport()],
     });
-  });
 
-  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -47,6 +44,7 @@ describe("AppController (e2e)", () => {
 
     server = app.getHttpServer();
   });
+
   describe("/", () => {
     it("GET /", () => {
       return request(server).get("/").expect(200).expect("Hello World!");
