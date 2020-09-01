@@ -5,7 +5,7 @@ import {
   CallHandler,
 } from "@nestjs/common";
 import { Observable } from "rxjs";
-import { first } from "rxjs/operators";
+import { tap } from "rxjs/operators";
 import { CustomLogger } from "../logging/CustomLogger";
 import { FastifyReply, FastifyRequest } from "fastify";
 
@@ -21,10 +21,8 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = ctx.getRequest<FastifyRequest>();
     const response = ctx.getResponse<FastifyReply>();
 
-    const observable = next.handle();
-    observable
-      .pipe(first())
-      .subscribe((data) => this.logger.logRoute(request, response, data));
-    return observable;
+    return next
+      .handle()
+      .pipe(tap((data) => this.logger.logRoute(request, response, data)));
   }
 }
