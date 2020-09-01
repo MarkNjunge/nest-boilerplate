@@ -6,11 +6,12 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { initializeWinston } from "../src/common/CustomLogger";
 import { ValidationPipe } from "../src/common/pipes/validation.pipe";
 import { CreateUserDto } from "src/users/dto/CreateUser.dto";
 import { CreateAddressDto } from "../src/users/dto/CreateAddress.dto";
 import { UpdateUserDto } from "../src/users/dto/UpdateUser.dto";
+import * as winston from "winston";
+import { BlankTransport } from "./util/Blank.transport";
 
 describe("AppController (e2e)", () => {
   let app: INestApplication;
@@ -18,7 +19,12 @@ describe("AppController (e2e)", () => {
 
   beforeAll(() => {
     // Prevents Winston error 'Attempt to write logs with no transports'
-    initializeWinston();
+    console.log(process.env.NODE_ENV);
+    winston.configure({
+      level: "debug",
+      format: winston.format.simple(),
+      transports: [new BlankTransport()],
+    });
   });
 
   beforeEach(async () => {

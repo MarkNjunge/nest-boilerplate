@@ -82,10 +82,7 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "setupFiles": [
-      "../test/utils/logging.ts"
-    ]
+    "testEnvironment": "node"
   },
   "husky": {
     "hooks": {
