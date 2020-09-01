@@ -245,13 +245,16 @@ docker-compose up -d
 
 ```bash
 # unit tests
-$ yarn run test
+yarn test
 
-# e2e tests
-$ yarn run test:e2e
+# e2e tests (docker)
+yarn test:e2e
+
+# e2e test (locally)
+yarn test:e2e:local
 
 # test coverage
-$ yarn run test:cov
+yarn test:cov
 ```
 
 # CI

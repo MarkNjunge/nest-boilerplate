@@ -1,0 +1,23 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:11.2
+    container_name: nest-starter_pgsql
+    logging:
+      driver: none
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=nest-starter-e2e
+  nest-starter:
+    build:
+      context: .
+      dockerfile: Dockerfile-e2e
+    container_name: nest-starter
+    image: nest-starter
+    command: yarn test:e2e:local
+    depends_on:
+      - postgres
+    environment:
+      - PORT=3000
+      - DB_URL=postgres://postgres:postgres@nest-starter_pgsql:5432/nest-starter-e2e

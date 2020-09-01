@@ -193,5 +193,6 @@ $RECYCLE.BIN/
 
 .env
 config/local.json
+config/local-test.json
 dist
 documentation
