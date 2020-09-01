@@ -1,10 +1,10 @@
 name: Main Workflow
-on: [push]
+on: [push, pull_request]
 
 jobs:
   test:
     name: Lint & Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
@@ -22,3 +22,7 @@ jobs:
         env:
           CI: true
         run: yarn test
+      - name: Run e2e Test
+        env:
+          CI: true
+        run: yarn test:e2e
