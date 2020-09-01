@@ -29,8 +29,9 @@ describe("AppController (e2e)", () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(AppService)
-      .useValue(appService)
+      // Use custom service
+      // .overrideProvider(AppService)
+      // .useValue(appService)
       .compile();
 
     app = module.createNestApplication<NestFastifyApplication>(
@@ -46,7 +47,7 @@ describe("AppController (e2e)", () => {
   });
 
   it("GET /", () => {
-    return request(server).get("/").expect(200).expect(appService.getHello());
+    return request(server).get("/").expect(200).expect("Hello World!");
   });
 
   describe("users", () => {
