@@ -99,7 +99,6 @@ describe("AppController (e2e)", () => {
     });
     it("DELETE /users/{id}", (done) => {
       const res = {
-        status: 200,
         message: "User deleted",
       };
       return request(server)
