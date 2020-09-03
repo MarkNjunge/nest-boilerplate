@@ -1,12 +1,12 @@
 # Nest Starter
 
-[![Build Status](https://travis-ci.com/MarkNjunge/nest-starter.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-starter)
-![](https://github.com/MarkNjunge/nest-starter/workflows/Main%20Workflow/badge.svg)
-[![Known Vulnerabilities](https://snyk.io/test/github/MarkNjunge/nest-starter/badge.svg)](https://snyk.io/test/github/MarkNjunge/nest-starter)
+[![Build Status](https://travis-ci.com/MarkNjunge/nest-boilerplate.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-boilerplate)
+![](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/MarkNjunge/nest-boilerplate/badge.svg)](https://snyk.io/test/github/MarkNjunge/nest-boilerplate)
 
-A starter for [NestJS](https://nestjs.com/), using Fastify.
+A boilerplage for [NestJS](https://nestjs.com/), using Fastify.
 
-See Express branch [here](https://github.com/MarkNjunge/nest-starter/tree/express-adapter) (**extremely outdated**).
+See Express branch [here](https://github.com/MarkNjunge/nest-boilerplate/tree/express-adapter) (**extremely outdated**).
 
 ## Features
 
@@ -226,13 +226,13 @@ throw new HttpException(
 Build
 
 ```bash
-docker build -t nest-starter .
+docker build -t nest-boilerplate .
 ```
 
 Run
 
 ```bash
-docker run -p 3000:3000 nest-starter
+docker run -p 3000:3000 nest-boilerplate
 ```
 
 Docker Compose
@@ -260,7 +260,7 @@ yarn test:cov
 # CI
 
 [Travis CI config](./.travis.yml)  
-[![Build Status](https://travis-ci.com/MarkNjunge/nest-starter.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-starter)
+[![Build Status](https://travis-ci.com/MarkNjunge/nest-boilerplate.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-boilerplate)
 
 [Github Actions config](./.github/workflows/main-workflow.yml)  
-![](https://github.com/MarkNjunge/nest-starter/workflows/Main%20Workflow/badge.svg)
+![](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)

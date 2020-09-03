@@ -9,7 +9,7 @@
   "swagger": {
     "enabled": true,
     "endpoint": "docs",
-    "title": "nest-starter",
+    "title": "nest-boilerplate",
     "description": "A starter template for NestJS with support for swagger, config, logging, validation, exception handling, docker, testing and CI.",
     "contact": {
       "name": "Mark Njung'e",
