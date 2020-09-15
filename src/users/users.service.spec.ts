@@ -82,6 +82,10 @@ describe("UsersService", () => {
         .spyOn(addressRepository, "save")
         .mockImplementation(() => Promise.resolve(address as AddressEntity));
 
+      jest
+        .spyOn(usersRepository, "findOne")
+        .mockImplementation(() => Promise.resolve(user as UserEntity));
+
       const actual = await usersService.createAddress(1, createAddressDto);
       expect(actual).toEqual(address);
     });
