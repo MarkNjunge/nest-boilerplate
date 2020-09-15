@@ -1,10 +1,10 @@
 import { LoggerService } from "@nestjs/common";
 import * as winston from "winston";
-import * as moment from "moment";
 import { config } from "../Config";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import { removeSensitiveParams } from "./remove-sensitive";
+import * as dayjs from "dayjs";
 
 export class CustomLogger implements LoggerService {
   constructor(private readonly name: string = "Application") {}
@@ -45,8 +45,8 @@ export class CustomLogger implements LoggerService {
     const tag = "ROUTE";
 
     const requestTime = parseInt(request.headers["x-request-time"] as string);
-    const requestTimeISO = moment(requestTime).toISOString();
-    const duration = moment().valueOf() - requestTime;
+    const requestTimeISO = dayjs.unix(requestTime).toISOString();
+    const duration = dayjs().unix() - requestTime;
 
     let data = {
       tag,
@@ -76,8 +76,9 @@ export function initializeWinston() {
   const { combine, timestamp, printf, colorize } = winston.format;
 
   const myFormat = printf(({ level, message, logTimestamp }) => {
-    const m = moment(logTimestamp);
-    const formattedTimestamp = m.format(config.logging.timestampFormat);
+    const formattedTimestamp = dayjs
+      .unix(logTimestamp)
+      .format(config.logging.timestampFormat);
     return `${formattedTimestamp} | ${level}: ${message}`;
   });
 

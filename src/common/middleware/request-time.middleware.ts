@@ -1,12 +1,11 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import * as moment from "moment";
+import * as dayjs from "dayjs";
 
 export function requestTimeMiddleware(
   request: FastifyRequest,
   _response: FastifyReply,
   next: Function,
 ) {
-  const requestTime = moment().valueOf();
-  request.headers["x-request-time"] = requestTime.toString();
+  request.headers["x-request-time"] = dayjs().unix().toString();
   next();
 }
