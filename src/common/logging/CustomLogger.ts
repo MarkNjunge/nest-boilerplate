@@ -75,10 +75,10 @@ export class CustomLogger implements LoggerService {
 export function initializeWinston() {
   const { combine, timestamp, printf, colorize } = winston.format;
 
-  const myFormat = printf(({ level, message, logTimestamp }) => {
-    const formattedTimestamp = dayjs
-      .unix(logTimestamp)
-      .format(config.logging.timestampFormat);
+  const myFormat = printf(({ level, message, timestamp }) => {
+    const formattedTimestamp = dayjs(timestamp).format(
+      config.logging.timestampFormat,
+    );
     return `${formattedTimestamp} | ${level}: ${message}`;
   });
 
