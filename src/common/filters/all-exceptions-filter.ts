@@ -33,11 +33,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
     response.statusCode = status;
 
+    // Get appropriate error code
+    let code = ErrorCodes.INTERNAL_ERROR;
+    if (status.toString().match(/404/g) != null) {
+      code = ErrorCodes.NOT_FOUND;
+    } else if (status.toString().match(/4.*/g) != null) {
+      code = ErrorCodes.CLIENT_ERROR;
+    }
+
     const message = e.message;
     const apiError: ApiErrorDto = {
       status,
       message,
-      code: ErrorCodes.INTERNAL_ERROR,
+      code,
     };
     if (e instanceof HttpException && (e.getResponse() as any).code) {
       apiError.code = (e.getResponse() as any).code;

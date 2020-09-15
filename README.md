@@ -189,19 +189,27 @@ An example of a response to an invalid body,
 }
 ```
 
-## Exception Handling
+## Errors & Exception Handling
 
-All non HttpException errors are caught and returned as a 500 response.
+Errors are returning in the following format
 
-Exceptions can be thrown using Nest's [Built-in HTTP Exceptions](https://docs.nestjs.com/exception-filters#built-in-http-exceptions)
+```json
+{
+  "status": 403,
+  "message": "This resource is currently restricted",
+  "code": "Restricted"
+}
+```
+
+Exceptions can be thrown using:
+
+- Nest's [Built-in HTTP Exceptions](https://docs.nestjs.com/exception-filters#built-in-http-exceptions)
 
 ```Typescript
 throw new ForbiddenException("Forbidden");
-```
 
-or
+// or with more detail
 
-```Typescript
 throw new ForbiddenException({
   message: "Forbidden",
   code: ErrorCodes.RESTRICTED,
@@ -209,17 +217,22 @@ throw new ForbiddenException({
 });
 ```
 
-or using the HttpException class
+- the HttpException class
 
 ```typescript
 throw new HttpException(
-  { message: "Misdirected Request", code: ErrorCodes.MISDIRECTED },
-  421,
+  {
+    message: "This resource is currently restricted",
+    code: ErrorCodes.RESTRICTED,
+  },
+  403,
 );
 ```
 
-**\*** The `meta` and `code` fields are optional.  
-**\*** All fields other than `message`, `code`, and `meta` will be ignored.
+All non HttpExceptions errors are caught and returned as a 500 response.
+
+**NB:** The `meta` and `code` fields are optional.  
+**NB:** All fields other than `message`, `code`, and `meta` will be ignored.
 
 ## Docker
 
