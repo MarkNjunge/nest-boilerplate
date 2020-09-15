@@ -4,4 +4,5 @@ export class ErrorCodes {
   static CLIENT_ERROR = "ClientError";
   static NOT_FOUND = "NotFound";
   static VALIDATION_ERROR = "ValidationError";
+  static INVALID_USER = "InvalidUser";
 }

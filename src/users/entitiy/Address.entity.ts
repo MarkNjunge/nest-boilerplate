@@ -26,9 +26,8 @@ export class AddressEntity {
   @JoinColumn({ name: "user_id" })
   user: UserEntity;
 
-  static fromCreateDto(userId: number, dto: CreateAddressDto): AddressEntity {
-    const user = new UserEntity();
-    user.id = userId;
+  static fromCreateDto(user: UserEntity, dto: CreateAddressDto): AddressEntity {
+    user = user;
     const address = new AddressEntity();
     address.city = dto.city;
     address.country = dto.country;
