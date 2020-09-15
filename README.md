@@ -157,16 +157,24 @@ It defaults to 100 request per minute per IP (configurable in [default.json](./c
 
 ## Request Body Validation
 
-The starter uses [class-validator](https://www.npmjs.com/package/class-validator) and [class-transformer](https://www.npmjs.com/package/class-transformer) to validate request bodies.  
-See [class-validator decorators](https://www.npmjs.com/package/class-validator#validation-decorators)
+[class-validator](https://www.npmjs.com/package/class-validator) and [class-transformer](https://www.npmjs.com/package/class-transformer) are used to validate request bodies.
 
-An example of a response to an invalid body,
+See [class-validator decorators](https://www.npmjs.com/package/class-validator#validation-decorators) for available validation options
+
+An example of a response to an invalid body:
 
 ```JSON
 {
   "status": 400,
-  "message": "Validation failed",
+  "message": "Validation errors with properties [name,username,contact.mail,contact.email]",
+  "code": "ValidationError",
   "meta": [
+    {
+      "property": "name",
+      "constraints": [
+        "property name should not exist"
+      ]
+    },
     {
       "property": "username",
       "constraints": [
@@ -174,20 +182,22 @@ An example of a response to an invalid body,
       ]
     },
     {
-      "property": "address.country.name",
+      "property": "contact.mail",
       "constraints": [
-        "name should not be empty"
+        "property mail should not exist"
       ]
     },
     {
-      "property": "address.city",
+      "property": "contact.email",
       "constraints": [
-        "city should not be empty"
+        "email should not be empty"
       ]
     }
   ]
 }
 ```
+
+NB: Raising in a error with unknown values can be disabled by setting `validator.forbidUnknown` to `false` in the config.
 
 ## Errors & Exception Handling
 

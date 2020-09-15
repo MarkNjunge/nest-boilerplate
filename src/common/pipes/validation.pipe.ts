@@ -7,6 +7,7 @@ import {
 import { validate } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { config } from "./../Config";
+import { ErrorCodes } from "../error-codes";
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
@@ -27,36 +28,39 @@ export class ValidationPipe implements PipeTransform<any> {
       forbidNonWhitelisted: config.validator.forbidUnknown,
     });
 
-    if (errors.length > 0) {
-      // Top-level errors
-      const topLevelErrors = errors
-        .filter(v => v.constraints) // Top-level errors have the constraints here
-        .map(error => {
-          return {
-            property: error.property,
-            constraints: Object.values(error.constraints),
-          };
-        });
-
-      // Nested errors
-      const nestedErrors = [];
-      errors
-        .filter(v => !v.constraints) // Nested errors do not have constraints here
-        .forEach(error => {
-          const validationErrors = this.getValidationErrorsFromChildren(
-            error.property,
-            error.children,
-          );
-          nestedErrors.push(...validationErrors);
-        });
-
-      throw new BadRequestException({
-        message: "Validation failed",
-        meta: topLevelErrors.concat(nestedErrors),
-      });
+    if (errors.length == 0) {
+      return value;
     }
 
-    return value;
+    // Top-level errors
+    const topLevelErrors = errors
+      .filter((v) => v.constraints) // Top-level errors have the constraints here
+      .map((error) => {
+        return {
+          property: error.property,
+          constraints: Object.values(error.constraints),
+        };
+      });
+
+    // Nested errors
+    const nestedErrors = [];
+    errors
+      .filter((v) => !v.constraints) // Nested errors do not have constraints here
+      .forEach((error) => {
+        const validationErrors = this.getValidationErrorsFromChildren(
+          error.property,
+          error.children,
+        );
+        nestedErrors.push(...validationErrors);
+      });
+
+    const validationErrors = topLevelErrors.concat(nestedErrors);
+    const errorProperties = validationErrors.map((e) => e.property).join(",");
+    throw new BadRequestException({
+      message: `Validation errors with properties [${errorProperties}]`,
+      code: ErrorCodes.VALIDATION_ERROR,
+      meta: validationErrors,
+    });
   }
 
   private toValidate(metatype: any): boolean {
@@ -65,7 +69,7 @@ export class ValidationPipe implements PipeTransform<any> {
   }
 
   private getValidationErrorsFromChildren(parent, children, errors = []) {
-    children.forEach(child => {
+    children.forEach((child) => {
       if (child.constraints) {
         errors.push({
           property: `${parent}.${child.property}`,
