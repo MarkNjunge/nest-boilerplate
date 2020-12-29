@@ -12,7 +12,7 @@ import {
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
 import * as helmet from "fastify-helmet";
-import { requestTimeMiddleware } from "./middleware/request-time.middleware";
+import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 
 async function bootstrap() {
   initializeWinston();
@@ -66,7 +66,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(new ValidationPipe());
-  app.use(requestTimeMiddleware);
+  app.use(requestHeadersMiddleware);
 
   await app.listen(config.port, "0.0.0.0");
   logger.log(`Started on port ${config.port}`);
