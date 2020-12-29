@@ -22,7 +22,7 @@ describe("AppController", () => {
         .spyOn(appService, "getHello")
         .mockImplementation(() => "Hello World!");
 
-      expect(appController.getHello()).toBe("Hello World!");
+      expect(appController.getHello("abc-123")).toBe("Hello World!");
     });
   });
 });
