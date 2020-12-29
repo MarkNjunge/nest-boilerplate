@@ -1,9 +1,9 @@
 import { NestFactory } from "@nestjs/core";
 import { CustomLogger, initializeWinston } from "./common/logging/CustomLogger";
 import { AppModule } from "./app.module";
-import { AllExceptionsFilter } from "./common/filters/all-exceptions-filter";
-import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
-import { ValidationPipe } from "./common/pipes/validation.pipe";
+import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
+import { LoggingInterceptor } from "./interceptors/logging.interceptor";
+import { ValidationPipe } from "./pipes/validation.pipe";
 import { config, configAsBoolean } from "./common/Config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
 import * as helmet from "fastify-helmet";
-import { requestTimeMiddleware } from "./common/middleware/request-time.middleware";
+import { requestTimeMiddleware } from "./middleware/request-time.middleware";
 
 async function bootstrap() {
   initializeWinston();

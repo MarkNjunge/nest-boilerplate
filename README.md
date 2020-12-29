@@ -118,7 +118,7 @@ this.logger.debug("Hello!", "AppService.getHello", { user: "mark" });
 
 Sensitive parameters specified in the config option `logging.sensitiveParams` will be replaced with the value in `logging.replacementString`.
 
-See [remove-sensitive.ts](src\common\logging\remove-sensitive.ts)
+See [remove-sensitive.ts](./src/common/logging/remove-sensitive.ts)
 
 ```json
 Before
@@ -136,7 +136,7 @@ After
 
 ## Auth Guard
 
-An authentication guard is available in [auth.guard.ts](./src/common/guards/auth.guard.ts)
+An authentication guard is available in [auth.guard.ts](./src/guards/auth.guard.ts)
 
 It can be enabled by adding a `UseGuards` decorator to a controller or route
 

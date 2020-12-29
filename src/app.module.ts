@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
-import { AppController } from "./app/app.controller";
-import { AppService } from "./app/app.service";
+import { AppController } from "./modules/app/app.controller";
+import { AppService } from "./modules/app/app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { config } from "./common/Config";
-import { UsersModule } from "./users/users.module";
+import { UsersModule } from "./modules/users/users.module";
 import * as path from "path";
 
 @Module({

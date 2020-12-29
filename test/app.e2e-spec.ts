@@ -6,10 +6,10 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { ValidationPipe } from "../src/common/pipes/validation.pipe";
-import { CreateUserDto } from "src/users/dto/CreateUser.dto";
-import { CreateAddressDto } from "../src/users/dto/CreateAddress.dto";
-import { UpdateUserDto } from "../src/users/dto/UpdateUser.dto";
+import { ValidationPipe } from "../src/pipes/validation.pipe";
+import { CreateUserDto } from "src/modules/users/dto/CreateUser.dto";
+import { CreateAddressDto } from "../src/modules/users/dto/CreateAddress.dto";
+import { UpdateUserDto } from "../src/modules/users/dto/UpdateUser.dto";
 import * as winston from "winston";
 import { BlankTransport } from "./util/Blank.transport";
 

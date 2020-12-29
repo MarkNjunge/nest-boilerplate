@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { UserDto } from "./dto/user.dto";
-import { CustomLogger } from "../common/logging/CustomLogger";
+import { CustomLogger } from "../../common/logging/CustomLogger";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserEntity } from "./entitiy/User.entity";
@@ -9,7 +9,7 @@ import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
 import { AddressEntity } from "./entitiy/Address.entity";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
-import { ErrorCodes } from "../common/error-codes";
+import { ErrorCodes } from "../../common/error-codes";
 
 @Injectable()
 export class UsersService {

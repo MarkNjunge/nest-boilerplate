@@ -1,0 +1,33 @@
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
+import { Observable } from "rxjs";
+import { FastifyRequest } from "fastify";
+import { config } from "../common/Config";
+import { ErrorCodes } from "../common/error-codes";
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    const request: FastifyRequest = context.switchToHttp().getRequest();
+    return validateRequest(request);
+  }
+}
+
+async function validateRequest(request: FastifyRequest): Promise<boolean> {
+  const apiKey = request.headers["x-api-key"];
+
+  if (apiKey !== config.apiKey) {
+    throw new ForbiddenException({
+      message: "Invalid api key",
+      code: ErrorCodes.INVALID_API_KEY,
+    });
+  }
+
+  return true;
+}

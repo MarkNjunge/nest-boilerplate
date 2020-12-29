@@ -6,9 +6,9 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CustomLogger } from "../logging/CustomLogger";
-import { ApiErrorDto } from "../dto/ApiError.dto";
-import { ErrorCodes } from "../error-codes";
+import { CustomLogger } from "../common/logging/CustomLogger";
+import { ApiErrorDto } from "../common/dto/ApiError.dto";
+import { ErrorCodes } from "../common/error-codes";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
