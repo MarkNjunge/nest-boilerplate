@@ -5,8 +5,8 @@ import { CustomLogger } from "../../common/logging/CustomLogger";
 export class AppService {
   logger: CustomLogger = new CustomLogger("AppService");
 
-  getHello(): string {
-    this.logger.debug("Hello!", "AppService.getHello");
+  getHello(correlationId: string): string {
+    this.logger.debug(`Hello ${correlationId}`, "AppService.getHello");
     return "Hello World!";
   }
 }

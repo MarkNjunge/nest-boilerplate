@@ -13,6 +13,9 @@ export class ApiErrorDto {
   message: string;
 
   @ApiProperty()
+  correlationId: string;
+
+  @ApiProperty()
   @IsOptional()
   meta?: any;
 }

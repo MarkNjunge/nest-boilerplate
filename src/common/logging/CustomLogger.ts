@@ -43,6 +43,7 @@ export class CustomLogger implements LoggerService {
     const method = request.method;
     const url = request.url;
     const tag = "ROUTE";
+    const correlationId = request.headers["x-correlation-id"]
 
     const requestTime = parseInt(request.headers["x-request-time"] as string);
     const requestTimeISO = dayjs.unix(requestTime).toISOString();
@@ -55,6 +56,7 @@ export class CustomLogger implements LoggerService {
         method,
         requestTime: requestTimeISO,
         ip: request.headers["x-forwarded-for"] || request.ip,
+        correlationId,
         query: Object.assign({}, request.query),
         body: Object.assign({}, request.body),
       },

@@ -41,10 +41,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
       code = ErrorCodes.CLIENT_ERROR;
     }
 
+    const correlationId = request.headers["x-correlation-id"] as string;
     const message = e.message;
     const apiError: ApiErrorDto = {
       status,
       message,
+      correlationId,
       code,
     };
     if (e instanceof HttpException && (e.getResponse() as any).code) {
