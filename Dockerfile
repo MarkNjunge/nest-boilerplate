@@ -1,5 +1,5 @@
 # Builder image
-FROM node:12.14.1-alpine3.9 as builder
+FROM node:14.15.3-alpine3.12 as builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN yarn install
 RUN yarn build
 
 # Final image
-FROM node:12.14.1-alpine3.9
+FROM node:14.15.3-alpine3.12
 
 WORKDIR /app
 
