@@ -4,7 +4,7 @@ import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor";
 import { ValidationPipe } from "./pipes/validation.pipe";
-import { config, configAsBoolean } from "./common/Config";
+import { config } from "./common/Config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import {
   FastifyAdapter,
@@ -74,7 +74,7 @@ async function bootstrap() {
 bootstrap();
 
 function intializeSwagger(app: NestFastifyApplication) {
-  if (configAsBoolean(config.swagger.enabled) === false) {
+  if (Boolean(config.swagger.enabled) === false) {
     return;
   }
 

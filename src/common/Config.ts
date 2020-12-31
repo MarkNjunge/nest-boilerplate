@@ -56,15 +56,3 @@ interface Logging {
 }
 
 export const config: Config = configPackage;
-
-// Handle environment variables being set as strings instead of boolean
-export function configAsBoolean(value: boolean | string) {
-  let valueBool: boolean;
-  if (typeof value === "string") {
-    valueBool = value === "true" ? true : false;
-  } else if (typeof value === "boolean") {
-    valueBool = value;
-  }
-
-  return valueBool;
-}
