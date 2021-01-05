@@ -1,6 +1,6 @@
 import { config } from "../Config";
 
-export function removeSensitiveParams(data: any) {
+export function removeSensitiveParams<T>(data: T): T {
   return scanAndRemove(data, config.logging.sensitiveParams);
 }
 

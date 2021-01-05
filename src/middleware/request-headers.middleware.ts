@@ -7,7 +7,7 @@ export function requestHeadersMiddleware(
   _response: FastifyReply,
   // eslint-disable-next-line @typescript-eslint/ban-types
   next: Function,
-) {
+): void {
   request.headers["x-request-time"] = dayjs().unix().toString();
   const correlationId = uuidv4();
   request.headers["x-correlation-id"] = correlationId;

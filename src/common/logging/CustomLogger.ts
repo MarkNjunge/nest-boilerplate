@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { LoggerService } from "@nestjs/common";
 import * as winston from "winston";
 import { config } from "../Config";

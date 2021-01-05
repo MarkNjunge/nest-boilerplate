@@ -11,7 +11,7 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
-import * as helmet from "fastify-helmet";
+// import { default as helmet } from "fastify-helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 
 async function bootstrap() {
@@ -27,25 +27,17 @@ async function bootstrap() {
     },
   );
 
-  // This config is based off the helmet source code.
-  // 'unsafe-inline' has been added to 'default-src' and 'script-src' for Swagger to work
-  app.register(helmet, {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'", "'unsafe-inline'"],
-        baseUri: ["'self'"],
-        blockAllMixedContent: [],
-        fontSrc: ["'self'", "https:", "data:"],
-        frameAncestors: ["'self'"],
-        imgSrc: ["'self'", "data:"],
-        objectSrc: ["'none'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'none'"],
-        styleSrc: ["'self'", "https:", "'unsafe-inline'"],
-        upgradeInsecureRequests: [],
-      },
-    },
-  });
+  // Disabled due to Typescript errors
+  // app.register(helmet, {
+  //   contentSecurityPolicy: {
+  //     directives: {
+  //       defaultSrc: [`'self'`],
+  //       styleSrc: [`'self'`, `'unsafe-inline'`],
+  //       imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
+  //       scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+  //     },
+  //   },
+  // });
   app.enableCors({
     origin: config.cors.origin,
     methods: config.cors.methods,

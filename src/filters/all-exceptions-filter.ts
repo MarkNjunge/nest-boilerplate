@@ -18,7 +18,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     this.logger = new CustomLogger("HttpExceptionFilter");
   }
 
-  catch(e: HttpException | Error, host: ArgumentsHost) {
+  catch(e: HttpException | Error, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();

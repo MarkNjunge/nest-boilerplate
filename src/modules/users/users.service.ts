@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { UserDto } from "./dto/user.dto";
 import { CustomLogger } from "../../common/logging/CustomLogger";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, DeleteResult } from "typeorm";
 import { UserEntity } from "./entitiy/User.entity";
 import { CreateUserDto } from "./dto/CreateUser.dto";
 import { CreateAddressDto } from "./dto/CreateAddress.dto";
@@ -31,8 +31,7 @@ export class UsersService {
 
     const user = UserEntity.fromCreateDto(dto);
 
-    const created = await this.usersRepository.save(user);
-    return created;
+    return await this.usersRepository.save(user);
   }
 
   async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
@@ -52,7 +51,7 @@ export class UsersService {
     return created;
   }
 
-  async updateUser(id: number, dto: UpdateUserDto) {
+  async updateUser(id: number, dto: UpdateUserDto): Promise<UserEntity> {
     this.logger.log(`Updating user ${id}`, null, dto);
 
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
@@ -68,7 +67,7 @@ export class UsersService {
     return this.usersRepository.save(existing);
   }
 
-  async deleteUser(userId: number) {
+  async deleteUser(userId: number): Promise<DeleteResult> {
     this.logger.debug(`Deleting user ${userId}`, null, { userId });
 
     return this.usersRepository.delete({ id: userId });

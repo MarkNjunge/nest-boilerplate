@@ -11,13 +11,13 @@ import { ErrorCodes } from "../common/error-codes";
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
-  async transform(value: any, { metatype }: ArgumentMetadata) {
+  async transform<T>(value: T, { metatype }: ArgumentMetadata): Promise<T> {
     // Account for an empty request body
     if (value == null) {
-      value = {};
+      value = Object.assign({}, value);
     }
 
-    if (!metatype || !this.toValidate(metatype)) {
+    if (!metatype || !ValidationPipe.toValidate(metatype)) {
       return value;
     }
 
@@ -63,7 +63,7 @@ export class ValidationPipe implements PipeTransform<any> {
     });
   }
 
-  private toValidate(metatype: any): boolean {
+  private static toValidate(metatype: any): boolean {
     const types: Array<() => any> = [String, Boolean, Number, Array, Object];
     return !types.includes(metatype);
   }

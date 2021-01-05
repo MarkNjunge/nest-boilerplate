@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as Transport from "winston-transport";
 
 export class BlankTransport extends Transport {

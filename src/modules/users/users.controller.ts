@@ -32,7 +32,7 @@ export class UsersController {
   @Get("/")
   @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
-  async getAllUsers() {
+  async getAllUsers(): Promise<UserDto[]> {
     return this.usersService.getAllUsers();
   }
 
