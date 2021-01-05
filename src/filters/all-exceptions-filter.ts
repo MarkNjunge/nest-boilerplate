@@ -45,8 +45,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const apiError: ApiErrorDto = {
       status,
       message,
-      correlationId,
       code,
+      correlationId,
     };
     if (e instanceof HttpException && (e.getResponse() as any).code) {
       apiError.code = (e.getResponse() as any).code;
