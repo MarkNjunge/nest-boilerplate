@@ -61,7 +61,7 @@ async function bootstrap() {
   app.use(requestHeadersMiddleware);
 
   await app.listen(config.port, "0.0.0.0");
-  logger.log(`Started on port ${config.port}`);
+  logger.log(`App running at http://127.0.0.1:${config.port}`);
 }
 bootstrap();
 
