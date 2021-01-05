@@ -266,18 +266,29 @@ docker-compose up -d
 
 ## Testing
 
-```bash
-# unit tests
-yarn test
+### Unit test
 
+There exist unit tests for controllers and services.
+
+Dependencies are mocked using `jest`.
+
+```bash
+yarn test
+```
+
+### End-to-end test
+
+A Docker container is created to run end to end tests. 
+
+See [docker-compose-e2e.yml](./docker-compose-e2e.yml)
+
+
+```bash
 # e2e tests (docker)
 yarn test:e2e
 
 # e2e test (locally)
 yarn test:e2e:local
-
-# test coverage
-yarn test:cov
 ```
 
 # CI
