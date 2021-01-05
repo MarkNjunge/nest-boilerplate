@@ -23,6 +23,6 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next
       .handle()
-      .pipe(tap((data) => this.logger.logRoute(request, response, data)));
+      .pipe(tap(data => this.logger.logRoute(request, response, data)));
   }
 }

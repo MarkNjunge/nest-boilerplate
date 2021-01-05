@@ -18,13 +18,13 @@ export class UserEntity {
   @Column({ name: "username" })
   username: string;
 
-  @OneToMany(() => AddressEntity, (address) => address.user, {
+  @OneToMany(() => AddressEntity, address => address.user, {
     eager: true,
     cascade: true,
   })
   addresses: AddressEntity[];
 
-  @OneToOne(() => ContactEntity, (contact) => contact.user, {
+  @OneToOne(() => ContactEntity, contact => contact.user, {
     eager: true,
     cascade: true,
   })

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { Test, TestingModule } from "@nestjs/testing";
 import * as request from "supertest";
 import { AppModule } from "./../src/app.module";
@@ -17,7 +18,7 @@ describe("AppController (e2e)", () => {
   let app: INestApplication;
   let server: HttpServer;
 
-  beforeAll(async () => {
+  beforeAll(async() => {
     // Prevents Winston error 'Attempt to write logs with no transports'
     winston.configure({
       level: "debug",
@@ -40,29 +41,30 @@ describe("AppController (e2e)", () => {
     await app.init();
 
     // Wait for fastify
-    await app.getHttpAdapter().getInstance().ready();
+    await app.getHttpAdapter().getInstance()
+      .ready();
 
     server = app.getHttpServer();
   });
 
   describe("/", () => {
-    it("GET /", () => {
-      return request(server).get("/").expect(200).expect("Hello World!");
-    });
+    it("GET /", () => request(server)
+      .get("/")
+      .expect(200)
+      .expect("Hello World!"));
   });
 
   describe("/users", () => {
-    it("GET /users", (done) => {
-      return request(server)
-        .get("/users")
-        .expect("Content-Type", /json/)
-        .expect(200, done);
-    });
-    it("POST /users", (done) => {
+    it("GET /users", done => request(server)
+      .get("/users")
+      .expect("Content-Type", /json/)
+      .expect(200, done));
+    it("POST /users", done => {
       const dto: CreateUserDto = {
         username: "mark",
         contact: { email: "mark@mail.com" },
       };
+
       return request(server)
         .post("/users")
         .send(dto)
@@ -70,7 +72,7 @@ describe("AppController (e2e)", () => {
         .expect("Content-Type", /json/)
         .expect(201, done);
     });
-    it("POST /users/{id}/addresses", (done) => {
+    it("POST /users/{id}/addresses", done => {
       const dto: CreateAddressDto = {
         city: "Nairobi",
         country: "Kenya",
@@ -83,11 +85,12 @@ describe("AppController (e2e)", () => {
         .expect("Content-Type", /json/)
         .expect(201, done);
     });
-    it("PUT /users/{id}", (done) => {
+    it("PUT /users/{id}", done => {
       const dto: UpdateUserDto = {
         username: "mark",
         contact: { email: "contact@mark.com" },
       };
+
       return request(server)
         .put("/users/1")
         .send(dto)
@@ -95,10 +98,11 @@ describe("AppController (e2e)", () => {
         .expect("Content-Type", /json/)
         .expect(200, done);
     });
-    it("DELETE /users/{id}", (done) => {
+    it("DELETE /users/{id}", done => {
       const res = {
         message: "User deleted",
       };
+
       return request(server)
         .delete("/users/1")
         .set("x-api-key", "api-key")
@@ -107,7 +111,7 @@ describe("AppController (e2e)", () => {
     });
   });
 
-  afterAll(async () => {
+  afterAll(async() => {
     await app.close();
   });
 });

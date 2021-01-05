@@ -31,14 +31,14 @@ export class UsersService {
 
     const user = UserEntity.fromCreateDto(dto);
 
-    return await this.usersRepository.save(user);
+    return this.usersRepository.save(user);
   }
 
   async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
     this.logger.debug(`Creating address for user ${id}`, null, dto);
 
     const user = await this.usersRepository.findOne({ id });
-    if (user == null) {
+    if (user === null) {
       throw new NotFoundException({
         message: `The user ${id} does not exist`,
         code: ErrorCodes.INVALID_USER,
@@ -48,6 +48,7 @@ export class UsersService {
     const address = AddressEntity.fromCreateDto(user, dto);
     const created = await this.addressesRepository.save(address);
     delete created.user;
+
     return created;
   }
 
@@ -56,7 +57,7 @@ export class UsersService {
 
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
     const existing = await this.usersRepository.findOne({ id });
-    if (existing == null) {
+    if (existing === null) {
       throw new NotFoundException({
         message: `The user ${id} does not exist`,
         code: ErrorCodes.INVALID_USER,
@@ -64,6 +65,7 @@ export class UsersService {
     }
     const updated = UserEntity.fromUpdateDto(dto);
     await this.usersRepository.merge(existing, updated);
+
     return this.usersRepository.save(existing);
   }
 

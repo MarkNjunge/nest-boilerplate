@@ -642,6 +642,11 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@marknjunge/eslint-config@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@marknjunge/eslint-config/-/eslint-config-1.1.0.tgz#cdd491ffd33fbc211f428465a6c811ace64aabae"
+  integrity sha512-09HiUdoXCZ5Io+djrScVRT9g+CghrDsnAZwRwBeV4uNG/UhbB6Ts2Ms5sDDzbFOgZ2iiKMwE4YVr7G8tri+gNw==
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"

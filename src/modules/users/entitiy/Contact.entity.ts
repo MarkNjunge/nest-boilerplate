@@ -17,7 +17,7 @@ export class ContactEntity {
   @Column({ name: "email" })
   email: string;
 
-  @OneToOne(() => UserEntity, (user) => user.contact, {
+  @OneToOne(() => UserEntity, user => user.contact, {
     nullable: false,
     onDelete: "CASCADE",
   })

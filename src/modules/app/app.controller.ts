@@ -10,6 +10,7 @@ export class AppController {
   @Get()
   getHello(@CorrelationId() correlationId: string): string {
     new CustomLogger().debug(correlationId);
+
     return this.appService.getHello(correlationId);
   }
 }

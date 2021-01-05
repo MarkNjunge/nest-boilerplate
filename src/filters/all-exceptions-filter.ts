@@ -18,6 +18,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     this.logger = new CustomLogger("HttpExceptionFilter");
   }
 
+  // eslint-disable-next-line max-lines-per-function
   catch(e: HttpException | Error, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
@@ -28,16 +29,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Get the correct http status
     const status =
-      e instanceof HttpException
-        ? e.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      e instanceof HttpException ? e.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
     response.statusCode = status;
 
     // Get appropriate error code
     let code = ErrorCodes.INTERNAL_ERROR;
-    if (status.toString().match(/404/g) != null) {
+    if (status.toString().match(/404/g) !== null) {
       code = ErrorCodes.NOT_FOUND;
-    } else if (status.toString().match(/4.*/g) != null) {
+    } else if (status.toString().match(/4.*/g) !== null) {
       code = ErrorCodes.CLIENT_ERROR;
     }
 

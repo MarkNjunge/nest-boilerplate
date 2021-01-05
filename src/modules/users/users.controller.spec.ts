@@ -1,3 +1,4 @@
+/* eslint-disable max-nested-callbacks,max-lines-per-function */
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
@@ -33,7 +34,7 @@ describe("Users Controller", () => {
     addresses: [],
   };
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
@@ -58,7 +59,7 @@ describe("Users Controller", () => {
   });
 
   describe("getAllUsers", () => {
-    it("should return array", async () => {
+    it("should return array", async() => {
       jest
         .spyOn(usersService, "getAllUsers")
         .mockImplementation(() => Promise.resolve([user]));
@@ -68,7 +69,7 @@ describe("Users Controller", () => {
   });
 
   describe("createUser", () => {
-    it("should return created user", async () => {
+    it("should return created user", async() => {
       jest
         .spyOn(usersService, "createUser")
         .mockImplementation(() => Promise.resolve(user));
@@ -78,7 +79,7 @@ describe("Users Controller", () => {
   });
 
   describe("createAddress", () => {
-    it("should return body", async () => {
+    it("should return body", async() => {
       jest
         .spyOn(usersService, "createAddress")
         .mockImplementation(() => Promise.resolve(address));

@@ -19,7 +19,7 @@ export class AddressEntity {
   @Column({ name: "country" })
   country: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.addresses, {
+  @ManyToOne(() => UserEntity, user => user.addresses, {
     nullable: false,
     onDelete: "CASCADE",
   })

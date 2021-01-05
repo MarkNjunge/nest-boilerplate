@@ -8,11 +8,8 @@ export function requestHeadersMiddleware(
   // eslint-disable-next-line @typescript-eslint/ban-types
   next: Function,
 ): void {
-  request.headers["x-request-time"] = dayjs().unix().toString();
-  const correlationId = uuidv4();
-  request.headers["x-correlation-id"] = correlationId;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  request.params = { correlationId };
+  request.headers["x-request-time"] = dayjs().unix()
+    .toString();
+  request.headers["x-correlation-id"] = uuidv4();
   next();
 }

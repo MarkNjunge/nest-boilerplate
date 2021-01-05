@@ -6,7 +6,7 @@ export function removeSensitiveParams<T>(data: T): T {
 
 function scanAndRemove(data, sensitive) {
   const cleanedData: typeof data = {};
-  Object.keys(data).forEach((k) => {
+  Object.keys(data).forEach(k => {
     if (data[k] instanceof Object) {
       cleanedData[k] = scanAndRemove(data[k], sensitive);
     } else {

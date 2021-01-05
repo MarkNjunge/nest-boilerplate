@@ -35,6 +35,7 @@ export class CustomLogger implements LoggerService {
     data = removeSensitiveParams({ ...data, tag });
     winston.verbose({ message: `[${name || this.name}] ${message}`, data });
   }
+  // eslint-disable-next-line max-lines-per-function
   logRoute(
     request: FastifyRequest,
     response: FastifyReply,
@@ -44,7 +45,7 @@ export class CustomLogger implements LoggerService {
     const method = request.method;
     const url = request.url;
     const tag = "ROUTE";
-    const correlationId = request.headers["x-correlation-id"]
+    const correlationId = request.headers["x-correlation-id"];
 
     const requestTime = parseInt(request.headers["x-request-time"] as string);
     const requestTimeISO = dayjs.unix(requestTime).toISOString();
@@ -82,6 +83,7 @@ export function initializeWinston() {
     const formattedTimestamp = dayjs(timestamp).format(
       config.logging.timestampFormat,
     );
+
     return `${formattedTimestamp} | ${level}: ${message}`;
   });
 

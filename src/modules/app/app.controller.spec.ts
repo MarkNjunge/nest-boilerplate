@@ -1,3 +1,4 @@
+/* eslint-disable max-nested-callbacks */
 import { Test, TestingModule } from "@nestjs/testing";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
@@ -6,7 +7,7 @@ describe("AppController", () => {
   let appController: AppController;
   let appService: AppService;
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [AppService],

@@ -10,6 +10,7 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "prettier",
     "prettier/@typescript-eslint",
+    "@marknjunge/eslint-config"
   ],
   root: true,
   env: {
@@ -24,5 +25,7 @@ module.exports = {
       "error",
       { functions: false, classes: false },
     ],
+    "new-cap": "off",
+    "no-empty-function": ["error", { allow: ["constructors"] }],
   },
 };

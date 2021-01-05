@@ -11,9 +11,10 @@ import { ErrorCodes } from "../common/error-codes";
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
+  // eslint-disable-next-line max-lines-per-function
   async transform<T>(value: T, { metatype }: ArgumentMetadata): Promise<T> {
     // Account for an empty request body
-    if (value == null) {
+    if (value === null) {
       value = Object.assign({}, value);
     }
 
@@ -28,25 +29,25 @@ export class ValidationPipe implements PipeTransform<any> {
       forbidNonWhitelisted: config.validator.forbidUnknown,
     });
 
-    if (errors.length == 0) {
+    if (errors.length === 0) {
       return value;
     }
 
     // Top-level errors
     const topLevelErrors = errors
-      .filter((v) => v.constraints) // Top-level errors have the constraints here
-      .map((error) => {
-        return {
-          property: error.property,
-          constraints: Object.values(error.constraints),
-        };
-      });
+      // Top-level errors have the constraints here
+      .filter(v => v.constraints)
+      .map(error => ({
+        property: error.property,
+        constraints: Object.values(error.constraints),
+      }));
 
     // Nested errors
     const nestedErrors = [];
     errors
-      .filter((v) => !v.constraints) // Nested errors do not have constraints here
-      .forEach((error) => {
+      // Nested errors do not have constraints here
+      .filter(v => !v.constraints)
+      .forEach(error => {
         const validationErrors = this.getValidationErrorsFromChildren(
           error.property,
           error.children,
@@ -55,7 +56,7 @@ export class ValidationPipe implements PipeTransform<any> {
       });
 
     const validationErrors = topLevelErrors.concat(nestedErrors);
-    const errorProperties = validationErrors.map((e) => e.property).join(",");
+    const errorProperties = validationErrors.map(e => e.property).join(",");
     throw new BadRequestException({
       message: `Validation errors with properties [${errorProperties}]`,
       code: ErrorCodes.VALIDATION_ERROR,
@@ -65,11 +66,12 @@ export class ValidationPipe implements PipeTransform<any> {
 
   private static toValidate(metatype: any): boolean {
     const types: Array<() => any> = [String, Boolean, Number, Array, Object];
+
     return !types.includes(metatype);
   }
 
   private getValidationErrorsFromChildren(parent, children, errors = []) {
-    children.forEach((child) => {
+    children.forEach(child => {
       if (child.constraints) {
         errors.push({
           property: `${parent}.${child.property}`,

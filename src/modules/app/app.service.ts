@@ -7,6 +7,7 @@ export class AppService {
 
   getHello(correlationId: string): string {
     this.logger.debug(`Hello ${correlationId}`, "AppService.getHello");
+
     return "Hello World!";
   }
 }
