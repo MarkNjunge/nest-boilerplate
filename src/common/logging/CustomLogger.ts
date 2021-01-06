@@ -59,12 +59,14 @@ export class CustomLogger implements LoggerService {
         requestTime: requestTimeISO,
         ip: request.headers["x-forwarded-for"] || request.ip,
         correlationId,
+        headers: request.headers,
         query: Object.assign({}, request.query),
         body: Object.assign({}, request.body),
       },
       response: {
         duration,
         statusCode,
+        headers: response.getHeaders(),
         body: responseBody,
       },
     };

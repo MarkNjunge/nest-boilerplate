@@ -32,7 +32,7 @@
   },
   "logging": {
     "timestampFormat": "YYYY-MM-DD HH:mm:ss.SSS",
-    "sensitiveParams": ["password"],
+    "sensitiveParams": ["password", "x-api-key"],
     "replacementString": "REDACTED"
   }
 }
