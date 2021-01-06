@@ -66,13 +66,15 @@ Typeorm is configured to use migrations instead of `synchronize: true`.
 To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by inspecting your entities, the cli needs to be configured. Create a `.env` file based on [.env.sample](.env.sample).
 
 You can then generate migrations using `yarn migration:generate <your_migration_name>`.  
-You can also use `yarn migration:create <your_migration_name>` to only create the file.
+You can also use `yarn migration:create <your_migration_name>` to only create the file and write the migration logic yourself.
 
 When the server starts, migrations will run automatically, or, you can run the migrations using `yarn migration:run`
 
 ## Swagger
 
-Swagger documentation is automatically generated from the routes.
+Swagger documentation is automatically generated from the routes.  
+
+By default it is available at http://127.0.0.1:3000/docs
 
 See config in [default.json](./config/default.json).
 
@@ -80,7 +82,7 @@ See config in [default.json](./config/default.json).
 
 A custom logger is implemented using [winston](https://www.npmjs.com/package/winston).
 
-Create a logger using `new CustomLogger()`.  
+Create a logger instance using `new CustomLogger()`.  
 A parameter can be passed into the constructor and to be used as a tag (defaults to "Application").
 
 For example,
@@ -105,7 +107,7 @@ this.logger.debug("Hello!", "AppService.getHello");
 // 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
 ```
 
-Extra data can be passed into the log functions. This data will not be printed to the console. To access it, a custom transport is needed. See [SampleTransport](./src/common/logging/Sample.transport.ts) for an example.
+Extra data can be passed into the log functions. This data will not be printed to the console. To access it, a [custom transport](https://github.com/winstonjs/winston-transport) is needed. See [SampleTransport](./src/common/logging/Sample.transport.ts) for an example.
 
 ```Typescript
 this.logger.debug("Hello!", "AppService.getHello", { user: "mark" });
@@ -114,7 +116,19 @@ this.logger.debug("Hello!", "AppService.getHello", { user: "mark" });
 // 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
 ```
 
-#### Sensitive parameters
+### Correlation 
+
+A correlation ID header is set and can be used to correlate requests.  
+It can be accessed using the `@CorrelationId()` header.
+```typescript
+@Get()
+getHello(@CorrelationId() correlationId: string) {
+  console.log(correlationId)
+  // b945c41d-ae51-4170-80b5-3c2200cbe25d
+}
+```
+
+### Sensitive parameters
 
 Sensitive parameters specified in the config option `logging.sensitiveParams` will be replaced with the value in `logging.replacementString`.
 
@@ -159,7 +173,7 @@ It defaults to 100 request per minute per IP (configurable in [default.json](./c
 
 [class-validator](https://www.npmjs.com/package/class-validator) and [class-transformer](https://www.npmjs.com/package/class-transformer) are used to validate request bodies.
 
-See [class-validator decorators](https://www.npmjs.com/package/class-validator#validation-decorators) for available validation options
+See [class-validator decorators](https://www.npmjs.com/package/class-validator#validation-decorators) for available validation options.
 
 An example of a response to an invalid body:
 
@@ -197,7 +211,7 @@ An example of a response to an invalid body:
 }
 ```
 
-NB: Raising in a error with unknown values can be disabled by setting `validator.forbidUnknown` to `false` in the config.
+NB: Raising an error when unknown values are passed can be disabled by setting `validator.forbidUnknown` to `false` in the config.
 
 ## Errors & Exception Handling
 
@@ -207,7 +221,8 @@ Errors are returning in the following format
 {
   "status": 403,
   "message": "This resource is currently restricted",
-  "code": "Restricted"
+  "code": "Restricted",
+  "correlationId": "b945c41d-ae51-4170-80b5-3c2200cbe25d"
 }
 ```
 
@@ -246,19 +261,17 @@ All non HttpExceptions errors are caught and returned as a 500 response.
 
 ## Docker
 
+The application can be run using docker.
+
 Build
 
 ```bash
 docker build -t nest-boilerplate .
-```
 
-Run
-
-```bash
 docker run -p 3000:3000 nest-boilerplate
 ```
 
-Docker Compose
+Docker Compose can be used to start the application and a database.
 
 ```
 docker-compose up -d
