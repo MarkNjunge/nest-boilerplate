@@ -11,7 +11,7 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import * as fastifyRateLimit from "fastify-rate-limit";
-// import { default as helmet } from "fastify-helmet";
+import { default as helmet } from "fastify-helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 
 async function bootstrap() {
@@ -27,33 +27,9 @@ async function bootstrap() {
     },
   );
 
-  // Disabled due to Typescript errors
-  // app.register(helmet, {
-  //   contentSecurityPolicy: {
-  //     directives: {
-  //       defaultSrc: [`'self'`],
-  //       styleSrc: [`'self'`, `'unsafe-inline'`],
-  //       imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
-  //       scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
-  //     },
-  //   },
-  // });
-  app.enableCors({
-    origin: config.cors.origin,
-    methods: config.cors.methods,
-    allowedHeaders: config.cors.allowedHeaders,
-  });
 
-  if (config.rateLimit.enabled === true) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    app.register(fastifyRateLimit, {
-      max: config.rateLimit.max,
-      timeWindow: config.rateLimit.timeWindow,
-    });
-  }
-
-  intializeSwagger(app);
+  await enablePlugins(app);
+  initializeSwagger(app);
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -65,7 +41,36 @@ async function bootstrap() {
 }
 bootstrap();
 
-function intializeSwagger(app: NestFastifyApplication) {
+async function enablePlugins(app: NestFastifyApplication) {
+  await app.register(helmet, {
+    // A custom Content Security Policy config is required in order for swagger to work
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "validator.swagger.io"],
+        scriptSrc: ["'self'", "https: 'unsafe-inline'"],
+      },
+    },
+  });
+
+  app.enableCors({
+    origin: config.cors.origin,
+    methods: config.cors.methods,
+    allowedHeaders: config.cors.allowedHeaders,
+  });
+
+  if (Boolean(config.rateLimit.enabled) === true) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    await app.register(fastifyRateLimit, {
+      max: config.rateLimit.max,
+      timeWindow: config.rateLimit.timeWindow,
+    });
+  }
+}
+
+function initializeSwagger(app: NestFastifyApplication) {
   if (Boolean(config.swagger.enabled) === false) {
     return;
   }
