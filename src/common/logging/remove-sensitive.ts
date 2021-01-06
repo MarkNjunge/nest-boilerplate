@@ -1,22 +1,24 @@
 import { config } from "../Config";
+import { flatten, unflatten } from "flat";
 
 export function removeSensitiveParams<T>(data: T): T {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   return scanAndRemove(data, config.logging.sensitiveParams);
 }
 
-function scanAndRemove(data, sensitive) {
-  const cleanedData: typeof data = {};
-  Object.keys(data).forEach(k => {
-    if (data[k] instanceof Object) {
-      cleanedData[k] = scanAndRemove(data[k], sensitive);
+function scanAndRemove<T>(data: T, sensitive: string[]) {
+  const cleanedData = flatten(data);
+
+  Object.keys(cleanedData).forEach(k => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (k.includes(sensitive)) {
+      cleanedData[k] = config.logging.replacementString;
     } else {
-      if (sensitive.includes(k)) {
-        cleanedData[k] = config.logging.replacementString;
-      } else {
-        cleanedData[k] = data[k];
-      }
+      cleanedData[k] = cleanedData[k];
     }
   });
 
-  return cleanedData;
+  return unflatten(cleanedData);
 }
