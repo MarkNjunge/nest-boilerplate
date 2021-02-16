@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as dayjs from "dayjs";
-import { v4 as uuidv4 } from "uuid";
+import * as crypto from "crypto";
 
 export function requestHeadersMiddleware(
   request: FastifyRequest,
@@ -10,6 +10,8 @@ export function requestHeadersMiddleware(
 ): void {
   request.headers["x-request-time"] = dayjs().valueOf()
     .toString();
-  request.headers["x-correlation-id"] = uuidv4();
+  const correlationId = crypto.randomBytes(8).toString("hex");
+  request.headers["x-correlation-id"] = correlationId;
+  request.params = { correlationId };
   next();
 }

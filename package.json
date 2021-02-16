@@ -45,7 +45,6 @@
     "reflect-metadata": "^0.1.12",
     "rxjs": "^6.6.3",
     "typeorm": "^0.2.29",
-    "uuid": "^8.3.2",
     "winston": "^3.3.3",
     "winston-transport": "^4.4.0"
   },
