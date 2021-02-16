@@ -48,8 +48,8 @@ export class CustomLogger implements LoggerService {
     const correlationId = request.headers["x-correlation-id"];
 
     const requestTime = parseInt(request.headers["x-request-time"] as string);
-    const requestTimeISO = dayjs.unix(requestTime).toISOString();
-    const duration = dayjs().unix() - requestTime;
+    const requestTimeISO = dayjs(requestTime).toISOString();
+    const duration = dayjs().valueOf() - requestTime;
 
     let data = {
       tag,
