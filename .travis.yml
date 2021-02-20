@@ -4,6 +4,6 @@ node_js:
 sudo: required
 cache: npm
 install:
-  - npm run
+  - npm install
 script:
   - npm run test & npm run lint

@@ -13,7 +13,7 @@ jobs:
       - name: Install dependencies
         env:
           CI: true
-        run: npm run install
+        run: npm install
       - name: Run lint
         env:
           CI: true
