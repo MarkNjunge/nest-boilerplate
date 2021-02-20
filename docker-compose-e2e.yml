@@ -15,7 +15,7 @@ services:
       dockerfile: Dockerfile-e2e
     container_name: nest-boilerplate-e2e
     image: nest-boilerplate-e2e
-    command: yarn test:e2e:local
+    command: npm run test:e2e:local
     depends_on:
       - postgres
     environment:

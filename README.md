@@ -25,20 +25,20 @@ See Express branch [here](https://github.com/MarkNjunge/nest-boilerplate/tree/ex
 ## Installation
 
 ```bash
-$ yarn install
+$ npm install
 ```
 
 ## Running
 
 ```bash
 # development
-$ yarn run start
+$ npm run start
 
 # watch mode
-$ yarn run start:dev
+$ npm run start:dev
 
 # production mode
-$ yarn run start:prod
+$ npm run start:prod
 ```
 
 ## Config
@@ -65,10 +65,10 @@ Typeorm is configured to use migrations instead of `synchronize: true`.
 
 To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by inspecting your entities, the cli needs to be configured. Create a `.env` file based on [.env.sample](.env.sample).
 
-You can then generate migrations using `yarn migration:generate <your_migration_name>`.  
-You can also use `yarn migration:create <your_migration_name>` to only create the file and write the migration logic yourself.
+You can then generate migrations using `npm run migration:generate <your_migration_name>`.  
+You can also use `npm run migration:create <your_migration_name>` to only create the file and write the migration logic yourself.
 
-When the server starts, migrations will run automatically, or, you can run the migrations using `yarn migration:run`
+When the server starts, migrations will run automatically, or, you can run the migrations using `npm run migration:run`
 
 ## Swagger
 
@@ -286,7 +286,7 @@ There exist unit tests for controllers and services.
 Dependencies are mocked using `jest`.
 
 ```bash
-yarn test
+npm run test
 ```
 
 ### End-to-end test
@@ -298,10 +298,10 @@ See [docker-compose-e2e.yml](./docker-compose-e2e.yml)
 
 ```bash
 # e2e tests (docker)
-yarn test:e2e
+npm run test:e2e
 
 # e2e test (locally)
-yarn test:e2e:local
+npm run test:e2e:local
 ```
 
 # CI
