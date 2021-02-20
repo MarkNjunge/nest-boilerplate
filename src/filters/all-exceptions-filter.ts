@@ -28,8 +28,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const stackTop = e.stack.split("\n")[1].split("at ")[1].split(" ")[0];
 
     // Get the correct http status
-    const status =
-      e instanceof HttpException ? e.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = e instanceof HttpException ?
+      e.getStatus() :
+      HttpStatus.INTERNAL_SERVER_ERROR;
     response.statusCode = status;
 
     // Get appropriate error code

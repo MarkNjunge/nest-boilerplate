@@ -23,7 +23,9 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
     {
-      logger: process.env.NODE_ENV === "production" ? false : logger,
+      logger: process.env.NODE_ENV === "production" ?
+        false :
+        logger,
     },
   );
 
