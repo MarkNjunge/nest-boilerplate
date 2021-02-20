@@ -13,16 +13,16 @@ jobs:
       - name: Install dependencies
         env:
           CI: true
-        run: yarn install
+        run: npm run install
       - name: Run lint
         env:
           CI: true
-        run: yarn lint
+        run: npm run lint
       - name: Run Test
         env:
           CI: true
-        run: yarn test
+        run: npm run test
       - name: Run e2e Test
         env:
           CI: true
-        run: yarn test:e2e
+        run: npm run test:e2e

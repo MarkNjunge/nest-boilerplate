@@ -2,8 +2,8 @@ language: node_js
 node_js:
   - "14.15.3"
 sudo: required
-cache: yarn
+cache: npm
 install:
-  - yarn
+  - npm run
 script:
-  - yarn test & yarn lint
+  - npm run test & npm run lint
