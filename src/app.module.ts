@@ -11,7 +11,7 @@ import * as path from "path";
     TypeOrmModule.forRoot({
       type: "postgres",
       url: config.db.url,
-      entities: [path.join(__dirname, "./**/*.entity{.ts,.js}")],
+      entities: [path.join(__dirname, "./db/entity/*.entity{.ts,.js}")],
       migrations: [path.join(__dirname, "./db/migration/*{.ts,.js}")],
       migrationsRun: true,
       synchronize: false,

@@ -2,9 +2,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { UserEntity } from "./entitiy/User.entity";
+import { UserEntity } from "../../db/entity/User.entity";
 import { Repository } from "typeorm";
-import { AddressEntity } from "./entitiy/Address.entity";
+import { AddressEntity } from "../../db/entity/Address.entity";
 import { CreateUserDto } from "./dto/CreateUser.dto";
 import { UserDto } from "./dto/user.dto";
 import { CreateAddressDto } from "./dto/CreateAddress.dto";

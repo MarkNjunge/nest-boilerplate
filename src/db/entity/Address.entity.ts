@@ -6,7 +6,7 @@ import {
   ManyToOne,
 } from "typeorm";
 import { UserEntity } from "./User.entity";
-import { CreateAddressDto } from "../dto/CreateAddress.dto";
+import { CreateAddressDto } from "../../modules/users/dto/CreateAddress.dto";
 
 @Entity({ name: "addresses" })
 export class AddressEntity {
