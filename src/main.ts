@@ -1,5 +1,5 @@
 import { NestFactory } from "@nestjs/core";
-import { CustomLogger, initializeWinston } from "./common/logging/CustomLogger";
+import { CustomLogger, initializeWinston } from "./logging/CustomLogger";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor";

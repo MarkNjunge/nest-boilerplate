@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { AppService } from "./app.service";
-import { CustomLogger } from "../../common/logging/CustomLogger";
+import { CustomLogger } from "../../logging/CustomLogger";
 import { CorrelationId } from "../../decorators/correlation-id.decorator";
 
 @Controller()

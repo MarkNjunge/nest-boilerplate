@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { UserDto } from "./dto/user.dto";
-import { CustomLogger } from "../../common/logging/CustomLogger";
+import { CustomLogger } from "../../logging/CustomLogger";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserEntity } from "../../db/entity/User.entity";

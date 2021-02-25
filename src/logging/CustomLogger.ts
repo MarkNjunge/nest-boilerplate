@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { LoggerService } from "@nestjs/common";
 import * as winston from "winston";
-import { config } from "../Config";
+import { config } from "../common/Config";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import { removeSensitiveParams } from "./remove-sensitive";

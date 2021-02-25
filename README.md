@@ -107,7 +107,7 @@ this.logger.debug("Hello!", "AppService.getHello");
 // 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
 ```
 
-Extra data can be passed into the log functions. This data will not be printed to the console. To access it, a [custom transport](https://github.com/winstonjs/winston-transport) is needed. See [SampleTransport](./src/common/logging/Sample.transport.ts) for an example.
+Extra data can be passed into the log functions. This data will not be printed to the console. To access it, a [custom transport](https://github.com/winstonjs/winston-transport) is needed. See [SampleTransport](src/logging/Sample.transport.ts) for an example.
 
 ```Typescript
 this.logger.debug("Hello!", "AppService.getHello", { user: "mark" });
@@ -132,7 +132,7 @@ getHello(@CorrelationId() correlationId: string) {
 
 Sensitive parameters specified in the config option `logging.sensitiveParams` will be replaced with the value in `logging.replacementString`.
 
-See [remove-sensitive.ts](./src/common/logging/remove-sensitive.ts)
+See [remove-sensitive.ts](src/logging/remove-sensitive.ts)
 
 ```json
 Before
