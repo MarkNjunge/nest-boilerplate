@@ -4,7 +4,6 @@ import * as winston from "winston";
 import { config } from "../common/Config";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
-import { removeSensitiveParams } from "./remove-sensitive";
 import * as dayjs from "dayjs";
 
 export class CustomLogger implements LoggerService {
@@ -12,28 +11,23 @@ export class CustomLogger implements LoggerService {
 
   log(message: string, name?: string, data?: any) {
     const tag = name || this.name;
-    data = removeSensitiveParams({ ...data, tag });
     winston.info({ message: `[${tag}] ${message}`, data });
   }
   error(message: string, name?: string, data?: any) {
     const tag = name || this.name;
-    data = removeSensitiveParams({ ...data, tag });
-    winston.error({ message: `[${name || this.name}] ${message}`, data });
+    winston.error({ message: `[${tag}] ${message}`, data });
   }
   warn(message: string, name?: string, data?: any) {
     const tag = name || this.name;
-    data = removeSensitiveParams({ ...data, tag });
-    winston.warn({ message: `[${name || this.name}] ${message}`, data });
+    winston.warn({ message: `[${tag}] ${message}`, data });
   }
   debug(message: string, name?: string, data?: any) {
     const tag = name || this.name;
-    data = removeSensitiveParams({ ...data, tag });
-    winston.debug({ message: `[${name || this.name}] ${message}`, data });
+    winston.debug({ message: `[${tag}] ${message}`, data });
   }
   verbose(message: string, name?: string, data?: any) {
     const tag = name || this.name;
-    data = removeSensitiveParams({ ...data, tag });
-    winston.verbose({ message: `[${name || this.name}] ${message}`, data });
+    winston.verbose({ message: `[${tag}] ${message}`, data });
   }
   // eslint-disable-next-line max-lines-per-function
   logRoute(
@@ -51,7 +45,7 @@ export class CustomLogger implements LoggerService {
     const requestTimeISO = dayjs(requestTime).toISOString();
     const duration = dayjs().valueOf() - requestTime;
 
-    let data = {
+    const data = {
       tag,
       request: {
         url,
@@ -70,7 +64,6 @@ export class CustomLogger implements LoggerService {
         body: responseBody,
       },
     };
-    data = removeSensitiveParams(data);
 
     const message = `${method} ${url} - ${statusCode} - ${duration}ms`;
 
