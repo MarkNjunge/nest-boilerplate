@@ -11,6 +11,7 @@ export class ResponseUtils {
   static cleanObject<T>(clz: ClassType<T>, data: any): T {
     return plainToClass(clz, data, {
       excludeExtraneousValues: true,
+      enableImplicitConversion: true,
     });
   }
 }
