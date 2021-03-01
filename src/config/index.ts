@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import * as configPackage from "config";
 
-interface Config {
+interface Index {
   env: string;
   port: number;
   apiKey: string;
@@ -55,4 +55,4 @@ interface Logging {
   replacementString: string;
 }
 
-export const config: Config = configPackage;
+export const config: Index = configPackage;

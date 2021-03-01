@@ -9,8 +9,8 @@ import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
 import { AddressEntity } from "../../db/entity/Address.entity";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
-import { ErrorCodes } from "../../common/error-codes";
-import { ResponseUtils } from "../../common/util/ResponseUtils";
+import { ErrorCodes } from "../../utils/error-codes";
+import { ResponseUtils } from "../../utils/ResponseUtils";
 
 @Injectable()
 export class UsersService {

@@ -10,7 +10,7 @@ See Express branch [here](https://github.com/MarkNjunge/nest-boilerplate/tree/ex
 
 ## Features
 
-- [Config](#config)
+- [Index](#config)
 - [Database](#database)
 - [Swagger (API docs)](#swagger)
 - [Logging](#logging)
@@ -41,7 +41,7 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Config
+## Index
 
 The [node-config](https://www.npmjs.com/package/config) package to manage configs.
 

@@ -6,8 +6,8 @@ import {
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { FastifyRequest } from "fastify";
-import { config } from "../common/Config";
-import { ErrorCodes } from "../common/error-codes";
+import { config } from "../config";
+import { ErrorCodes } from "../utils/error-codes";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

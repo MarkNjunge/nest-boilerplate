@@ -1,4 +1,4 @@
-import { config } from "../common/Config";
+import { config } from "../config";
 import { flatten, unflatten } from "flat";
 
 export function removeSensitiveParams<T>(data: T): T {

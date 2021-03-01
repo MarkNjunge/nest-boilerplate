@@ -21,7 +21,7 @@ import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/CreateUser.dto";
 import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
-import { ApiResponseDto } from "../../common/dto/ApiResponse.dto";
+import { ApiResponseDto } from "../shared/dto/ApiResponse.dto";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
 
 @Controller("users")
