@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import { Test, TestingModule } from "@nestjs/testing";
 import * as request from "supertest";
-import { AppModule } from "./../src/app.module";
+import { AppModule } from "../src/app.module";
 import { INestApplication, HttpServer } from "@nestjs/common";
 import {
   FastifyAdapter,
@@ -55,17 +55,19 @@ describe("AppController (e2e)", () => {
   });
 
   describe("/users", () => {
-    it("GET /users", done => request(server)
-      .get("/users")
-      .expect("Content-Type", /json/)
-      .expect(200, done));
+    it("GET /users", done => {
+      request(server)
+        .get("/users")
+        .expect("Content-Type", /json/)
+        .expect(200, done);
+    });
     it("POST /users", done => {
       const dto: CreateUserDto = {
         username: "mark",
         contact: { email: "mark@mail.com" },
       };
 
-      return request(server)
+      request(server)
         .post("/users")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -78,7 +80,7 @@ describe("AppController (e2e)", () => {
         country: "Kenya",
       };
 
-      return request(server)
+      request(server)
         .post("/users/1/addresses")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -91,7 +93,7 @@ describe("AppController (e2e)", () => {
         contact: { email: "contact@mark.com" },
       };
 
-      return request(server)
+      request(server)
         .put("/users/1")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -103,7 +105,7 @@ describe("AppController (e2e)", () => {
         message: "User deleted",
       };
 
-      return request(server)
+      request(server)
         .delete("/users/1")
         .set("x-api-key", "api-key")
         .expect("Content-Type", /json/)
