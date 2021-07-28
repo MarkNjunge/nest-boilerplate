@@ -1,4 +1,5 @@
-import { plainToClass, ClassConstructor } from "class-transformer";
+import { ClassType } from "class-transformer/ClassTransformer";
+import { plainToClass } from "class-transformer";
 
 export class ResponseUtils {
   /**
@@ -7,7 +8,7 @@ export class ResponseUtils {
    * @param data Object
    */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  static cleanObject<T>(clz: ClassConstructor<T>, data: any): T {
+  static cleanObject<T>(clz: ClassType<T>, data: any): T {
     return plainToClass(clz, data, {
       excludeExtraneousValues: true,
       enableImplicitConversion: true,
