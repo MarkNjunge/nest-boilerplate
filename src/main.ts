@@ -15,9 +15,12 @@ import { default as helmet } from "fastify-helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 import { ApplicationLogger } from "./logging/ApplicationLogger";
 
+initializeWinston();
+const logger = new Logger("Application");
+
+bootstrap().catch(e => logger.error(e.message));
+
 async function bootstrap() {
-  initializeWinston();
-  const logger = new Logger("Application");
   logger.info("****** Starting API ******");
 
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -30,7 +33,6 @@ async function bootstrap() {
     },
   );
 
-
   await enablePlugins(app);
   initializeSwagger(app);
 
@@ -42,7 +44,6 @@ async function bootstrap() {
   await app.listen(config.port, "0.0.0.0");
   logger.info(`App running at http://127.0.0.1:${config.port}`);
 }
-bootstrap();
 
 async function enablePlugins(app: NestFastifyApplication) {
   await app.register(helmet, {
