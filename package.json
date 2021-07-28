@@ -24,7 +24,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "docker-compose -f docker-compose-e2e.yml up --abort-on-container-exit",
     "posttest:e2e": "docker-compose -f docker-compose-e2e.yml down && docker rmi nest-boilerplate-e2e",
-    "test:e2e:local": "jest --config ./test/jest-e2e.json"
+    "test:e2e:local": "jest --config ./test/jest-e2e.json",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.5",
@@ -62,7 +63,7 @@
     "@typescript-eslint/parser": "^4.12.0",
     "eslint": "^7.17.0",
     "eslint-plugin-import": "^2.22.1",
-    "husky": "^4.3.6",
+    "husky": "^7.0.1",
     "jest": "^26.6.3",
     "nodemon": "^2.0.6",
     "rimraf": "^3.0.2",
@@ -89,10 +90,5 @@
     "setupFiles": [
       "../test/util/logging.ts"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint:fix && npm run test"
-    }
   }
 }
