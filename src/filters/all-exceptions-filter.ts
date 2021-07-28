@@ -6,16 +6,16 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { CustomLogger } from "../logging/CustomLogger";
+import { Logger } from "../logging/Logger";
 import { ApiErrorDto } from "../modules/shared/dto/ApiError.dto";
 import { ErrorCodes } from "../utils/error-codes";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  logger: CustomLogger;
+  logger: Logger;
 
   constructor() {
-    this.logger = new CustomLogger("HttpExceptionFilter");
+    this.logger = new Logger("HttpExceptionFilter");
   }
 
   // eslint-disable-next-line max-lines-per-function

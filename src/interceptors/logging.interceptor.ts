@@ -6,15 +6,15 @@ import {
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { CustomLogger } from "../logging/CustomLogger";
+import { Logger } from "../logging/Logger";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  logger: CustomLogger;
+  logger: Logger;
 
   constructor() {
-    this.logger = new CustomLogger("ROUTE");
+    this.logger = new Logger("ROUTE");
   }
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();

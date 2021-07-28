@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { CustomLogger } from "../../logging/CustomLogger";
+import { Logger } from "../../logging/Logger";
 
 @Injectable()
 export class AppService {
-  logger: CustomLogger = new CustomLogger("AppService");
+  logger: Logger = new Logger("AppService");
 
   getHello(correlationId: string): string {
     this.logger.debug(`Hello ${correlationId}`, "AppService.getHello");

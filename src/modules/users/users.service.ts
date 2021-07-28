@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { UserDto } from "./dto/user.dto";
-import { CustomLogger } from "../../logging/CustomLogger";
+import { Logger } from "../../logging/Logger";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserEntity } from "../../db/entity/User.entity";
@@ -14,7 +14,7 @@ import { ResponseUtils } from "../../utils/ResponseUtils";
 
 @Injectable()
 export class UsersService {
-  private logger = new CustomLogger("UsersService");
+  private logger = new Logger("UsersService");
 
   constructor(
     @InjectRepository(UserEntity)
@@ -54,7 +54,7 @@ export class UsersService {
   }
 
   async updateUser(id: number, dto: UpdateUserDto): Promise<UserDto> {
-    this.logger.log(`Updating user ${id}`, null, dto);
+    this.logger.info(`Updating user ${id}`, null, dto);
 
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
     const existing = await this.usersRepository.findOne({ id });

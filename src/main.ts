@@ -1,5 +1,5 @@
 import { NestFactory } from "@nestjs/core";
-import { CustomLogger, initializeWinston } from "./logging/CustomLogger";
+import { Logger, initializeWinston } from "./logging/Logger";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor";
@@ -13,11 +13,12 @@ import {
 import * as fastifyRateLimit from "fastify-rate-limit";
 import { default as helmet } from "fastify-helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
+import { ApplicationLogger } from "./logging/ApplicationLogger";
 
 async function bootstrap() {
   initializeWinston();
-  const logger = new CustomLogger("Application");
-  logger.log("****** Starting API ******");
+  const logger = new Logger("Application");
+  logger.info("****** Starting API ******");
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -25,7 +26,7 @@ async function bootstrap() {
     {
       logger: process.env.NODE_ENV === "production" ?
         false :
-        logger,
+        new ApplicationLogger(),
     },
   );
 
@@ -39,7 +40,7 @@ async function bootstrap() {
   app.use(requestHeadersMiddleware);
 
   await app.listen(config.port, "0.0.0.0");
-  logger.log(`App running at http://127.0.0.1:${config.port}`);
+  logger.info(`App running at http://127.0.0.1:${config.port}`);
 }
 bootstrap();
 

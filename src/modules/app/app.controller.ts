@@ -1,15 +1,16 @@
 import { Controller, Get } from "@nestjs/common";
 import { AppService } from "./app.service";
-import { CustomLogger } from "../../logging/CustomLogger";
+import { Logger } from "../../logging/Logger";
 import { CorrelationId } from "../../decorators/correlation-id.decorator";
 
 @Controller()
 export class AppController {
+  private logger = new Logger("AppController")
   constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(@CorrelationId() correlationId: string): string {
-    new CustomLogger().debug(correlationId);
+    this.logger.debug(correlationId);
 
     return this.appService.getHello(correlationId);
   }

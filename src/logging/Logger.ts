@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { LoggerService } from "@nestjs/common";
 import * as winston from "winston";
 import { config } from "../config";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
 
-export class CustomLogger implements LoggerService {
-  constructor(private readonly name: string = "Application") {}
+export class Logger {
+  constructor(private readonly name: string) {}
 
-  log(message: string, name?: string, data?: any) {
+  info(message: string, name?: string, data?: any) {
     const tag = name || this.name;
     winston.info({ message: `[${tag}] ${message}`, data });
   }
