@@ -13,7 +13,9 @@ jobs:
       - name: Install dependencies
         env:
           CI: true
-        run: npm install
+        run: |
+          npm install
+          npm install --global npm@7
       - name: Run lint
         env:
           CI: true
