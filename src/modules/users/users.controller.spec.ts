@@ -62,7 +62,7 @@ describe("Users Controller", () => {
     it("should return array", async() => {
       jest
         .spyOn(usersService, "getAllUsers")
-        .mockImplementation(() => Promise.resolve([user]));
+        .mockImplementation(async() => Promise.resolve([user]));
 
       expect(await usersController.getAllUsers()).toEqual([user]);
     });
@@ -72,7 +72,7 @@ describe("Users Controller", () => {
     it("should return created user", async() => {
       jest
         .spyOn(usersService, "createUser")
-        .mockImplementation(() => Promise.resolve(user));
+        .mockImplementation(async() => Promise.resolve(user));
 
       expect(await usersController.createUser(createUserDto)).toBe(user);
     });
@@ -82,7 +82,7 @@ describe("Users Controller", () => {
     it("should return body", async() => {
       jest
         .spyOn(usersService, "createAddress")
-        .mockImplementation(() => Promise.resolve(address));
+        .mockImplementation(async() => Promise.resolve(address));
 
       expect(await usersController.createAddress(1, createAddressDto)).toBe(
         address,

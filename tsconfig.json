@@ -9,8 +9,14 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true
+    "incremental": true,
+    "strictNullChecks": true
   },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    ".eslintrc.js",
+  ],
   "exclude": [
     "node_modules",
     "dist"

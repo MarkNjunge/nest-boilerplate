@@ -7,9 +7,9 @@ import { UsersModule } from "./modules/users/users.module";
 import * as path from "path";
 import { TlsOptions } from "tls";
 
-let ssl: boolean | TlsOptions = config.db.ssl;
-if (ssl === true) {
-  ssl = {
+let sslConfig: boolean | TlsOptions = config.db.ssl;
+if (config.db.ssl) {
+  sslConfig = {
     // This accepts a self signed certificate
     // See node-postgres docs for how to verify
     // https://node-postgres.com/features/ssl
@@ -20,13 +20,14 @@ if (ssl === true) {
 @Module({
   imports: [
     TypeOrmModule.forRoot({
+      // @ts-expect-error: types are not listed correctly
       type: "postgres",
       url: config.db.url,
       entities: [path.join(__dirname, "./db/entity/*.entity{.ts,.js}")],
       migrations: [path.join(__dirname, "./db/migration/*{.ts,.js}")],
       migrationsRun: true,
       synchronize: false,
-      ssl,
+      sslConfig,
     }),
     UsersModule,
   ],

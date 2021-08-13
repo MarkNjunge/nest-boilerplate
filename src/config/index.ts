@@ -55,4 +55,13 @@ interface Logging {
   replacementString: string;
 }
 
-export const config: Index = configPackage;
+export const config: Index = configPackage as Index;
+
+export function bool(value: boolean | string): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return value === "true";
+
+}

@@ -6,11 +6,12 @@ export class BlankTransport extends Transport {
     super(opts);
   }
 
-  async log(info, callback) {
+  log(info, callback): void {
     setImmediate(() => {
       this.emit("logged", info);
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     callback();
   }
 }

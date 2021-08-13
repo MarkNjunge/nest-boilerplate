@@ -4,7 +4,7 @@ import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor";
 import { ValidationPipe } from "./pipes/validation.pipe";
-import { config } from "./config";
+import { config, bool } from "./config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import {
   FastifyAdapter,
@@ -18,9 +18,9 @@ import { ApplicationLogger } from "./logging/ApplicationLogger";
 initializeWinston();
 const logger = new Logger("Application");
 
-bootstrap().catch(e => logger.error(e.message));
+bootstrap().catch((e: Error) => logger.error(e.message));
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
 
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -45,7 +45,7 @@ async function bootstrap() {
   logger.info(`App running at http://127.0.0.1:${config.port}`);
 }
 
-async function enablePlugins(app: NestFastifyApplication) {
+async function enablePlugins(app: NestFastifyApplication): Promise<void> {
   await app.register(helmet, {
     // A custom Content Security Policy config is required in order for swagger to work
     contentSecurityPolicy: {
@@ -64,9 +64,9 @@ async function enablePlugins(app: NestFastifyApplication) {
     allowedHeaders: config.cors.allowedHeaders,
   });
 
-  if (Boolean(config.rateLimit.enabled) === true) {
+  if (bool(config.rateLimit.enabled)) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-errors: Type issues
     await app.register(fastifyRateLimit, {
       max: config.rateLimit.max,
       timeWindow: config.rateLimit.timeWindow,
@@ -74,8 +74,8 @@ async function enablePlugins(app: NestFastifyApplication) {
   }
 }
 
-function initializeSwagger(app: NestFastifyApplication) {
-  if (Boolean(config.swagger.enabled) === false) {
+function initializeSwagger(app: NestFastifyApplication): void {
+  if (!bool(config.swagger.enabled)) {
     return;
   }
 

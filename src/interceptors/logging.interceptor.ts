@@ -16,6 +16,7 @@ export class LoggingInterceptor implements NestInterceptor {
   constructor() {
     this.logger = new Logger("ROUTE");
   }
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<FastifyRequest>();

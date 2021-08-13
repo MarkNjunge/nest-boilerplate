@@ -1,19 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { config } from "../config";
 import { flatten, unflatten } from "flat";
 
 export function removeSensitiveParams<T>(data: T): T {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   return scanAndRemove(data, config.logging.sensitiveParams);
 }
 
-function scanAndRemove<T>(data: T, sensitive: string[]) {
-  const cleanedData = flatten(data);
+function scanAndRemove<T>(data: T, sensitive: string[]): T {
+  const cleanedData: any = flatten(data);
   const sensitiveRegex = new RegExp(sensitive.join("|"));
 
   Object.keys(cleanedData).forEach(k => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     if (k.match(sensitiveRegex)) {
       cleanedData[k] = config.logging.replacementString;
     } else {

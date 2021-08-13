@@ -2,7 +2,7 @@ import { LoggerService } from "@nestjs/common";
 import { Logger } from "./Logger";
 
 export class ApplicationLogger implements LoggerService {
-  private logger = new Logger("NestApplication")
+  private logger = new Logger("NestApplication");
 
   log(message: string): void {
     this.logger.info(message);

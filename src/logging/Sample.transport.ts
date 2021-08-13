@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as Transport from "winston-transport";
 import { removeSensitiveParams } from "./remove-sensitive";
 
@@ -7,7 +8,7 @@ export class SampleTransport extends Transport {
     super(opts);
   }
 
-  async log(info: any, callback: () => void) {
+  log(info: any, callback: () => void): void {
     setImmediate(() => {
       this.emit("logged", info);
     });

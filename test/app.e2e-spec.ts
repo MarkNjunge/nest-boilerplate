@@ -41,22 +41,29 @@ describe("AppController (e2e)", () => {
     await app.init();
 
     // Wait for fastify
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+    /* eslint-disable @typescript-eslint/no-unsafe-call */
     await app.getHttpAdapter().getInstance()
       .ready();
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+    /* eslint-enable @typescript-eslint/no-unsafe-call */
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     server = app.getHttpServer();
   });
 
   describe("/", () => {
-    it("GET /", () => request(server)
-      .get("/")
-      .expect(200)
-      .expect("Hello World!"));
+    it("GET /", done => {
+      void request(server)
+        .get("/")
+        .expect(200)
+        .expect("Hello World!", done);
+    });
   });
 
   describe("/users", () => {
     it("GET /users", done => {
-      request(server)
+      void request(server)
         .get("/users")
         .expect("Content-Type", /json/)
         .expect(200, done);
@@ -67,7 +74,7 @@ describe("AppController (e2e)", () => {
         contact: { email: "mark@mail.com" },
       };
 
-      request(server)
+      void request(server)
         .post("/users")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -80,7 +87,7 @@ describe("AppController (e2e)", () => {
         country: "Kenya",
       };
 
-      request(server)
+      void request(server)
         .post("/users/1/addresses")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -93,7 +100,7 @@ describe("AppController (e2e)", () => {
         contact: { email: "contact@mark.com" },
       };
 
-      request(server)
+      void request(server)
         .put("/users/1")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -105,7 +112,7 @@ describe("AppController (e2e)", () => {
         message: "User deleted",
       };
 
-      request(server)
+      void request(server)
         .delete("/users/1")
         .set("x-api-key", "api-key")
         .expect("Content-Type", /json/)

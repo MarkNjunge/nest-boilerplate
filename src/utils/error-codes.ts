@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/lines-between-class-members */
 export class ErrorCodes {
   static INVALID_API_KEY = "InvalidApiKey";
   static INTERNAL_ERROR = "InternalError";

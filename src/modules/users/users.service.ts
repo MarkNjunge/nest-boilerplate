@@ -28,7 +28,7 @@ export class UsersService {
   }
 
   async createUser(dto: CreateUserDto): Promise<UserDto> {
-    this.logger.debug(`Creating user ${dto.username}`, null, dto);
+    this.logger.debug(`Creating user ${dto.username}`, undefined, dto);
 
     const user = UserEntity.fromCreateDto(dto);
     const saved = await this.usersRepository.save(user);
@@ -37,10 +37,10 @@ export class UsersService {
   }
 
   async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
-    this.logger.debug(`Creating address for user ${id}`, null, dto);
+    this.logger.debug(`Creating address for user ${id}`, undefined, dto);
 
     const user = await this.usersRepository.findOne({ id });
-    if (user === null) {
+    if (user === undefined) {
       throw new NotFoundException({
         message: `The user ${id} does not exist`,
         code: ErrorCodes.INVALID_USER,
@@ -54,25 +54,25 @@ export class UsersService {
   }
 
   async updateUser(id: number, dto: UpdateUserDto): Promise<UserDto> {
-    this.logger.info(`Updating user ${id}`, null, dto);
+    this.logger.info(`Updating user ${id}`, undefined, dto);
 
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
     const existing = await this.usersRepository.findOne({ id });
-    if (existing === null) {
+    if (existing === undefined) {
       throw new NotFoundException({
         message: `The user ${id} does not exist`,
         code: ErrorCodes.INVALID_USER,
       });
     }
     const updated = UserEntity.fromUpdateDto(dto);
-    await this.usersRepository.merge(existing, updated);
+    this.usersRepository.merge(existing, updated);
     const saved = await this.usersRepository.save(existing);
 
     return ResponseUtils.cleanObject(UserDto, saved);
   }
 
   async deleteUser(userId: number): Promise<void> {
-    this.logger.debug(`Deleting user ${userId}`, null, { userId });
+    this.logger.debug(`Deleting user ${userId}`, undefined, { userId });
 
     await this.usersRepository.delete({ id: userId });
   }

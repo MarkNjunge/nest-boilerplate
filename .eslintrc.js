@@ -8,7 +8,7 @@ module.exports = {
   extends: [
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "@marknjunge/eslint-config"
+    "@marknjunge/eslint-config-ts",
   ],
   root: true,
   env: {
@@ -16,14 +16,14 @@ module.exports = {
     jest: true,
   },
   rules: {
-    "@typescript-eslint/interface-name-prefix": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
+    // "@typescript-eslint/interface-name-prefix": "off",
+    // "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-use-before-define": [
-      "error",
-      { functions: false, classes: false },
-    ],
-    "new-cap": "off",
-    "no-empty-function": ["error", { allow: ["constructors"] }],
+    // "@typescript-eslint/no-use-before-define": [
+    //   "error",
+    //   { functions: false, classes: false },
+    // ],
+    // "new-cap": "off",
+    // "no-empty-function": ["error", { allow: ["constructors"] }],
   },
 };

@@ -1,16 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   PipeTransform,
   Injectable,
   ArgumentMetadata,
   BadRequestException,
 } from "@nestjs/common";
-import { validate } from "class-validator";
+import { validate, ValidationError } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { config } from "../config";
 import { ErrorCodes } from "../utils/error-codes";
 
 @Injectable()
-export class ValidationPipe implements PipeTransform<any> {
+export class ValidationPipe implements PipeTransform {
   // eslint-disable-next-line max-lines-per-function
   async transform<T>(value: T, { metatype }: ArgumentMetadata): Promise<T> {
     // Account for an empty request body
@@ -34,16 +35,16 @@ export class ValidationPipe implements PipeTransform<any> {
     }
 
     // Top-level errors
-    const topLevelErrors = errors
+    const topLevelErrors: ValidationErrorDto[] = errors
       // Top-level errors have the constraints here
       .filter(v => v.constraints)
       .map(error => ({
         property: error.property,
-        constraints: Object.values(error.constraints),
+        constraints: Object.values(error.constraints as any),
       }));
 
     // Nested errors
-    const nestedErrors = [];
+    const nestedErrors: ValidationErrorDto[] = [];
     errors
       // Nested errors do not have constraints here
       .filter(v => !v.constraints)
@@ -70,7 +71,11 @@ export class ValidationPipe implements PipeTransform<any> {
     return !types.includes(metatype);
   }
 
-  private getValidationErrorsFromChildren(parent, children, errors = []) {
+  private getValidationErrorsFromChildren(
+    parent: string,
+    children: ValidationError[],
+    errors: ValidationErrorDto[] = []
+  ): ValidationErrorDto[] {
     children.forEach(child => {
       if (child.constraints) {
         errors.push({
@@ -88,4 +93,9 @@ export class ValidationPipe implements PipeTransform<any> {
 
     return errors;
   }
+}
+
+interface ValidationErrorDto {
+  property: string;
+  constraints: string[];
 }

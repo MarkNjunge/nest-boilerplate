@@ -25,7 +25,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<FastifyRequest>();
 
     // Get the location where the error was thrown from to use as a logging tag
-    const stackTop = e.stack.split("\n")[1].split("at ")[1].split(" ")[0];
+    const stackTop = e.stack?.split("\n")[1].split("at ")[1].split(" ")[0];
 
     // Get the correct http status
     const status = e instanceof HttpException ?
@@ -49,17 +49,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
       code,
       correlationId,
     };
-    if (e instanceof HttpException && (e.getResponse() as any).code) {
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+    if (e instanceof HttpException && (e.getResponse() as any).code !== null) {
       apiError.code = (e.getResponse() as any).code;
     }
 
-    if (e instanceof HttpException && (e.getResponse() as any).meta) {
+    if (e instanceof HttpException && (e.getResponse() as any).meta !== null) {
       apiError.meta = (e.getResponse() as any).meta;
     }
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
     this.logger.error(message, stackTop, { stacktrace: e.stack });
     this.logger.logRoute(request, response, { ...apiError });
 
-    response.status(status).send(apiError);
+    void response.status(status).send(apiError);
   }
 }

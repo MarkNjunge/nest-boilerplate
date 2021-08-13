@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as winston from "winston";
 import { config } from "../config";
@@ -8,32 +9,37 @@ import * as dayjs from "dayjs";
 export class Logger {
   constructor(private readonly name: string) {}
 
-  info(message: string, name?: string, data?: any) {
-    const tag = name || this.name;
+  info(message: string, name?: string, data?: any): void {
+    const tag = name ?? this.name;
     winston.info({ message: `[${tag}] ${message}`, data });
   }
-  error(message: string, name?: string, data?: any) {
-    const tag = name || this.name;
+
+  error(message: string, name?: string, data?: any): void {
+    const tag = name ?? this.name;
     winston.error({ message: `[${tag}] ${message}`, data });
   }
-  warn(message: string, name?: string, data?: any) {
-    const tag = name || this.name;
+
+  warn(message: string, name?: string, data?: any): void {
+    const tag = name ?? this.name;
     winston.warn({ message: `[${tag}] ${message}`, data });
   }
-  debug(message: string, name?: string, data?: any) {
-    const tag = name || this.name;
+
+  debug(message: string, name?: string, data?: any): void {
+    const tag = name ?? this.name;
     winston.debug({ message: `[${tag}] ${message}`, data });
   }
-  verbose(message: string, name?: string, data?: any) {
-    const tag = name || this.name;
+
+  verbose(message: string, name?: string, data?: any): void {
+    const tag = name ?? this.name;
     winston.verbose({ message: `[${tag}] ${message}`, data });
   }
+
   // eslint-disable-next-line max-lines-per-function
   logRoute(
     request: FastifyRequest,
     response: FastifyReply,
     responseBody?: any,
-  ) {
+  ): void {
     const statusCode = response.statusCode;
     const method = request.method;
     const url = request.url;
@@ -50,7 +56,7 @@ export class Logger {
         url,
         method,
         requestTime: requestTimeISO,
-        ip: request.headers["x-forwarded-for"] || request.ip,
+        ip: request.headers["x-forwarded-for"] ?? request.ip,
         correlationId,
         headers: request.headers,
         query: Object.assign({}, request.query),
@@ -70,9 +76,10 @@ export class Logger {
   }
 }
 
-export function initializeWinston() {
+export function initializeWinston(): void {
   const { combine, timestamp, printf, colorize } = winston.format;
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const myFormat = printf(({ level, message, timestamp }) => {
     const formattedTimestamp = dayjs(timestamp).format(
       config.logging.timestampFormat,

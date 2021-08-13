@@ -5,7 +5,8 @@ import { CorrelationId } from "../../decorators/correlation-id.decorator";
 
 @Controller()
 export class AppController {
-  private logger = new Logger("AppController")
+  private logger = new Logger("AppController");
+
   constructor(private readonly appService: AppService) {}
 
   @Get()
