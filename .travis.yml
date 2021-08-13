@@ -5,6 +5,5 @@ sudo: required
 cache: npm
 install:
   - npm install
-  - npm install --global npm@7
 script:
   - npm run test & npm run lint
