@@ -35,7 +35,7 @@ describe("UsersService", () => {
     addresses: [],
   };
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -56,10 +56,10 @@ describe("UsersService", () => {
   });
 
   describe("getAllUsers", () => {
-    it("should return an array", async() => {
+    it("should return an array", async () => {
       jest
         .spyOn(usersRepository, "find")
-        .mockImplementation(async() => Promise.resolve([user as UserEntity]));
+        .mockImplementation(async () => Promise.resolve([user as UserEntity]));
 
       const actual = await usersService.getAllUsers();
       expect(actual).toEqual([user]);
@@ -67,10 +67,10 @@ describe("UsersService", () => {
   });
 
   describe("createUser", () => {
-    it("shoud return an object", async() => {
+    it("shoud return an object", async () => {
       jest
         .spyOn(usersRepository, "save")
-        .mockImplementation(async() => Promise.resolve(user as UserEntity));
+        .mockImplementation(async () => Promise.resolve(user as UserEntity));
 
       const actual = await usersService.createUser(createUserDto);
       expect(actual).toEqual(user);
@@ -78,14 +78,14 @@ describe("UsersService", () => {
   });
 
   describe("createAddress", () => {
-    it("should return an object", async() => {
+    it("should return an object", async () => {
       jest
         .spyOn(addressRepository, "save")
-        .mockImplementation(async() => Promise.resolve(address as AddressEntity));
+        .mockImplementation(async () => Promise.resolve(address as AddressEntity));
 
       jest
         .spyOn(usersRepository, "findOne")
-        .mockImplementation(async() => Promise.resolve(user as UserEntity));
+        .mockImplementation(async () => Promise.resolve(user as UserEntity));
 
       const actual = await usersService.createAddress(1, createAddressDto);
       expect(actual).toEqual(address);

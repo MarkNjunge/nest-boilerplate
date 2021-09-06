@@ -34,7 +34,7 @@ describe("Users Controller", () => {
     addresses: [],
   };
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
@@ -59,30 +59,30 @@ describe("Users Controller", () => {
   });
 
   describe("getAllUsers", () => {
-    it("should return array", async() => {
+    it("should return array", async () => {
       jest
         .spyOn(usersService, "getAllUsers")
-        .mockImplementation(async() => Promise.resolve([user]));
+        .mockImplementation(async () => Promise.resolve([user]));
 
       expect(await usersController.getAllUsers()).toEqual([user]);
     });
   });
 
   describe("createUser", () => {
-    it("should return created user", async() => {
+    it("should return created user", async () => {
       jest
         .spyOn(usersService, "createUser")
-        .mockImplementation(async() => Promise.resolve(user));
+        .mockImplementation(async () => Promise.resolve(user));
 
       expect(await usersController.createUser(createUserDto)).toBe(user);
     });
   });
 
   describe("createAddress", () => {
-    it("should return body", async() => {
+    it("should return body", async () => {
       jest
         .spyOn(usersService, "createAddress")
-        .mockImplementation(async() => Promise.resolve(address));
+        .mockImplementation(async () => Promise.resolve(address));
 
       expect(await usersController.createAddress(1, createAddressDto)).toBe(
         address,

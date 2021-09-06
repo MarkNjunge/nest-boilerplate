@@ -18,7 +18,7 @@ describe("AppController (e2e)", () => {
   let app: INestApplication;
   let server: HttpServer;
 
-  beforeAll(async() => {
+  beforeAll(async () => {
     // Prevents Winston error 'Attempt to write logs with no transports'
     winston.configure({
       level: "debug",
@@ -120,7 +120,7 @@ describe("AppController (e2e)", () => {
     });
   });
 
-  afterAll(async() => {
+  afterAll(async () => {
     await app.close();
   });
 });
