@@ -7,7 +7,7 @@
     "ssl": "DB_SSL"
   },
   "swagger": {
-    "enabled": "SWAGGER_ENBLED",
+    "enabled": "SWAGGER_ENABLED",
     "endpoint": "SWAGGER_ENDPOINT"
   },
   "rateLimit": {
