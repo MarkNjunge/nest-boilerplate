@@ -53,6 +53,7 @@ interface Logging {
   timestampFormat: string;
   sensitiveParams: string[];
   replacementString: string;
+  logDataConsole: boolean;
 }
 
 export const config: Index = configPackage as Index;

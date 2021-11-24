@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as winston from "winston";
-import { config } from "../config";
+import { bool, config } from "../config";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
@@ -80,12 +80,17 @@ export function initializeWinston(): void {
   const { combine, timestamp, printf, colorize } = winston.format;
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  const myFormat = printf(({ level, message, timestamp }) => {
+  const myFormat = printf(({ level, message, timestamp, data }) => {
     const formattedTimestamp = dayjs(timestamp).format(
       config.logging.timestampFormat,
     );
 
-    return `${formattedTimestamp} | ${level}: ${message}`;
+    let formatted = `${formattedTimestamp} | ${level}: ${message}`;
+    if (bool(config.logging.logDataConsole) && data !== undefined) {
+      formatted += `\n${JSON.stringify(data)}`;
+    }
+
+    return formatted;
   });
 
   winston.configure({
