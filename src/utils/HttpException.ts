@@ -1,16 +1,14 @@
-import { ErrorCodes } from "./error-codes";
-
 export class HttpException extends Error {
   status: number;
 
   message: string;
 
-  code?: ErrorCodes;
+  code?: string;
 
   meta: any;
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  constructor(status: number, message: string, code?: ErrorCodes, meta: any = {}) {
+  constructor(status: number, message: string, code?: string, meta: any = {}) {
     super(message);
     this.status = status;
     this.message = message;

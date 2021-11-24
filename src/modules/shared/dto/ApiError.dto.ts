@@ -1,13 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional } from "class-validator";
-import { ErrorCodes } from "../../../utils/error-codes";
 
 export class ApiErrorDto {
   @ApiProperty()
   status: number;
 
   @ApiProperty()
-  code: ErrorCodes;
+  code: string;
 
   @ApiProperty()
   message: string;
