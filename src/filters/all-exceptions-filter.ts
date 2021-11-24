@@ -2,13 +2,12 @@ import {
   ExceptionFilter,
   Catch,
   ArgumentsHost,
-  HttpException,
-  HttpStatus,
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "../logging/Logger";
 import { ApiErrorDto } from "../modules/shared/dto/ApiError.dto";
 import { ErrorCodes } from "../utils/error-codes";
+import { HttpException } from "../utils/HttpException";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -28,9 +27,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const stackTop = e.stack?.split("\n")[1].split("at ")[1].split(" ")[0];
 
     // Get the correct http status
-    const status = e instanceof HttpException ?
-      e.getStatus() :
-      HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = e instanceof HttpException ? e.status : 500;
     response.statusCode = status;
 
     // Get appropriate error code
@@ -49,17 +46,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
       code,
       correlationId,
     };
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-    if (e instanceof HttpException && (e.getResponse() as any).code !== null) {
-      apiError.code = (e.getResponse() as any).code;
+    if (e instanceof HttpException && e.meta !== null) {
+      if (e.code != null) {
+        apiError.code = e.code;
+      }
+      if (e.meta != null) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        apiError.meta = e.meta;
+      }
     }
-
-    if (e instanceof HttpException && (e.getResponse() as any).meta !== null) {
-      apiError.meta = (e.getResponse() as any).meta;
-    }
-    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
 
     this.logger.error(message, stackTop, { stacktrace: e.stack });
     this.logger.logRoute(request, response, { ...apiError });

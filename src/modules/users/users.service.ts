@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { UserDto } from "./dto/user.dto";
 import { Logger } from "../../logging/Logger";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -11,6 +11,7 @@ import { AddressEntity } from "../../db/entity/Address.entity";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
 import { ErrorCodes } from "../../utils/error-codes";
 import { ResponseUtils } from "../../utils/ResponseUtils";
+import { HttpException } from "../../utils/HttpException";
 
 @Injectable()
 export class UsersService {
@@ -41,10 +42,7 @@ export class UsersService {
 
     const user = await this.usersRepository.findOne({ id });
     if (user === undefined) {
-      throw new NotFoundException({
-        message: `The user ${id} does not exist`,
-        code: ErrorCodes.INVALID_USER,
-      });
+      throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
     }
 
     const address = AddressEntity.fromCreateDto(user, dto);
@@ -59,10 +57,7 @@ export class UsersService {
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
     const existing = await this.usersRepository.findOne({ id });
     if (existing === undefined) {
-      throw new NotFoundException({
-        message: `The user ${id} does not exist`,
-        code: ErrorCodes.INVALID_USER,
-      });
+      throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
     }
     const updated = UserEntity.fromUpdateDto(dto);
     this.usersRepository.merge(existing, updated);

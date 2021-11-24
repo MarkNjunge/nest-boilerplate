@@ -215,49 +215,31 @@ NB: Raising an error when unknown values are passed can be disabled by setting `
 
 ## Errors & Exception Handling
 
-Errors are returning in the following format
+Errors are returned in the following format:  
+Note: The contents of `meta` are dependent on where the error is thrown.
 
 ```json
 {
-  "status": 403,
-  "message": "This resource is currently restricted",
-  "code": "Restricted",
-  "correlationId": "b945c41d-ae51-4170-80b5-3c2200cbe25d"
+  "status": 404,
+  "message": "The user 12 does not exist",
+  "code": "NotFound",
+  "correlationId": "db5d89051f0b47b9",
+  "meta": {}
 }
 ```
 
-Exceptions can be thrown using:
-
-- Nest's [Built-in HTTP Exceptions](https://docs.nestjs.com/exception-filters#built-in-http-exceptions)
-
-```Typescript
-throw new ForbiddenException("Forbidden");
-
-// or with more detail
-
-throw new ForbiddenException({
-  message: "Forbidden",
-  code: ErrorCodes.RESTRICTED,
-  meta: { reason: "Token does not have access to resource" },
-});
-```
-
-- the HttpException class
+Exceptions should be thrown using the [HttpException](src/utils/HttpException.ts) class
 
 ```typescript
 throw new HttpException(
-  {
-    message: "This resource is currently restricted",
-    code: ErrorCodes.RESTRICTED,
-  },
-  403,
+  404,
+  `The user ${id} does not exist`,
+  ErrorCodes.INVALID_USER,
+  meta
 );
 ```
 
-All non HttpExceptions errors are caught and returned as a 500 response.
-
-**NB:** The `meta` and `code` fields are optional.  
-**NB:** All fields other than `message`, `code`, and `meta` will be ignored.
+Regular errors are also caught and returned as a 500 response.
 
 ## Docker
 
