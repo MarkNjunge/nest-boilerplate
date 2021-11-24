@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as Transport from "winston-transport";
 import { removeSensitiveParams } from "./remove-sensitive";
 

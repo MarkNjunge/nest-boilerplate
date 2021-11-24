@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ClassType } from "class-transformer/ClassTransformer";
 import { plainToClass } from "class-transformer";
 

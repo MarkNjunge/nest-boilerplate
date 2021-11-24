@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as winston from "winston";
 import { bool, config } from "../config";
 import { FastifyRequest, FastifyReply } from "fastify";

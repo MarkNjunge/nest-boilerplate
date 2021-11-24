@@ -51,7 +51,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
         apiError.code = e.code;
       }
       if (e.meta != null) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         apiError.meta = e.meta;
       }
     }

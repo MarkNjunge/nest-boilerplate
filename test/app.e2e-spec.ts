@@ -41,14 +41,8 @@ describe("AppController (e2e)", () => {
     await app.init();
 
     // Wait for fastify
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-    /* eslint-disable @typescript-eslint/no-unsafe-call */
     await app.getHttpAdapter().getInstance()
       .ready();
-    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-    /* eslint-enable @typescript-eslint/no-unsafe-call */
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     server = app.getHttpServer();
   });
 
