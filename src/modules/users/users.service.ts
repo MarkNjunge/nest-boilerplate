@@ -37,6 +37,12 @@ export class UsersService {
     return ResponseUtils.cleanObject(UserDto, saved);
   }
 
+  async createUsersBulk(dtos: CreateUserDto[]): Promise<UserDto[]> {
+    const promises = dtos.map(async dto => this.createUser(dto));
+
+    return Promise.all(promises);
+  }
+
   async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
     this.logger.debug(`Creating address for user ${id}`, undefined, dto);
 

@@ -15,7 +15,7 @@ import {
   ApiBadRequestResponse,
   ApiOperation,
   ApiTags,
-  ApiSecurity,
+  ApiSecurity, ApiBody,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/CreateUser.dto";
@@ -23,6 +23,7 @@ import { CreateAddressDto } from "./dto/CreateAddress.dto";
 import { AddressDto } from "./dto/address.dto";
 import { ApiResponseDto } from "../shared/dto/ApiResponse.dto";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
+import { ArrayValidationPipe } from "../../pipes/array-validation.pipe";
 
 @Controller("users")
 @ApiTags("Users")
@@ -48,6 +49,24 @@ export class UsersController {
   @ApiBadRequestResponse({ description: "Missing or too many params" })
   async createUser(@Body() dto: CreateUserDto): Promise<UserDto> {
     return this.usersService.createUser(dto);
+  }
+
+  @Post("/_bulk")
+  @UseGuards(AuthGuard)
+  @ApiSecurity("x-api-key")
+  @ApiOperation({ summary: "Create a user" })
+  @ApiBody({ type: CreateUserDto, isArray: true })
+  @ApiResponse({
+    status: 201,
+    description: "The user has been created successfully.",
+    isArray: true,
+    type: UserDto,
+  })
+  @ApiBadRequestResponse({ description: "Missing or too many params" })
+  async createUsersBulk(
+    @Body(new ArrayValidationPipe(CreateUserDto)) dto: CreateUserDto[]
+  ): Promise<UserDto[]> {
+    return this.usersService.createUsersBulk(dto);
   }
 
   @Post(":id/addresses")

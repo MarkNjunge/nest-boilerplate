@@ -11,15 +11,31 @@ import { HttpException } from "../utils/HttpException";
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
+  async transform<T>(value: T, metadata: ArgumentMetadata): Promise<T> {
+    const validationErrors = await ValidationPipe.validate(value, metadata);
+
+    if (validationErrors.length === 0) {
+      return value;
+    }
+
+    const errorProperties = validationErrors.map(e => e.property).join(",");
+    throw new HttpException(
+      400,
+      `Validation errors with properties [${errorProperties}]`,
+      ErrorCodes.VALIDATION_ERROR,
+      validationErrors,
+    );
+  }
+
   // eslint-disable-next-line max-lines-per-function
-  async transform<T>(value: T, { metatype }: ArgumentMetadata): Promise<T> {
+  static async validate(value: any, { metatype }: ArgumentMetadata): Promise<ValidationErrorDto[]> {
     // Account for an empty request body
     if (value === null) {
       value = Object.assign({}, value);
     }
 
     if (!metatype || !ValidationPipe.toValidate(metatype)) {
-      return value;
+      return [];
     }
 
     const object = plainToClass(metatype, value);
@@ -30,7 +46,7 @@ export class ValidationPipe implements PipeTransform {
     });
 
     if (errors.length === 0) {
-      return value;
+      return [];
     }
 
     // Top-level errors
@@ -48,30 +64,23 @@ export class ValidationPipe implements PipeTransform {
       // Nested errors do not have constraints here
       .filter(v => !v.constraints)
       .forEach(error => {
-        const validationErrors = this.getValidationErrorsFromChildren(
+        const validationErrors = ValidationPipe.getValidationErrorsFromChildren(
           error.property,
           error.children,
         );
         nestedErrors.push(...validationErrors);
       });
 
-    const validationErrors = topLevelErrors.concat(nestedErrors);
-    const errorProperties = validationErrors.map(e => e.property).join(",");
-    throw new HttpException(
-      400,
-      `Validation errors with properties [${errorProperties}]`,
-      ErrorCodes.VALIDATION_ERROR,
-      validationErrors,
-    );
+    return topLevelErrors.concat(nestedErrors);
   }
 
-  private static toValidate(metatype: any): boolean {
+  static toValidate(metatype: any): boolean {
     const types: Array<() => any> = [String, Boolean, Number, Array, Object];
 
     return !types.includes(metatype);
   }
 
-  private getValidationErrorsFromChildren(
+  static getValidationErrorsFromChildren(
     parent: string,
     children: ValidationError[],
     errors: ValidationErrorDto[] = []
@@ -95,7 +104,7 @@ export class ValidationPipe implements PipeTransform {
   }
 }
 
-interface ValidationErrorDto {
+export interface ValidationErrorDto {
   property: string;
   constraints: string[];
 }
