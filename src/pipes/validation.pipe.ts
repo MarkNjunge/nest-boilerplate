@@ -2,12 +2,12 @@ import {
   PipeTransform,
   Injectable,
   ArgumentMetadata,
-  BadRequestException,
 } from "@nestjs/common";
 import { validate, ValidationError } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { config } from "../config";
 import { ErrorCodes } from "../utils/error-codes";
+import { HttpException } from "../utils/HttpException";
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
@@ -57,11 +57,12 @@ export class ValidationPipe implements PipeTransform {
 
     const validationErrors = topLevelErrors.concat(nestedErrors);
     const errorProperties = validationErrors.map(e => e.property).join(",");
-    throw new BadRequestException({
-      message: `Validation errors with properties [${errorProperties}]`,
-      code: ErrorCodes.VALIDATION_ERROR,
-      meta: validationErrors,
-    });
+    throw new HttpException(
+      400,
+      `Validation errors with properties [${errorProperties}]`,
+      ErrorCodes.VALIDATION_ERROR,
+      validationErrors,
+    );
   }
 
   private static toValidate(metatype: any): boolean {
