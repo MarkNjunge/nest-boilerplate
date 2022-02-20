@@ -9,15 +9,30 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=nest-boilerplate-e2e
-  nest-boilerplate-e2e:
+  test:
     build:
       context: .
-      dockerfile: Dockerfile-e2e
-    container_name: nest-boilerplate-e2e
+      dockerfile: e2e.Dockerfile
     image: nest-boilerplate-e2e
-    command: npm run test:e2e:local
+    container_name: nest-boilerplate-e2e_test
     depends_on:
       - postgres
+      - nest-boilerplate-e2e
+    environment:
+      - HOST=http://nest-boilerplate-e2e_app:3000
+    volumes:
+      - ./test/run-e2e.sh:/run-e2e.sh
+    command: ["sh", "-c", "/run-e2e.sh"]
+  app:
+    build:
+      context: .
+      dockerfile: e2e.Dockerfile
+    container_name: nest-boilerplate-e2e_app
+    image: nest-boilerplate-e2e
+    depends_on:
+      - postgres
+    expose:
+      - 3000
     environment:
       - PORT=3000
       - DB_URL=postgres://postgres:postgres@nest-boilerplate-e2e_pgsql:5432/nest-boilerplate-e2e

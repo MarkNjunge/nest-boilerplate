@@ -1,54 +1,15 @@
 /* eslint-disable max-lines-per-function */
-import { Test, TestingModule } from "@nestjs/testing";
 import * as request from "supertest";
-import { AppModule } from "../src/app.module";
-import { INestApplication, HttpServer } from "@nestjs/common";
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from "@nestjs/platform-fastify";
-import { ValidationPipe } from "../src/pipes/validation.pipe";
 import { CreateUserDto } from "src/modules/users/dto/CreateUser.dto";
 import { CreateAddressDto } from "../src/modules/users/dto/CreateAddress.dto";
 import { UpdateUserDto } from "../src/modules/users/dto/UpdateUser.dto";
-import * as winston from "winston";
-import { BlankTransport } from "./util/Blank.transport";
 
-describe("AppController (e2e)", () => {
-  let app: INestApplication;
-  let server: HttpServer;
-
-  beforeAll(async () => {
-    // Prevents Winston error 'Attempt to write logs with no transports'
-    winston.configure({
-      level: "debug",
-      format: winston.format.simple(),
-      transports: [new BlankTransport()],
-    });
-
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      // Use custom service
-      // .overrideProvider(AppService)
-      // .useValue(appService)
-      .compile();
-
-    app = module.createNestApplication<NestFastifyApplication>(
-      new FastifyAdapter(),
-    );
-    app.useGlobalPipes(new ValidationPipe());
-    await app.init();
-
-    // Wait for fastify
-    await app.getHttpAdapter().getInstance()
-      .ready();
-    server = app.getHttpServer();
-  });
+describe("App e2e", () => {
+  const host = process.env.HOST ?? "http://localhost:3000";
 
   describe("/", () => {
     it("GET /", done => {
-      void request(server)
+      void request(host)
         .get("/")
         .expect(200)
         .expect("Hello World!", done);
@@ -57,7 +18,7 @@ describe("AppController (e2e)", () => {
 
   describe("/users", () => {
     it("GET /users", done => {
-      void request(server)
+      void request(host)
         .get("/users")
         .expect("Content-Type", /json/)
         .expect(200, done);
@@ -68,7 +29,7 @@ describe("AppController (e2e)", () => {
         contact: { email: "mark@mail.com" },
       };
 
-      void request(server)
+      void request(host)
         .post("/users")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -81,7 +42,7 @@ describe("AppController (e2e)", () => {
         country: "Kenya",
       };
 
-      void request(server)
+      void request(host)
         .post("/users/1/addresses")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -94,7 +55,7 @@ describe("AppController (e2e)", () => {
         contact: { email: "contact@mark.com" },
       };
 
-      void request(server)
+      void request(host)
         .put("/users/1")
         .send(dto)
         .set("x-api-key", "api-key")
@@ -106,15 +67,11 @@ describe("AppController (e2e)", () => {
         message: "User deleted",
       };
 
-      void request(server)
+      void request(host)
         .delete("/users/1")
         .set("x-api-key", "api-key")
         .expect("Content-Type", /json/)
         .expect(200, JSON.stringify(res), done);
     });
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 });
