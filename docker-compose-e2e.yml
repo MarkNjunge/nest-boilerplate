@@ -17,7 +17,7 @@ services:
     container_name: nest-boilerplate-e2e_test
     depends_on:
       - postgres
-      - nest-boilerplate-e2e
+      - app
     environment:
       - HOST=http://nest-boilerplate-e2e_app:3000
     volumes:
