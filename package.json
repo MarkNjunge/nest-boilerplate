@@ -51,8 +51,8 @@
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.14",
-    "@marknjunge/eslint-config": "^1.8.0",
-    "@marknjunge/eslint-config-ts": "^1.2.0",
+    "@marknjunge/eslint-config": "^1.11.0",
+    "@marknjunge/eslint-config-ts": "^1.5.0",
     "@nestjs/cli": "^8.1.0",
     "@nestjs/schematics": "^8.0.2",
     "@nestjs/testing": "^8.0.5",
