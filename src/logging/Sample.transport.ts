@@ -1,5 +1,4 @@
 import * as Transport from "winston-transport";
-import { removeSensitiveParams } from "./remove-sensitive";
 
 export class SampleTransport extends Transport {
   constructor(opts = {}) {
@@ -11,7 +10,6 @@ export class SampleTransport extends Transport {
       this.emit("logged", info);
     });
 
-    info = removeSensitiveParams(info);
     // console.log(JSON.stringify(info));
 
     callback();

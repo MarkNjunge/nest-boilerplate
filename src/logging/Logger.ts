@@ -3,6 +3,8 @@ import { bool, config } from "../config";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
+import { redact } from "../utils/redact";
+import { clone } from "../utils/clone";
 
 export class Logger {
   constructor(private readonly name: string) {}
@@ -70,7 +72,8 @@ export class Logger {
 
     const message = `${method} ${url} - ${statusCode} - ${duration}ms`;
 
-    winston.info({ message: `[${tag}] ${message}`, data });
+    const cleanData = redact(clone(data));
+    winston.info({ message: `[${tag}] ${message}`, data: cleanData });
   }
 }
 

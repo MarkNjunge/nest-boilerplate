@@ -24,5 +24,7 @@ module.exports = {
     "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/restrict-template-expressions": ["error", { allowAny: true }],
     "eqeqeq": "off",
+    "@typescript-eslint/no-unsafe-return": "off",
+    "padding-line-between-statements": "off",
   },
 };

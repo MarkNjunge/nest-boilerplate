@@ -25,6 +25,6 @@
   },
   "logging": {
     "timestampFormat": "LOGGING_TIMESTAMP_FORMAT",
-    "sensitiveParams": "LOGGING_SENSITVE_PARAMS"
+    "sensitiveParams": "LOGGING_SENSITIVE_PARAMS"
   }
 }

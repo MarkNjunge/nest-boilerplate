@@ -51,8 +51,6 @@ interface Validator {
 
 interface Logging {
   timestampFormat: string;
-  sensitiveParams: string[];
-  replacementString: string;
   logDataConsole: boolean;
 }
 
