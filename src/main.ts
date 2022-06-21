@@ -14,6 +14,7 @@ import * as fastifyRateLimit from "fastify-rate-limit";
 import { default as helmet } from "fastify-helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 import { ApplicationLogger } from "./logging/ApplicationLogger";
+import { ResponseInterceptor } from "./interceptors/response.interceptor";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -38,6 +39,7 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalPipes(new ValidationPipe());
   app.use(requestHeadersMiddleware);
 
