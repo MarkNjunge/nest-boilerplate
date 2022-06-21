@@ -24,7 +24,8 @@ export function parseStacktraceLine(line: string): ParseStacktraceLine | null {
   }
 
   return {
-    file: parts[2].split(path.sep).slice(-1)[0],
+    file: parts[2].replace(new RegExp(`\\${path.sep}`, "g"), "/").split("/")
+      .slice(-1)[0],
     filePath: parts[2],
     methodName: parts[1] || "<unknown>",
     arguments: [],
