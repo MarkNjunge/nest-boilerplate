@@ -64,11 +64,13 @@ export class ValidationPipe implements PipeTransform {
       // Nested errors do not have constraints here
       .filter(v => !v.constraints)
       .forEach(error => {
-        const validationErrors = ValidationPipe.getValidationErrorsFromChildren(
-          error.property,
-          error.children,
-        );
-        nestedErrors.push(...validationErrors);
+        if (error.children) {
+          const validationErrors = ValidationPipe.getValidationErrorsFromChildren(
+            error.property,
+            error.children,
+          );
+          nestedErrors.push(...validationErrors);
+        }
       });
 
     return topLevelErrors.concat(nestedErrors);
@@ -91,7 +93,7 @@ export class ValidationPipe implements PipeTransform {
           property: `${parent}.${child.property}`,
           constraints: Object.values(child.constraints),
         });
-      } else {
+      } else if (child.children) {
         return this.getValidationErrorsFromChildren(
           `${parent}.${child.property}`,
           child.children,

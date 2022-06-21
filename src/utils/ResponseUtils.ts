@@ -1,5 +1,4 @@
-import { ClassType } from "class-transformer/ClassTransformer";
-import { plainToClass } from "class-transformer";
+import { ClassConstructor, plainToInstance } from "class-transformer";
 
 export class ResponseUtils {
   /**
@@ -7,8 +6,8 @@ export class ResponseUtils {
    * @param clz Desired response class
    * @param data Object
    */
-  static cleanObject<T>(clz: ClassType<T>, data: any): T {
-    return plainToClass(clz, data, {
+  static cleanObject<T>(clz: ClassConstructor<T>, data: any): T {
+    return plainToInstance(clz, data, {
       excludeExtraneousValues: true,
       enableImplicitConversion: true,
     });

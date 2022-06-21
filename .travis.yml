@@ -1,9 +1,0 @@
-language: node_js
-node_js:
-  - "14.15.3"
-sudo: required
-cache: npm
-install:
-  - npm install
-script:
-  - npm run test & npm run lint
