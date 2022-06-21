@@ -23,7 +23,10 @@ export class ArrayValidationPipe implements PipeTransform<any> {
 
     const errors: ValidationErrorDto[] = [];
     for (const [i, valueElement] of value.entries()) {
-      const validationErrors = await ValidationPipe.validate(valueElement, { metatype: this.type, type: "body" });
+      const validationErrors = await ValidationPipe.validate(valueElement, {
+        metatype: this.type,
+        type: "body",
+      });
 
       const resMeta = validationErrors.map(m => ({ ...m, property: `${i}.${m.property}` }));
       errors.push(...resMeta);

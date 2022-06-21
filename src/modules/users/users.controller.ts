@@ -64,7 +64,7 @@ export class UsersController {
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
   async createUsersBulk(
-    @Body(new ArrayValidationPipe(CreateUserDto)) dto: CreateUserDto[]
+    @Body(new ArrayValidationPipe(CreateUserDto)) dto: CreateUserDto[],
   ): Promise<UserDto[]> {
     return this.usersService.createUsersBulk(dto);
   }
@@ -81,7 +81,7 @@ export class UsersController {
   @ApiBadRequestResponse({ description: "Bad Request" })
   async createAddress(
     @Param("id") id: number,
-      @Body() dto: CreateAddressDto,
+    @Body() dto: CreateAddressDto,
   ): Promise<AddressDto> {
     return this.usersService.createAddress(id, dto);
   }
@@ -97,7 +97,7 @@ export class UsersController {
   })
   async updateUser(
     @Param("id") id: number,
-      @Body() dto: UpdateUserDto,
+    @Body() dto: UpdateUserDto,
   ): Promise<ApiResponseDto> {
     await this.usersService.updateUser(id, dto);
 

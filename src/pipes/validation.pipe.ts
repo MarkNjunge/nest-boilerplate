@@ -83,7 +83,7 @@ export class ValidationPipe implements PipeTransform {
   static getValidationErrorsFromChildren(
     parent: string,
     children: ValidationError[],
-    errors: ValidationErrorDto[] = []
+    errors: ValidationErrorDto[] = [],
   ): ValidationErrorDto[] {
     children.forEach(child => {
       if (child.constraints) {
