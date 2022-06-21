@@ -58,6 +58,7 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
         scriptSrc: ["'self'", "https: 'unsafe-inline'"],
       },
     },
+    hsts: false,
   });
 
   app.enableCors({
