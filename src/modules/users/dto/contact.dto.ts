@@ -1,8 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Expose } from "class-transformer";
+import { Exclude } from "class-transformer";
 
 export class ContactDto {
   @ApiProperty()
-  @Expose()
+  @Exclude()
+  id: number;
+
+  @ApiProperty()
   email: string;
 }

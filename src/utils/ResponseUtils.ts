@@ -8,8 +8,16 @@ export class ResponseUtils {
    */
   static cleanObject<T>(clz: ClassConstructor<T>, data: any): T {
     return plainToInstance(clz, data, {
-      excludeExtraneousValues: true,
       enableImplicitConversion: true,
     });
+  }
+
+  /**
+   * Excludes parameters without an `@Expose()` decorator from the object
+   * @param clz Desired response class
+   * @param data Object
+   */
+  static cleanObjectArr<T>(clz: ClassConstructor<T>, data: any[]): T[] {
+    return data.map(d => this.cleanObject(clz, d));
   }
 }

@@ -24,17 +24,31 @@ import { AddressDto } from "./dto/address.dto";
 import { ApiResponseDto } from "../shared/dto/ApiResponse.dto";
 import { UpdateUserDto } from "./dto/UpdateUser.dto";
 import { ArrayValidationPipe } from "../../pipes/array-validation.pipe";
+import { HttpException } from "../../utils/HttpException";
+import { ErrorCodes } from "../../utils/error-codes";
 
 @Controller("users")
 @ApiTags("Users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get("/:id")
+  @ApiOperation({ summary: "Get a user" })
+  @ApiResponse({ status: 200, type: UserDto })
+  async get(@Param("id") id: number): Promise<UserDto> {
+    const user = await this.usersService.get(id);
+    if (!user) {
+      throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
+    }
+
+    return user;
+  }
+
   @Get("/")
   @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
-  async getAllUsers(): Promise<UserDto[]> {
-    return this.usersService.getAllUsers();
+  async list(): Promise<UserDto[]> {
+    return this.usersService.list();
   }
 
   @Post("/")
@@ -47,8 +61,8 @@ export class UsersController {
     type: UserDto,
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
-  async createUser(@Body() dto: CreateUserDto): Promise<UserDto> {
-    return this.usersService.createUser(dto);
+  async create(@Body() dto: CreateUserDto): Promise<UserDto> {
+    return this.usersService.create(dto);
   }
 
   @Post("/_bulk")
@@ -63,10 +77,41 @@ export class UsersController {
     type: UserDto,
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
-  async createUsersBulk(
+  async createBulk(
     @Body(new ArrayValidationPipe(CreateUserDto)) dto: CreateUserDto[],
   ): Promise<UserDto[]> {
-    return this.usersService.createUsersBulk(dto);
+    return this.usersService.createBulk(dto);
+  }
+
+  @Put(":id")
+  @UseGuards(AuthGuard)
+  @ApiSecurity("x-api-key")
+  @ApiOperation({ summary: "Update a user" })
+  @ApiResponse({
+    status: 200,
+    description: "The user has been updated",
+    type: ApiResponseDto,
+  })
+  async update(
+    @Param("id") id: number,
+    @Body() dto: UpdateUserDto,
+  ): Promise<UserDto> {
+    return this.usersService.update(id, dto);
+  }
+
+  @Delete(":id")
+  @UseGuards(AuthGuard)
+  @ApiSecurity("x-api-key")
+  @ApiOperation({ summary: "Delete a user" })
+  @ApiResponse({
+    status: 200,
+    description: "The user has been deleted",
+    type: ApiResponseDto,
+  })
+  async delete(@Param("id") id: number): Promise<ApiResponseDto> {
+    await this.usersService.delete(id);
+
+    return { message: "User deleted" };
   }
 
   @Post(":id/addresses")
@@ -84,38 +129,5 @@ export class UsersController {
     @Body() dto: CreateAddressDto,
   ): Promise<AddressDto> {
     return this.usersService.createAddress(id, dto);
-  }
-
-  @Put(":id")
-  @UseGuards(AuthGuard)
-  @ApiSecurity("x-api-key")
-  @ApiOperation({ summary: "Update a user" })
-  @ApiResponse({
-    status: 200,
-    description: "The user has been updated",
-    type: ApiResponseDto,
-  })
-  async updateUser(
-    @Param("id") id: number,
-    @Body() dto: UpdateUserDto,
-  ): Promise<ApiResponseDto> {
-    await this.usersService.updateUser(id, dto);
-
-    return { message: "User updated" };
-  }
-
-  @Delete(":id")
-  @UseGuards(AuthGuard)
-  @ApiSecurity("x-api-key")
-  @ApiOperation({ summary: "Delete a user" })
-  @ApiResponse({
-    status: 200,
-    description: "The user has been deleted",
-    type: ApiResponseDto,
-  })
-  async deleteUser(@Param("id") id: number): Promise<ApiResponseDto> {
-    await this.usersService.deleteUser(id);
-
-    return { message: "User deleted" };
   }
 }

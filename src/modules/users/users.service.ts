@@ -12,9 +12,10 @@ import { UpdateUserDto } from "./dto/UpdateUser.dto";
 import { ErrorCodes } from "../../utils/error-codes";
 import { ResponseUtils } from "../../utils/ResponseUtils";
 import { HttpException } from "../../utils/HttpException";
+import { BaseService } from "../_base/base.service";
 
 @Injectable()
-export class UsersService {
+export class UsersService extends BaseService<UserEntity, UserDto, CreateUserDto, UpdateUserDto> {
   private logger = new Logger("UsersService");
 
   constructor(
@@ -22,25 +23,28 @@ export class UsersService {
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(AddressEntity)
     private readonly addressesRepository: Repository<AddressEntity>,
-  ) {}
-
-  async getAllUsers(): Promise<UserDto[]> {
-    return this.usersRepository.find();
+  ) {
+    super(UserDto, CreateUserDto, UpdateUserDto, usersRepository);
   }
 
-  async createUser(dto: CreateUserDto): Promise<UserDto> {
+  async create(dto: CreateUserDto): Promise<UserDto> {
     this.logger.debug(`Creating user ${dto.username}`, undefined, dto);
-
-    const user = UserEntity.fromCreateDto(dto);
-    const saved = await this.usersRepository.save(user);
-
-    return ResponseUtils.cleanObject(UserDto, saved);
+    return super.create(dto);
   }
 
-  async createUsersBulk(dtos: CreateUserDto[]): Promise<UserDto[]> {
-    const promises = dtos.map(async dto => this.createUser(dto));
+  async createBulk(dtos: CreateUserDto[]): Promise<UserDto[]> {
+    this.logger.debug(`Creating ${dtos.length} users`, undefined, dtos);
+    return super.createBulk(dtos);
+  }
 
-    return Promise.all(promises);
+  async update(id: number, dto: UpdateUserDto): Promise<UserDto> {
+    this.logger.debug(`Updating user ${id}`, undefined, dto);
+    return super.update(id, dto);
+  }
+
+  async delete(id: number): Promise<void> {
+    this.logger.debug(`Deleting user ${id}`, undefined, { id });
+    await super.delete(id);
   }
 
   async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
@@ -55,26 +59,5 @@ export class UsersService {
     const created = await this.addressesRepository.save(address);
 
     return ResponseUtils.cleanObject(AddressDto, created);
-  }
-
-  async updateUser(id: number, dto: UpdateUserDto): Promise<UserDto> {
-    this.logger.info(`Updating user ${id}`, undefined, dto);
-
-    // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
-    const existing = await this.usersRepository.findOne({ id });
-    if (existing === undefined) {
-      throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
-    }
-    const updated = UserEntity.fromUpdateDto(dto);
-    this.usersRepository.merge(existing, updated);
-    const saved = await this.usersRepository.save(existing);
-
-    return ResponseUtils.cleanObject(UserDto, saved);
-  }
-
-  async deleteUser(userId: number): Promise<void> {
-    this.logger.debug(`Deleting user ${userId}`, undefined, { userId });
-
-    await this.usersRepository.delete({ id: userId });
   }
 }
