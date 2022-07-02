@@ -6,32 +6,38 @@ import * as dayjs from "dayjs";
 import { redact } from "../utils/redact";
 import { clone } from "../utils/clone";
 
+export class ILogMeta {
+  tag?: string;
+
+  data?: any;
+}
+
 export class Logger {
   constructor(private readonly name: string) {}
 
-  info(message: string, name?: string, data?: any): void {
-    const tag = name ?? this.name;
-    winston.info({ message: `[${tag}] ${message}`, data });
+  info(message: string, meta?: ILogMeta): void {
+    const tag = meta?.tag ?? this.name;
+    winston.info({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
   }
 
-  error(message: string, name?: string, data?: any): void {
-    const tag = name ?? this.name;
-    winston.error({ message: `[${tag}] ${message}`, data });
+  error(message: string, meta?: ILogMeta): void {
+    const tag = meta?.tag ?? this.name;
+    winston.error({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
   }
 
-  warn(message: string, name?: string, data?: any): void {
-    const tag = name ?? this.name;
-    winston.warn({ message: `[${tag}] ${message}`, data });
+  warn(message: string, meta?: ILogMeta): void {
+    const tag = meta?.tag ?? this.name;
+    winston.warn({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
   }
 
-  debug(message: string, name?: string, data?: any): void {
-    const tag = name ?? this.name;
-    winston.debug({ message: `[${tag}] ${message}`, data });
+  debug(message: string, meta?: ILogMeta): void {
+    const tag = meta?.tag ?? this.name;
+    winston.debug({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
   }
 
-  verbose(message: string, name?: string, data?: any): void {
-    const tag = name ?? this.name;
-    winston.verbose({ message: `[${tag}] ${message}`, data });
+  verbose(message: string, meta?: ILogMeta): void {
+    const tag = meta?.tag ?? this.name;
+    winston.verbose({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
   }
 
   // eslint-disable-next-line max-lines-per-function

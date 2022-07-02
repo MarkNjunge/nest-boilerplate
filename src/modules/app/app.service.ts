@@ -7,7 +7,7 @@ export class AppService {
   logger: Logger = new Logger("AppService");
 
   getHello({ correlationId }: IReqCtx): string {
-    this.logger.debug(`Hello ${correlationId}`, "AppService.getHello");
+    this.logger.debug(`Hello ${correlationId}`, { tag: "AppService.getHello" });
 
     return `Hello ${correlationId}!`;
   }

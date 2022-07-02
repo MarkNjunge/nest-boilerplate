@@ -28,27 +28,27 @@ export class UsersService extends BaseService<UserEntity, UserDto, CreateUserDto
   }
 
   async create(dto: CreateUserDto): Promise<UserDto> {
-    this.logger.debug(`Creating user ${dto.username}`, undefined, dto);
+    this.logger.debug(`Creating user ${dto.username}`, { data: { dto } });
     return super.create(dto);
   }
 
   async createBulk(dtos: CreateUserDto[]): Promise<UserDto[]> {
-    this.logger.debug(`Creating ${dtos.length} users`, undefined, dtos);
+    this.logger.debug(`Creating ${dtos.length} users`, { data: { dtos } });
     return super.createBulk(dtos);
   }
 
   async update(id: number, dto: UpdateUserDto): Promise<UserDto> {
-    this.logger.debug(`Updating user ${id}`, undefined, dto);
+    this.logger.debug(`Updating user ${id}`, { data: { dto } });
     return super.update(id, dto);
   }
 
   async delete(id: number): Promise<void> {
-    this.logger.debug(`Deleting user ${id}`, undefined, { id });
+    this.logger.debug(`Deleting user ${id}`, { data: { id } });
     await super.delete(id);
   }
 
   async createAddress(id: number, dto: CreateAddressDto): Promise<AddressDto> {
-    this.logger.debug(`Creating address for user ${id}`, undefined, dto);
+    this.logger.debug(`Creating address for user ${id}`, { data: { dto } });
 
     const user = await this.usersRepository.findOne({ id });
     if (user === undefined) {

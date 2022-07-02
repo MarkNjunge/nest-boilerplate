@@ -51,7 +51,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       meta,
     };
 
-    this.logger.error(message, tag, { stacktrace: e.stack });
+    this.logger.error(message, { tag, data: { stacktrace: e.stack } });
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);
