@@ -1,16 +1,13 @@
 # Nest Starter
 
-[![Build Status](https://travis-ci.com/MarkNjunge/nest-boilerplate.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-boilerplate)
-![](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)
+[![CI](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)](https://github.com/MarkNjunge/nest-boilerplate/actions/workflows/main-workflow.yml)
 [![Known Vulnerabilities](https://snyk.io/test/github/MarkNjunge/nest-boilerplate/badge.svg)](https://snyk.io/test/github/MarkNjunge/nest-boilerplate)
 
-A boilerplage for [NestJS](https://nestjs.com/), using Fastify.
-
-See Express branch [here](https://github.com/MarkNjunge/nest-boilerplate/tree/express-adapter) (**extremely outdated**).
+A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 
 ## Features
 
-- [Index](#config)
+- [Config](#config)
 - [Database](#database)
 - [Swagger (API docs)](#swagger)
 - [Logging](#logging)
@@ -41,7 +38,7 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Index
+## Config
 
 The [node-config](https://www.npmjs.com/package/config) package to manage configs.
 
@@ -49,30 +46,36 @@ Default config values are found in [default.json](./config/default.json).
 These values can be overridden by:
 
 - Creating a `local.json` file in _config/_
-- Creating a `.env` file in the projcect directory.
-- Setting environment variables. See the environment variable mappings in [custom-environment-variables.json](./config/custom-environment-variables.json).
+- Creating a `.env` file in the project directory.
+- Setting environment variables. See the environment variable mappings
+  in [custom-environment-variables.json](./config/custom-environment-variables.json).
 
 ## Database
 
 [Typeorm](https://typeorm.io/) is used for database operations.
 
-It uses PostgreSQL by default, but that can be changed by changing the `type` in [app.module.ts](./src/app.module.ts).  
+It uses PostgreSQL by default, but that can be changed by changing the `type`
+in [app.module.ts](./src/modules/app/app.module.ts).  
 See [TypeORM documentation](https://typeorm.io/#/) for supported databases.
 
 ### Migrations
 
 Typeorm is configured to use migrations instead of `synchronize: true`.
 
-To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by inspecting your entities, the cli needs to be configured. Create a `.env` file based on [.env.sample](.env.sample).
+To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by
+inspecting your entities, the cli needs to be configured. Create a `.env` file based
+on [.env.sample](.env.sample).
 
 You can then generate migrations using `npm run migration:generate <your_migration_name>`.  
-You can also use `npm run migration:create <your_migration_name>` to only create the file and write the migration logic yourself.
+You can also use `npm run migration:create <your_migration_name>` to only create the file and write
+the migration logic yourself.
 
-When the server starts, migrations will run automatically, or, you can run the migrations using `npm run migration:run`
+When the server starts, migrations will run automatically, or, you can run the migrations
+using `npm run migration:run`
 
 ## Swagger
 
-Swagger documentation is automatically generated from the routes.  
+Swagger documentation is automatically generated from the routes.
 
 By default it is available at http://127.0.0.1:3000/docs
 
@@ -88,7 +91,7 @@ A parameter can be passed into the constructor and to be used as a tag (defaults
 For example,
 
 ```Typescript
-const logger =  new CustomLogger("AppService");
+const logger = new CustomLogger("AppService");
 ```
 
 ```typescript
@@ -101,50 +104,50 @@ this.logger.debug("Hello!");
 A custom tag can be passed into the log functions.
 
 ```Typescript
-this.logger.debug("Hello!", "AppService.getHello");
+this.logger.debug("Hello!", { tag: "AppService.getHello" });
 
 // Output
 // 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
 ```
 
-Extra data can be passed into the log functions. This data will not be printed to the console. To access it, a [custom transport](https://github.com/winstonjs/winston-transport) is needed. See [SampleTransport](src/logging/Sample.transport.ts) for an example.
+Extra data can be passed into the log functions. To enable printing it to the console, set the
+config `logging.logDataConsole` to `true`.
 
 ```Typescript
-this.logger.debug("Hello!", "AppService.getHello", { user: "mark" });
+this.logger.debug("Hello!", "AppService.getHello", { data: { user: "mark" } });
 
 // Output
-// 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
+// 2022-07-10 11:59:43.319 | debug: [AppService] Hello!
+// {"user":"mark"}
 ```
 
-### Correlation 
+To log to other locations, a [custom transport](https://github.com/winstonjs/winston-transport) is
+needed. See [SampleTransport](src/logging/Sample.transport.ts) for an example.
 
-A correlation ID header is set and can be used to correlate requests.  
-It can be accessed using the `@CorrelationId()` header.
-```typescript
-@Get()
-getHello(@CorrelationId() correlationId: string) {
-  console.log(correlationId)
-  // b945c41d-ae51-4170-80b5-3c2200cbe25d
-}
-```
+#### Redact Private Keys
 
-### Sensitive parameters
+Private keys are automatically redacted in logs for **API requests**.
 
-Sensitive parameters specified in the config option `logging.sensitiveParams` will be replaced with the value in `logging.replacementString`.
-
-See [remove-sensitive.ts](src/logging/remove-sensitive.ts)
+The private keys are specified in [redact.ts](src/utils/redact.ts)
 
 ```json
-Before
 {
   "username": "mark",
-  "password": "abc123"
+  "contact": {
+    "email": "REDACTED"
+  }
 }
+```
 
-After
-{
-  "username": "mark",
-  "password": "REDACTED"
+### Correlation
+
+A correlation ID header is set and can be used to correlate requests.  
+It can be accessed using the `@ReqCtx()` header.
+
+```typescript
+@Get()
+function getHello(@ReqCtx() ctx: IReqCtx) {
+  console.log(ctx.correlationId) // c855677c64c654d1
 }
 ```
 
@@ -166,14 +169,19 @@ app.useGlobalGuards(new AuthGuard());
 
 ## Rate Limiting
 
-A rate limiter is configured using [fastify-rate-limit](https://github.com/fastify/fastify-rate-limit).  
-It defaults to 100 request per minute per IP (configurable in [default.json](./config/default.json)).
+A rate limiter is configured
+using [fastify-rate-limit](https://github.com/fastify/fastify-rate-limit).  
+It defaults to 100 request per minute per IP (configurable in [default.json](./config/default.json))
+.
 
 ## Request Body Validation
 
-[class-validator](https://www.npmjs.com/package/class-validator) and [class-transformer](https://www.npmjs.com/package/class-transformer) are used to validate request bodies.
+[class-validator](https://www.npmjs.com/package/class-validator)
+and [class-transformer](https://www.npmjs.com/package/class-transformer) are used to validate
+request bodies.
 
-See [class-validator decorators](https://www.npmjs.com/package/class-validator#validation-decorators) for available validation options.
+See [class-validator decorators](https://www.npmjs.com/package/class-validator#validation-decorators)
+for available validation options.
 
 An example of a response to an invalid body:
 
@@ -211,35 +219,39 @@ An example of a response to an invalid body:
 }
 ```
 
-NB: Raising an error when unknown values are passed can be disabled by setting `validator.forbidUnknown` to `false` in the config.
+NB: Raising an error when unknown values are passed can be disabled by
+setting `validator.forbidUnknown` to `false` in the config.
 
 ## Errors & Exception Handling
 
-Errors are returned in the following format:  
-Note: The contents of `meta` are dependent on where the error is thrown.
+Exceptions should be thrown using the **custom** [HttpException](src/utils/HttpException.ts) class.
+
+```typescript
+throw new HttpException(404, `User ${1} was not found`, ErrorCodes.INVALID_USER, { id: 1 });
+```
 
 ```json
 {
   "status": 404,
-  "message": "The user 12 does not exist",
-  "code": "NotFound",
-  "correlationId": "db5d89051f0b47b9",
-  "meta": {}
+  "message": "User 1 was not found",
+  "code": "InvalidUser",
+  "correlationId": "775523bae019485d",
+  "meta": {
+    "id": 1
+  }
 }
 ```
 
-Exceptions should be thrown using the [HttpException](src/utils/HttpException.ts) class
+Regular errors an unhandled exceptions are also caught and returned as a 500 response.
 
-```typescript
-throw new HttpException(
-  404,
-  `The user ${id} does not exist`,
-  ErrorCodes.INVALID_USER,
-  meta
-);
+```json
+{
+  "status": 500,
+  "message": "Uncaught exception",
+  "code": "InternalError",
+  "correlationId": "d3cb1b2b3388e3b1"
+}
 ```
-
-Regular errors are also caught and returned as a 500 response.
 
 ## Docker
 
@@ -273,10 +285,9 @@ npm run test
 
 ### End-to-end test
 
-A Docker container is created to run end to end tests. 
+A Docker container is created to run end to end tests.
 
 See [docker-compose-e2e.yml](./docker-compose-e2e.yml)
-
 
 ```bash
 # e2e tests (docker)
@@ -287,9 +298,6 @@ npm run test:e2e:local
 ```
 
 # CI
-
-[Travis CI config](./.travis.yml)  
-[![Build Status](https://travis-ci.com/MarkNjunge/nest-boilerplate.svg?branch=master)](https://travis-ci.com/MarkNjunge/nest-boilerplate)
 
 [Github Actions config](./.github/workflows/main-workflow.yml)  
 ![](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)
