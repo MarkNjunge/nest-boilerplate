@@ -5,11 +5,14 @@ import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
 import { redact } from "../utils/redact";
 import { clone } from "../utils/clone";
+import { IReqCtx } from "../decorators/request-context.decorator";
 
 export class ILogMeta {
   tag?: string;
 
   data?: any;
+
+  ctx?: IReqCtx;
 }
 
 export class Logger {
@@ -17,27 +20,27 @@ export class Logger {
 
   info(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.info({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
+    winston.info({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
   }
 
   error(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.error({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
+    winston.error({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
   }
 
   warn(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.warn({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
+    winston.warn({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
   }
 
   debug(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.debug({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
+    winston.debug({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
   }
 
   verbose(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.verbose({ message: `[${tag}] ${message}`, data: meta?.data ?? {} });
+    winston.verbose({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
   }
 
   // eslint-disable-next-line max-lines-per-function
@@ -80,6 +83,12 @@ export class Logger {
 
     const cleanData = redact(clone(data));
     winston.info({ message: `[${tag}] ${message}`, data: cleanData });
+  }
+
+  private static getData(meta?: ILogMeta): any {
+    const data = meta?.data ?? {};
+    data.correlationId = meta?.ctx?.correlationId;
+    return data;
   }
 }
 

@@ -23,6 +23,7 @@ import { ApiResponseDto } from "../shared/dto/ApiResponse.dto";
 import { ArrayValidationPipe } from "../../pipes/array-validation.pipe";
 import { HttpException } from "../../utils/HttpException";
 import { ErrorCodes } from "../../utils/error-codes";
+import { IReqCtx, ReqCtx } from "../../decorators/request-context.decorator";
 
 @Controller("users")
 @ApiTags("Users")
@@ -32,8 +33,8 @@ export class UsersController {
   @Get("/:id")
   @ApiOperation({ summary: "Get a user" })
   @ApiResponse({ status: 200, type: UserDto })
-  async get(@Param("id") id: number): Promise<UserDto> {
-    const user = await this.usersService.get(id);
+  async get(@ReqCtx() ctx: IReqCtx, @Param("id") id: number): Promise<UserDto> {
+    const user = await this.usersService.get(ctx, id);
     if (!user) {
       throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
     }
@@ -44,8 +45,8 @@ export class UsersController {
   @Get("/")
   @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
-  async list(): Promise<UserDto[]> {
-    return this.usersService.list();
+  async list(@ReqCtx() ctx: IReqCtx): Promise<UserDto[]> {
+    return this.usersService.list(ctx);
   }
 
   @Post("/")
@@ -58,8 +59,8 @@ export class UsersController {
     type: UserDto,
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
-  async create(@Body() dto: CreateUserDto): Promise<UserDto> {
-    return this.usersService.create(dto);
+  async create(@ReqCtx() ctx: IReqCtx, @Body() dto: CreateUserDto): Promise<UserDto> {
+    return this.usersService.create(ctx, dto);
   }
 
   @Post("/_bulk")
@@ -75,9 +76,10 @@ export class UsersController {
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
   async createBulk(
+    @ReqCtx() ctx: IReqCtx,
     @Body(new ArrayValidationPipe(CreateUserDto)) dto: CreateUserDto[],
   ): Promise<UserDto[]> {
-    return this.usersService.createBulk(dto);
+    return this.usersService.createBulk(ctx, dto);
   }
 
   @Put(":id")
@@ -90,10 +92,11 @@ export class UsersController {
     type: ApiResponseDto,
   })
   async update(
+    @ReqCtx() ctx: IReqCtx,
     @Param("id") id: number,
     @Body() dto: UpdateUserDto,
   ): Promise<UserDto> {
-    return this.usersService.update(id, dto);
+    return this.usersService.update(ctx, id, dto);
   }
 
   @Delete(":id")
@@ -105,8 +108,8 @@ export class UsersController {
     description: "The user has been deleted",
     type: ApiResponseDto,
   })
-  async delete(@Param("id") id: number): Promise<ApiResponseDto> {
-    await this.usersService.delete(id);
+  async delete(@ReqCtx() ctx: IReqCtx, @Param("id") id: number): Promise<ApiResponseDto> {
+    await this.usersService.delete(ctx, id);
 
     return { message: "User deleted" };
   }
@@ -122,9 +125,10 @@ export class UsersController {
   })
   @ApiBadRequestResponse({ description: "Bad Request" })
   async createAddress(
+    @ReqCtx() ctx: IReqCtx,
     @Param("id") id: number,
     @Body() dto: CreateAddressDto,
   ): Promise<AddressDto> {
-    return this.usersService.createAddress(id, dto);
+    return this.usersService.createAddress(ctx, id, dto);
   }
 }

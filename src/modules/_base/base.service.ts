@@ -5,6 +5,7 @@ import { ICrudService } from "./crud.service";
 import { DTO } from "./dto";
 import { HttpException } from "../../utils/HttpException";
 import { ErrorCodes } from "../../utils/error-codes";
+import { IReqCtx } from "../../decorators/request-context.decorator";
 
 // eslint-disable-next-line max-len
 export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, UpdateDTO extends DTO<Entity>>
@@ -17,7 +18,7 @@ export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, Update
     protected readonly repo: Repository<Entity>,
   ) {}
 
-  async get(id: number): Promise<ClassDTO | null> {
+  async get(ctx: IReqCtx, id: number): Promise<ClassDTO | null> {
     const item = await this.repo.findOne(id);
     if (!item) {
       return null;
@@ -26,12 +27,12 @@ export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, Update
     return ResponseUtils.cleanObject(this.clz, item);
   }
 
-  async list(): Promise<ClassDTO[]> {
+  async list(ctx: IReqCtx): Promise<ClassDTO[]> {
     const items = await this.repo.find();
     return ResponseUtils.cleanObjectArr(this.clz, items);
   }
 
-  async create(dto: CreateDTO): Promise<ClassDTO> {
+  async create(ctx: IReqCtx, dto: CreateDTO): Promise<ClassDTO> {
     dto = plainToInstance(this.createClz, dto);
     const entity = dto.toInstance();
     const item = await this.repo.save(entity);
@@ -39,7 +40,7 @@ export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, Update
     return ResponseUtils.cleanObject(this.clz, item);
   }
 
-  async createBulk(dtos: CreateDTO[]): Promise<ClassDTO[]> {
+  async createBulk(ctx: IReqCtx, dtos: CreateDTO[]): Promise<ClassDTO[]> {
     const entities = dtos.map(dto => {
       dto = plainToInstance(this.createClz, dto);
       return dto.toInstance();
@@ -48,7 +49,7 @@ export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, Update
     return ResponseUtils.cleanObjectArr(this.clz, items);
   }
 
-  async update(id: number, dto: UpdateDTO): Promise<ClassDTO> {
+  async update(ctx: IReqCtx, id: number, dto: UpdateDTO): Promise<ClassDTO> {
     dto = plainToInstance(this.updateClz, dto);
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
     let item = await this.repo.findOne(id);
@@ -63,7 +64,7 @@ export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, Update
     return ResponseUtils.cleanObject(this.clz, item);
   }
 
-  async delete(id: number) {
+  async delete(ctx: IReqCtx, id: number) {
     await this.repo.delete(id);
   }
 

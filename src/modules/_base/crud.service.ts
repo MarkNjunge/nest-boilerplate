@@ -1,13 +1,15 @@
+import { IReqCtx } from "../../decorators/request-context.decorator";
+
 export interface ICrudService<DTO, CreateDTO, UpdateDTO> {
-  get(id: number): Promise<DTO | null>;
+  get(ctx: IReqCtx, id: number): Promise<DTO | null>;
 
-  list(): Promise<DTO[]>;
+  list(ctx: IReqCtx): Promise<DTO[]>;
 
-  create(dto: CreateDTO): Promise<DTO>;
+  create(ctx: IReqCtx, dto: CreateDTO): Promise<DTO>;
 
-  createBulk(dtos: CreateDTO[]): Promise<DTO[]>;
+  createBulk(ctx: IReqCtx, dtos: CreateDTO[]): Promise<DTO[]>;
 
-  update(id: number, dto: UpdateDTO): Promise<DTO>;
+  update(ctx: IReqCtx, id: number, dto: UpdateDTO): Promise<DTO>;
 
-  delete(id: number);
+  delete(ctx: IReqCtx, id: number);
 }
