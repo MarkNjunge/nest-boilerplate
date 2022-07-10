@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
-import { AppModule } from "./app.module";
+import { AppModule } from "./modules/app/app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor";
 import { ValidationPipe } from "./pipes/validation.pipe";

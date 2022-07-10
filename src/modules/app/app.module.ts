@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
-import { AppController } from "./modules/app/app.controller";
-import { AppService } from "./modules/app/app.service";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { config } from "./config";
-import { UsersModule } from "./modules/users/users.module";
+import { config } from "../../config";
+import { UsersModule } from "../users/users.module";
 import * as path from "path";
 import { TlsOptions } from "tls";
 
@@ -23,7 +23,7 @@ if (config.db.ssl) {
       // @ts-expect-error: types are not listed correctly
       type: "postgres",
       url: config.db.url,
-      entities: [path.join(__dirname, "./models/**/*.entity{.ts,.js}")],
+      entities: [path.join(__dirname, "../../models/**/*.entity{.ts,.js}")],
       migrations: [path.join(__dirname, "./db/migration/*{.ts,.js}")],
       migrationsRun: true,
       synchronize: false,
