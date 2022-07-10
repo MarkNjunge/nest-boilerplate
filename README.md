@@ -126,7 +126,7 @@ needed. See [SampleTransport](src/logging/Sample.transport.ts) for an example.
 
 #### Redact Private Keys
 
-Private keys are automatically redacted in logs for **API requests**.
+Private keys are automatically redacted in logged data.
 
 The private keys are specified in [redact.ts](src/utils/redact.ts)
 

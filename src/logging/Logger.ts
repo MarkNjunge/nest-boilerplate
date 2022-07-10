@@ -88,7 +88,7 @@ export class Logger {
   private static getData(meta?: ILogMeta): any {
     const data = meta?.data ?? {};
     data.correlationId = meta?.ctx?.correlationId;
-    return data;
+    return redact(clone(data));
   }
 }
 
