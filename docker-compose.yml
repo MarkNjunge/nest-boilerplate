@@ -1,26 +1,26 @@
 version: "3"
 services:
-  nest-boilerplate:
-    container_name: nest-boilerplate
+  nest-bp:
+    container_name: nest-bp
     restart: always
     build: .
-    image: nest-boilerplate
+    image: nest-bp
     depends_on:
       - postgres
     ports:
       - "3000:3000"
     environment:
       - PORT=3000
-      - DB_URL=postgres://postgres:postgres@nest-boilerplate_pgsql:5432/nest-boilerplate
+      - DB_URL=postgres://postgres:postgres@nest-bp_pgsql:5432/nest-bp
   postgres:
     image: postgres:11.2
-    container_name: nest-boilerplate_pgsql
+    container_name: nest-bp_pgsql
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=nest-boilerplate
+      - POSTGRES_DB=nest-bp
     volumes:
-      - nest-boilerplate-data:/var/lib/postgresql/data
+      - nest-bp-data:/var/lib/postgresql/data
 volumes:
-  nest-boilerplate-data:
+  nest-bp-data:

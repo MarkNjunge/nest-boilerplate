@@ -2,37 +2,37 @@ version: "3"
 services:
   postgres:
     image: postgres:11.2
-    container_name: nest-boilerplate-e2e_pgsql
+    container_name: nest-bp-e2e_pgsql
     logging:
       driver: none
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=nest-boilerplate-e2e
+      - POSTGRES_DB=nest-bp-e2e
   test:
     build:
       context: .
       dockerfile: e2e.Dockerfile
-    image: nest-boilerplate-e2e
-    container_name: nest-boilerplate-e2e_test
+    image: nest-bp-e2e
+    container_name: nest-bp-e2e_test
     depends_on:
       - postgres
       - app
     environment:
-      - HOST=http://nest-boilerplate-e2e_app:3000
+      - HOST=http://nest-bp-e2e_app:3000
     volumes:
       - ./test/run-e2e.sh:/run-e2e.sh
-    command: ["sh", "-c", "/run-e2e.sh"]
+    command: [ "sh", "-c", "/run-e2e.sh" ]
   app:
     build:
       context: .
       dockerfile: e2e.Dockerfile
-    container_name: nest-boilerplate-e2e_app
-    image: nest-boilerplate-e2e
+    container_name: nest-bp-e2e_app
+    image: nest-bp-e2e
     depends_on:
       - postgres
     expose:
       - 3000
     environment:
       - PORT=3000
-      - DB_URL=postgres://postgres:postgres@nest-boilerplate-e2e_pgsql:5432/nest-boilerplate-e2e
+      - DB_URL=postgres://postgres:postgres@nest-bp-e2e_pgsql:5432/nest-bp-e2e
