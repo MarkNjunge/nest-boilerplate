@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { UserEntity, UserDto } from "../../models/user";
+import { UserEntity, UserDto, CreateUserDto } from "../../models/user";
 import { AddressEntity, CreateAddressDto, AddressDto } from "../../models/address";
 
 describe("Users Controller", () => {
@@ -59,20 +59,20 @@ describe("Users Controller", () => {
   describe("getAllUsers", () => {
     it("should return array", async () => {
       jest
-        .spyOn(usersService, "getAllUsers")
+        .spyOn(usersService, "list")
         .mockImplementation(async () => Promise.resolve([user]));
 
-      expect(await usersController.getAllUsers()).toEqual([user]);
+      expect(await usersController.list()).toEqual([user]);
     });
   });
 
   describe("createUser", () => {
     it("should return created user", async () => {
       jest
-        .spyOn(usersService, "createUser")
+        .spyOn(usersService, "create")
         .mockImplementation(async () => Promise.resolve(user));
 
-      expect(await usersController.createUser(createUserDto)).toBe(user);
+      expect(await usersController.create(createUserDto as CreateUserDto)).toBe(user);
     });
   });
 

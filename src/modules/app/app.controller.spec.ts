@@ -2,6 +2,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { emptyCtx } from "../../decorators/request-context.decorator";
 
 describe("AppController", () => {
   let appController: AppController;
@@ -23,7 +24,7 @@ describe("AppController", () => {
         .spyOn(appService, "getHello")
         .mockImplementation(() => "Hello World!");
 
-      expect(appController.getHello("abc-123")).toBe("Hello World!");
+      expect(appController.getHello(emptyCtx())).toBe("Hello World!");
     });
   });
 });

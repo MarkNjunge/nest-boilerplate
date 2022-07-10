@@ -14,3 +14,5 @@ export const ReqCtx = createParamDecorator(
     return { correlationId };
   },
 );
+
+export const emptyCtx = (): IReqCtx => ({ correlationId: "" });

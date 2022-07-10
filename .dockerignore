@@ -1,3 +1,7 @@
 node_modules
 config/local.json
 .env
+dist
+coverage
+documentation
+.idea
