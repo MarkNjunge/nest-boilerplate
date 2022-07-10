@@ -8,7 +8,6 @@ import {
   Delete,
   Put,
 } from "@nestjs/common";
-import { UserDto } from "./dto/user.dto";
 import { AuthGuard } from "../../guards/auth.guard";
 import {
   ApiResponse,
@@ -18,11 +17,9 @@ import {
   ApiSecurity, ApiBody,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
-import { CreateUserDto } from "./dto/CreateUser.dto";
-import { CreateAddressDto } from "./dto/CreateAddress.dto";
-import { AddressDto } from "./dto/address.dto";
+import { UserDto, CreateUserDto, UpdateUserDto } from "../../models/user";
+import { AddressDto, CreateAddressDto } from "../../models/address";
 import { ApiResponseDto } from "../shared/dto/ApiResponse.dto";
-import { UpdateUserDto } from "./dto/UpdateUser.dto";
 import { ArrayValidationPipe } from "../../pipes/array-validation.pipe";
 import { HttpException } from "../../utils/HttpException";
 import { ErrorCodes } from "../../utils/error-codes";

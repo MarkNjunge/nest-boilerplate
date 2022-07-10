@@ -1,18 +1,13 @@
 import { Injectable } from "@nestjs/common";
-import { UserDto } from "./dto/user.dto";
 import { Logger } from "../../logging/Logger";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { UserEntity } from "../../db/entity/User.entity";
-import { CreateUserDto } from "./dto/CreateUser.dto";
-import { CreateAddressDto } from "./dto/CreateAddress.dto";
-import { AddressDto } from "./dto/address.dto";
-import { AddressEntity } from "../../db/entity/Address.entity";
-import { UpdateUserDto } from "./dto/UpdateUser.dto";
 import { ErrorCodes } from "../../utils/error-codes";
 import { ResponseUtils } from "../../utils/ResponseUtils";
 import { HttpException } from "../../utils/HttpException";
 import { BaseService } from "../_base/base.service";
+import { CreateUserDto, UpdateUserDto, UserDto, UserEntity } from "../../models/user";
+import { AddressDto, AddressEntity, CreateAddressDto } from "../../models/address";
 
 @Injectable()
 export class UsersService extends BaseService<UserEntity, UserDto, CreateUserDto, UpdateUserDto> {

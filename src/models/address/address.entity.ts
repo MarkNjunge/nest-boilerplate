@@ -5,8 +5,8 @@ import {
   JoinColumn,
   ManyToOne,
 } from "typeorm";
-import { UserEntity } from "./User.entity";
-import { CreateAddressDto } from "../../modules/users/dto/CreateAddress.dto";
+import { UserEntity } from "../user";
+import { CreateAddressDto } from "./address.dto";
 
 @Entity({ name: "addresses" })
 export class AddressEntity {

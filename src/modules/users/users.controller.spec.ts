@@ -1,14 +1,11 @@
 /* eslint-disable max-nested-callbacks,max-lines-per-function */
 import { Test, TestingModule } from "@nestjs/testing";
+import { Repository } from "typeorm";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { UserEntity } from "../../db/entity/User.entity";
-import { Repository } from "typeorm";
-import { AddressEntity } from "../../db/entity/Address.entity";
-import { UserDto } from "./dto/user.dto";
-import { CreateAddressDto } from "./dto/CreateAddress.dto";
-import { AddressDto } from "./dto/address.dto";
+import { UserEntity, UserDto } from "../../models/user";
+import { AddressEntity, CreateAddressDto, AddressDto } from "../../models/address";
 
 describe("Users Controller", () => {
   let usersController: UsersController;
@@ -29,6 +26,7 @@ describe("Users Controller", () => {
     id: 1,
     username: "Mark",
     contact: {
+      id: 1,
       email: "mark@mail.com",
     },
     addresses: [],

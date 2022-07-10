@@ -5,9 +5,8 @@ import {
   JoinColumn,
   OneToOne,
 } from "typeorm";
-import { UserEntity } from "./User.entity";
-import { CreateContactDto } from "../../modules/users/dto/CreateContactDto";
-import { UpdateContactDto } from "../../modules/users/dto/UpdateContact.dto";
+import { UserEntity } from "../user";
+import { CreateContactDto, UpdateContactDto } from "../contact";
 
 @Entity({ name: "contacts" })
 export class ContactEntity {

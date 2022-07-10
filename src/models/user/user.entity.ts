@@ -5,10 +5,9 @@ import {
   OneToMany,
   OneToOne,
 } from "typeorm";
-import { AddressEntity } from "./Address.entity";
-import { ContactEntity } from "./Contact.entity";
-import { CreateUserDto } from "../../modules/users/dto/CreateUser.dto";
-import { UpdateUserDto } from "../../modules/users/dto/UpdateUser.dto";
+import { AddressEntity } from "../address";
+import { ContactEntity } from "../contact";
+import { CreateUserDto, UpdateUserDto } from "./user.dto";
 
 @Entity({ name: "users" })
 export class UserEntity {
