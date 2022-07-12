@@ -4,7 +4,8 @@ import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AddressDto, AddressEntity, CreateAddressDto } from "../../models/address";
-import { CreateUserDto, UserDto, UserEntity } from "../../models/user";
+import { CreateUserDto, UserEntity } from "../../models/user";
+import { emptyCtx } from "../../decorators/request-context.decorator";
 
 describe("UsersService", () => {
   let usersService: UsersService;
@@ -57,7 +58,7 @@ describe("UsersService", () => {
         .spyOn(usersRepository, "find")
         .mockImplementation(async () => Promise.resolve([user as any as UserEntity]));
 
-      const actual = await usersService.list();
+      const actual = await usersService.list(emptyCtx());
       expect(actual).toEqual([user]);
     });
   });
@@ -68,7 +69,7 @@ describe("UsersService", () => {
         .spyOn(usersRepository, "save")
         .mockImplementation(async () => Promise.resolve(user as any as UserEntity));
 
-      const actual = await usersService.create(createUserDto as CreateUserDto);
+      const actual = await usersService.create(emptyCtx(), createUserDto as CreateUserDto);
       expect(actual).toEqual(user);
     });
   });
@@ -83,7 +84,7 @@ describe("UsersService", () => {
         .spyOn(usersRepository, "findOne")
         .mockImplementation(async () => Promise.resolve(user as any as UserEntity));
 
-      const actual = await usersService.createAddress(1, createAddressDto);
+      const actual = await usersService.createAddress(emptyCtx(), 1, createAddressDto);
       expect(actual).toEqual(address);
     });
   });

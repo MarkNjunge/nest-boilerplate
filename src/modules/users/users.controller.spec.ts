@@ -6,6 +6,7 @@ import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { UserEntity, UserDto, CreateUserDto } from "../../models/user";
 import { AddressEntity, CreateAddressDto, AddressDto } from "../../models/address";
+import { emptyCtx } from "../../decorators/request-context.decorator";
 
 describe("Users Controller", () => {
   let usersController: UsersController;
@@ -62,7 +63,7 @@ describe("Users Controller", () => {
         .spyOn(usersService, "list")
         .mockImplementation(async () => Promise.resolve([user]));
 
-      expect(await usersController.list()).toEqual([user]);
+      expect(await usersController.list(emptyCtx())).toEqual([user]);
     });
   });
 
@@ -72,7 +73,7 @@ describe("Users Controller", () => {
         .spyOn(usersService, "create")
         .mockImplementation(async () => Promise.resolve(user));
 
-      expect(await usersController.create(createUserDto as CreateUserDto)).toBe(user);
+      expect(await usersController.create(emptyCtx(), createUserDto as CreateUserDto)).toBe(user);
     });
   });
 
@@ -82,7 +83,7 @@ describe("Users Controller", () => {
         .spyOn(usersService, "createAddress")
         .mockImplementation(async () => Promise.resolve(address));
 
-      expect(await usersController.createAddress(1, createAddressDto)).toBe(
+      expect(await usersController.createAddress(emptyCtx(), 1, createAddressDto)).toBe(
         address,
       );
     });
