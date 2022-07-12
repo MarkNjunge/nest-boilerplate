@@ -24,7 +24,7 @@ if (config.db.ssl) {
       type: "postgres",
       url: config.db.url,
       entities: [path.join(__dirname, "../../models/**/*.entity{.ts,.js}")],
-      migrations: [path.join(__dirname, "./db/migration/*{.ts,.js}")],
+      migrations: [path.join(__dirname, "../../db/migration/*{.ts,.js}")],
       migrationsRun: true,
       synchronize: false,
       sslConfig,
