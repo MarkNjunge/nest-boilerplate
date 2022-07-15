@@ -21,7 +21,9 @@ export class AuthGuard implements CanActivate {
 }
 
 function validateRequest(request: FastifyRequest): boolean {
-  const apiKey = request.headers["x-api-key"];
+  const authHeader: string | undefined = request.headers.authorization;
+  const match = (authHeader ?? "").match(/Bearer (.*)/i);
+  const apiKey = match ? match[1] : null;
 
   if (apiKey !== config.apiKey) {
     throw new ForbiddenException({

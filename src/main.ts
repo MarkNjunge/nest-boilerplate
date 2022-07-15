@@ -90,10 +90,10 @@ function initializeSwagger(app: NestFastifyApplication): void {
       config.swagger.contact.url,
       config.swagger.contact.email,
     )
-    .addSecurity("x-api-key", {
-      type: "apiKey",
+    .addSecurity("api-key", {
+      type: "http",
       in: "header",
-      name: "x-api-key",
+      scheme: "bearer",
     })
     .build();
 

@@ -1,6 +1,5 @@
 /* eslint-disable max-lines-per-function */
 import * as request from "supertest";
-import { CreateUserDto, UpdateUserDto } from "../src/models/user";
 import { CreateAddressDto } from "../src/models/address";
 
 describe("App e2e", () => {
@@ -30,7 +29,7 @@ describe("App e2e", () => {
       void request(host)
         .post("/users")
         .send(dto)
-        .set("x-api-key", "api-key")
+        .set("Authorization", "Bearer api-key")
         .expect("Content-Type", /json/)
         .expect(201, done);
     });
@@ -45,7 +44,7 @@ describe("App e2e", () => {
       void request(host)
         .post("/users/_bulk")
         .send(dto)
-        .set("x-api-key", "api-key")
+        .set("Authorization", "Bearer api-key")
         .expect("Content-Type", /json/)
         .expect(201, done);
     });
@@ -58,7 +57,7 @@ describe("App e2e", () => {
       void request(host)
         .post("/users/1/addresses")
         .send(dto)
-        .set("x-api-key", "api-key")
+        .set("Authorization", "Bearer api-key")
         .expect("Content-Type", /json/)
         .expect(201, done);
     });
@@ -71,7 +70,7 @@ describe("App e2e", () => {
       void request(host)
         .put("/users/1")
         .send(dto)
-        .set("x-api-key", "api-key")
+        .set("Authorization", "Bearer api-key")
         .expect("Content-Type", /json/)
         .expect(200, done);
     });
@@ -82,7 +81,7 @@ describe("App e2e", () => {
 
       void request(host)
         .delete("/users/1")
-        .set("x-api-key", "api-key")
+        .set("Authorization", "Bearer api-key")
         .expect("Content-Type", /json/)
         .expect(200, JSON.stringify(res), done);
     });

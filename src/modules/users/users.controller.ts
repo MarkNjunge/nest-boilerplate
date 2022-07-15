@@ -51,7 +51,7 @@ export class UsersController {
 
   @Post("/")
   @UseGuards(AuthGuard)
-  @ApiSecurity("x-api-key")
+  @ApiSecurity("api-key")
   @ApiOperation({ summary: "Create a user" })
   @ApiResponse({
     status: 201,
@@ -65,7 +65,7 @@ export class UsersController {
 
   @Post("/_bulk")
   @UseGuards(AuthGuard)
-  @ApiSecurity("x-api-key")
+  @ApiSecurity("api-key")
   @ApiOperation({ summary: "Create a user" })
   @ApiBody({ type: CreateUserDto, isArray: true })
   @ApiResponse({
@@ -84,7 +84,7 @@ export class UsersController {
 
   @Put(":id")
   @UseGuards(AuthGuard)
-  @ApiSecurity("x-api-key")
+  @ApiSecurity("api-key")
   @ApiOperation({ summary: "Update a user" })
   @ApiResponse({
     status: 200,
@@ -101,7 +101,7 @@ export class UsersController {
 
   @Delete(":id")
   @UseGuards(AuthGuard)
-  @ApiSecurity("x-api-key")
+  @ApiSecurity("api-key")
   @ApiOperation({ summary: "Delete a user" })
   @ApiResponse({
     status: 200,
@@ -116,7 +116,7 @@ export class UsersController {
 
   @Post(":id/addresses")
   @UseGuards(AuthGuard)
-  @ApiSecurity("x-api-key")
+  @ApiSecurity("api-key")
   @ApiOperation({ summary: "Create an address" })
   @ApiResponse({
     status: 201,
