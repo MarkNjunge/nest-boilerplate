@@ -8,6 +8,7 @@ import { Observable } from "rxjs";
 import { FastifyRequest } from "fastify";
 import { config } from "../config";
 import { ErrorCodes } from "../utils/error-codes";
+import { HttpException } from "../utils/HttpException";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -26,10 +27,7 @@ function validateRequest(request: FastifyRequest): boolean {
   const apiKey = match ? match[1] : null;
 
   if (apiKey !== config.apiKey) {
-    throw new ForbiddenException({
-      message: "Invalid api key",
-      code: ErrorCodes.INVALID_API_KEY,
-    });
+    throw new HttpException(401, "Invalid api key", ErrorCodes.INVALID_AUTHENTICATION);
   }
 
   return true;

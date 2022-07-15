@@ -26,6 +26,8 @@ module.exports = {
     "eqeqeq": "off",
     "@typescript-eslint/no-unsafe-return": "off",
     "padding-line-between-statements": "off",
-    "@typescript-eslint/indent": "off"
+    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/no-unnecessary-condition": "off",
+    "@typescript-eslint/strict-boolean-expressions": "off"
   },
 };

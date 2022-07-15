@@ -3,6 +3,10 @@ export const privateKeys = ["password", "x-api-key", "authorization", "email"];
 const replaceValue = "REDACTED";
 
 export function redact(obj: any, keys = privateKeys): any {
+  if (!obj) {
+    return obj;
+  }
+
   Object.keys(obj).forEach(k => {
     const v = obj[k];
 

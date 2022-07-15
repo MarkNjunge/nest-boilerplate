@@ -6,7 +6,7 @@ import {
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "../logging/Logger";
 import { ApiErrorDto } from "../modules/shared/dto/ApiError.dto";
-import { ErrorCodes } from "../utils/error-codes";
+import { getErrorCode } from "../utils/error-codes";
 import { HttpException } from "../utils/HttpException";
 import { parseStacktrace } from "../utils/stack-trace";
 
@@ -28,18 +28,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const parsedStack = parseStacktrace(e.stack ?? "");
     const tag = parsedStack.length > 0 ? parsedStack[0].methodName : "<unknown>";
 
-    // Determine if it's a http exception or a regular error
-    const isHttp = e instanceof HttpException;
-
     // Get the correct http status
-    const status = isHttp ? (e as HttpException).status : 500;
+    const { status, code, meta } = {
+      status: (e as HttpException).status ?? 500,
+      code: (e as HttpException).code ?? getErrorCode((e as HttpException).status ?? 500),
+      meta: (e as HttpException).meta ?? undefined,
+    };
     response.statusCode = status;
-
-    // Get appropriate error code
-    const code = isHttp ? (e as HttpException).code : ErrorCodes.INTERNAL_ERROR;
-
-    // Get any meta info
-    const meta = isHttp ? (e as HttpException).meta : undefined;
 
     const correlationId = request.headers["x-correlation-id"] as string;
     const message = e.message;
