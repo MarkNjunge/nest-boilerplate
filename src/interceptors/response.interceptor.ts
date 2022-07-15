@@ -9,12 +9,14 @@ export class ResponseInterceptor implements NestInterceptor {
     const request = ctx.getRequest<FastifyRequest>();
 
     const correlationId = request.headers["x-correlation-id"] as string;
+    const ip = request.headers["x-ip"] as string;
 
     return next.handle()
       .pipe(
         tap(() => {
           const response = ctx.getResponse<FastifyReply>();
           void response.header("x-correlation-id", correlationId);
+          void response.header("x-ip", ip);
         }),
       );
   }

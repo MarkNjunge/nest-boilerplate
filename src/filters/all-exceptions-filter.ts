@@ -37,6 +37,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.statusCode = status;
 
     const correlationId = request.headers["x-correlation-id"] as string;
+    const ip = request.headers["x-ip"] as string;
     const message = e.message;
     const apiError: ApiErrorDto = {
       status,
@@ -46,7 +47,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       meta,
     };
 
-    this.logger.error(message, { tag, data: { stacktrace: e.stack }, ctx: { correlationId } });
+    this.logger.error(message, { tag, data: { stacktrace: e.stack }, ctx: { correlationId, ip } });
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);

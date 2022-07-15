@@ -6,6 +6,7 @@ import * as dayjs from "dayjs";
 import { redact } from "../utils/redact";
 import { clone } from "../utils/clone";
 import { IReqCtx } from "../decorators/request-context.decorator";
+import { extractIp } from "../utils/ip";
 
 export class ILogMeta {
   tag?: string;
@@ -54,6 +55,7 @@ export class Logger {
     const url = request.url;
     const tag = "ROUTE";
     const correlationId = request.headers["x-correlation-id"] as string;
+    const ip = request.headers["x-ip"] as string;
 
     const requestTime = parseInt(request.headers["x-request-time"] as string);
     const requestTimeISO = dayjs(requestTime).toISOString();
@@ -65,7 +67,7 @@ export class Logger {
         url,
         method,
         requestTime: requestTimeISO,
-        ip: request.headers["x-forwarded-for"] ?? request.ip,
+        ip,
         headers: request.headers,
         query: Object.assign({}, request.query),
         body: Object.assign({}, request.body),
@@ -80,7 +82,7 @@ export class Logger {
 
     const message = `${method} ${url} - ${statusCode} - ${duration}ms`;
 
-    this.info(message, { tag, data, ctx: { correlationId } });
+    this.info(message, { tag, data, ctx: { correlationId, ip } });
   }
 
   private static getData(tag: string, message: string, meta?: ILogMeta): any {
@@ -88,6 +90,7 @@ export class Logger {
     data.tag = tag;
     data.message = message;
     data.correlationId = meta?.ctx?.correlationId;
+    data.ip = meta?.ctx?.ip;
     return redact(clone(data));
   }
 }
