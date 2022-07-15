@@ -61,12 +61,12 @@ export class Logger {
 
     const data = {
       tag,
+      correlationId,
       request: {
         url,
         method,
         requestTime: requestTimeISO,
         ip: request.headers["x-forwarded-for"] ?? request.ip,
-        correlationId,
         headers: request.headers,
         query: Object.assign({}, request.query),
         body: Object.assign({}, request.body),

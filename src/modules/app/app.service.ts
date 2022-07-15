@@ -6,9 +6,9 @@ import { IReqCtx } from "../../decorators/request-context.decorator";
 export class AppService {
   logger: Logger = new Logger("AppService");
 
-  getHello({ correlationId }: IReqCtx): string {
-    this.logger.debug(`Hello ${correlationId}`, { tag: "AppService.getHello" });
+  getHello(ctx: IReqCtx): string {
+    this.logger.debug(`Hello ${ctx.correlationId}`, { tag: "AppService.getHello", ctx });
 
-    return `Hello ${correlationId}!`;
+    return `Hello ${ctx.correlationId}!`;
   }
 }
