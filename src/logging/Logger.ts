@@ -20,27 +20,27 @@ export class Logger {
 
   info(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.info({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
+    winston.info({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
   error(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.error({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
+    winston.error({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
   warn(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.warn({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
+    winston.warn({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
   debug(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.debug({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
+    winston.debug({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
   verbose(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.verbose({ message: `[${tag}] ${message}`, data: Logger.getData(meta) });
+    winston.verbose({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
   // eslint-disable-next-line max-lines-per-function
@@ -53,7 +53,7 @@ export class Logger {
     const method = request.method;
     const url = request.url;
     const tag = "ROUTE";
-    const correlationId = request.headers["x-correlation-id"];
+    const correlationId = request.headers["x-correlation-id"] as string;
 
     const requestTime = parseInt(request.headers["x-request-time"] as string);
     const requestTimeISO = dayjs(requestTime).toISOString();
@@ -61,7 +61,6 @@ export class Logger {
 
     const data = {
       tag,
-      correlationId,
       request: {
         url,
         method,
@@ -81,12 +80,13 @@ export class Logger {
 
     const message = `${method} ${url} - ${statusCode} - ${duration}ms`;
 
-    const cleanData = redact(clone(data));
-    winston.info({ message: `[${tag}] ${message}`, data: cleanData });
+    this.info(message, { tag, data, ctx: { correlationId } });
   }
 
-  private static getData(meta?: ILogMeta): any {
+  private static getData(tag: string, message: string, meta?: ILogMeta): any {
     const data = meta?.data ?? {};
+    data.tag = tag;
+    data.message = message;
     data.correlationId = meta?.ctx?.correlationId;
     return redact(clone(data));
   }
