@@ -19,7 +19,7 @@ import {
 import { UsersService } from "./users.service";
 import { UserDto, CreateUserDto, UpdateUserDto } from "../../models/user";
 import { AddressDto, CreateAddressDto } from "../../models/address";
-import { ApiResponseDto } from "../shared/dto/ApiResponse.dto";
+import { ApiResponseDto } from "@/models/_shared/ApiResponse.dto";
 import { ArrayValidationPipe } from "@/pipes/array-validation.pipe";
 import { HttpException, ErrorCodes } from "@/utils";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";

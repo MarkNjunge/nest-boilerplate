@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "@/logging/Logger";
-import { ApiErrorDto } from "@/modules/shared/dto/ApiError.dto";
+import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
 
 @Catch()
