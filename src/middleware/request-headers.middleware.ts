@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as dayjs from "dayjs";
 import * as crypto from "crypto";
-import { extractIp } from "../utils/ip";
+import { extractIp } from "@/utils";
 
 export function requestHeadersMiddleware(
   request: FastifyRequest,

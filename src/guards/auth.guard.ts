@@ -2,13 +2,11 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { FastifyRequest } from "fastify";
-import { config } from "../config";
-import { ErrorCodes } from "../utils/error-codes";
-import { HttpException } from "../utils/HttpException";
+import { config } from "@/config";
+import { ErrorCodes, HttpException } from "@/utils";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

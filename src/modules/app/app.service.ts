@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { Logger } from "../../logging/Logger";
-import { IReqCtx } from "../../decorators/request-context.decorator";
+import { Logger } from "@/logging/Logger";
+import { IReqCtx } from "@/decorators/request-context.decorator";
 
 @Injectable()
 export class AppService {

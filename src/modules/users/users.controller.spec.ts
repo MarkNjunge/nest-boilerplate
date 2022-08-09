@@ -6,7 +6,7 @@ import { UsersService } from "./users.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { UserEntity, UserDto, CreateUserDto } from "../../models/user";
 import { AddressEntity, CreateAddressDto, AddressDto } from "../../models/address";
-import { emptyCtx } from "../../decorators/request-context.decorator";
+import { emptyCtx } from "@/decorators/request-context.decorator";
 
 describe("Users Controller", () => {
   let usersController: UsersController;

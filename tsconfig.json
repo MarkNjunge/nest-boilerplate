@@ -10,12 +10,15 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "paths": {
+      "@/*": ["src/*"]
+    },
   },
   "include": [
     "src/**/*",
     "test/**/*",
-    ".eslintrc.js",
+    ".eslintrc.js"
   ],
   "exclude": [
     "node_modules",

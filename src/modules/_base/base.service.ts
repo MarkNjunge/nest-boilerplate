@@ -1,11 +1,9 @@
 import { Repository } from "typeorm";
-import { ResponseUtils } from "../../utils/ResponseUtils";
 import { ClassConstructor, plainToInstance } from "class-transformer";
 import { ICrudService } from "./crud.service";
 import { DTO } from "./dto";
-import { HttpException } from "../../utils/HttpException";
-import { ErrorCodes } from "../../utils/error-codes";
-import { IReqCtx } from "../../decorators/request-context.decorator";
+import { HttpException, ErrorCodes, ResponseUtils } from "@/utils";
+import { IReqCtx } from "@/decorators/request-context.decorator";
 
 // eslint-disable-next-line max-len
 export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, UpdateDTO extends DTO<Entity>>

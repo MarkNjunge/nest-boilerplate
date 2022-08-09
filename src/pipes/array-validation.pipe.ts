@@ -1,7 +1,6 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
 import { ValidationErrorDto, ValidationPipe } from "./validation.pipe";
-import { HttpException } from "../utils/HttpException";
-import { ErrorCodes } from "../utils/error-codes";
+import { HttpException, ErrorCodes } from "@/utils";
 
 // https://github.com/nestjs/nest/blob/d295f1c572f64aa8239d3fab4cfa59df220c3ebb/packages/common/interfaces/type.interface.ts
 export type Type<T = any> = new(...args: any[]) => T;

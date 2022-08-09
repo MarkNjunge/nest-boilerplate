@@ -3,10 +3,8 @@ import { bool, config } from "../config";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
-import { redact } from "../utils/redact";
-import { clone } from "../utils/clone";
-import { IReqCtx } from "../decorators/request-context.decorator";
-import { extractIp } from "../utils/ip";
+import { redact, clone } from "@/utils";
+import { IReqCtx } from "@/decorators/request-context.decorator";
 
 export class ILogMeta {
   tag?: string;

@@ -5,9 +5,8 @@ import {
 } from "@nestjs/common";
 import { validate, ValidationError } from "class-validator";
 import { plainToClass } from "class-transformer";
-import { config } from "../config";
-import { ErrorCodes } from "../utils/error-codes";
-import { HttpException } from "../utils/HttpException";
+import { config } from "@/config";
+import { ErrorCodes, HttpException } from "@/utils";
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {

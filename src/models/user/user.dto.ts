@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { AddressDto } from "../address";
 import { Type } from "class-transformer";
-import { DTO } from "../../modules/_base/dto";
+import { DTO } from "@/modules/_base/dto";
 import { UserEntity } from "./user.entity";
 import { IsNotEmpty, ValidateNested } from "class-validator";
 import { ContactDto, CreateContactDto, ContactEntity, UpdateContactDto } from "../contact";

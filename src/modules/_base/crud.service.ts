@@ -1,4 +1,4 @@
-import { IReqCtx } from "../../decorators/request-context.decorator";
+import { IReqCtx } from "@/decorators/request-context.decorator";
 
 export interface ICrudService<DTO, CreateDTO, UpdateDTO> {
   get(ctx: IReqCtx, id: number): Promise<DTO | null>;

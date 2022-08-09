@@ -8,7 +8,7 @@ import {
   Delete,
   Put,
 } from "@nestjs/common";
-import { AuthGuard } from "../../guards/auth.guard";
+import { AuthGuard } from "@/guards/auth.guard";
 import {
   ApiResponse,
   ApiBadRequestResponse,
@@ -20,10 +20,9 @@ import { UsersService } from "./users.service";
 import { UserDto, CreateUserDto, UpdateUserDto } from "../../models/user";
 import { AddressDto, CreateAddressDto } from "../../models/address";
 import { ApiResponseDto } from "../shared/dto/ApiResponse.dto";
-import { ArrayValidationPipe } from "../../pipes/array-validation.pipe";
-import { HttpException } from "../../utils/HttpException";
-import { ErrorCodes } from "../../utils/error-codes";
-import { IReqCtx, ReqCtx } from "../../decorators/request-context.decorator";
+import { ArrayValidationPipe } from "@/pipes/array-validation.pipe";
+import { HttpException, ErrorCodes } from "@/utils";
+import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
 
 @Controller("users")
 @ApiTags("Users")

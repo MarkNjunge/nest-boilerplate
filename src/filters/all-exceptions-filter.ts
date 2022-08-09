@@ -4,11 +4,9 @@ import {
   ArgumentsHost,
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { Logger } from "../logging/Logger";
-import { ApiErrorDto } from "../modules/shared/dto/ApiError.dto";
-import { getErrorCode } from "../utils/error-codes";
-import { HttpException } from "../utils/HttpException";
-import { parseStacktrace } from "../utils/stack-trace";
+import { Logger } from "@/logging/Logger";
+import { ApiErrorDto } from "@/modules/shared/dto/ApiError.dto";
+import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

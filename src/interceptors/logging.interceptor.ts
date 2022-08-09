@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
-import { Logger } from "../logging/Logger";
+import { Logger } from "@/logging/Logger";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 @Injectable()

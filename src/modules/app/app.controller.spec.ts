@@ -2,7 +2,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { emptyCtx } from "../../decorators/request-context.decorator";
+import { emptyCtx } from "@/decorators/request-context.decorator";
 
 describe("AppController", () => {
   let appController: AppController;

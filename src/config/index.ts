@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import * as configPackage from "config";
 
-interface Index {
+interface Config {
   env: string;
   port: number;
   apiKey: string;
@@ -55,7 +55,7 @@ interface Logging {
   logDataConsole: boolean;
 }
 
-export const config: Index = configPackage as Index;
+export const config: Config = configPackage as Config;
 
 export function bool(value: boolean | string): boolean {
   if (typeof value === "boolean") {
