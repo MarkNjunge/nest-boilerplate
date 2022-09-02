@@ -90,6 +90,9 @@
     "testEnvironment": "node",
     "setupFiles": [
       "../test/util/logging.ts"
-    ]
+    ],
+    "moduleNameMapper": {
+      "@/(.*)": ["<rootDir>/$1"]
+    }
   }
 }
