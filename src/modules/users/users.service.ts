@@ -44,8 +44,8 @@ export class UsersService extends BaseService<UserEntity, UserDto, CreateUserDto
   async createAddress(ctx: IReqCtx, id: number, dto: CreateAddressDto): Promise<AddressDto> {
     this.logger.debug(`Creating address for user ${id}`, { data: { dto }, ctx });
 
-    const user = await this.usersRepository.findOne({ id });
-    if (user === undefined) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (user === null) {
       throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
     }
 

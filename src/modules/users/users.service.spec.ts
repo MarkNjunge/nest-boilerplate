@@ -81,7 +81,7 @@ describe("UsersService", () => {
         .mockImplementation(async () => Promise.resolve(address as AddressEntity));
 
       jest
-        .spyOn(usersRepository, "findOne")
+        .spyOn(usersRepository, "findOneBy")
         .mockImplementation(async () => Promise.resolve(user as any as UserEntity));
 
       const actual = await usersService.createAddress(emptyCtx(), 1, createAddressDto);

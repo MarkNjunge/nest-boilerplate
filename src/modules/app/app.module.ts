@@ -1,34 +1,26 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { config } from "@/config";
+import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { UsersModule } from "../users/users.module";
-import * as path from "path";
-import { TlsOptions } from "tls";
+import { dataSource } from "@/db/db-data-source";
+import { Logger } from "@/logging/Logger";
 
-let sslConfig: boolean | TlsOptions = config.db.ssl;
-if (config.db.ssl) {
-  sslConfig = {
-    // This accepts a self signed certificate
-    // See node-postgres docs for how to verify
-    // https://node-postgres.com/features/ssl
-    rejectUnauthorized: false,
-  };
-}
+const logger = new Logger("Database");
+
+const options: TypeOrmModuleOptions = {
+  ...dataSource.options,
+  retryAttempts: 3,
+  toRetry: err => {
+    logger.error(err.message);
+    return true;
+  }
+};
+
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      // @ts-expect-error: types are not listed correctly
-      type: "postgres",
-      url: config.db.url,
-      entities: [path.join(__dirname, "../../models/**/*.entity{.ts,.js}")],
-      migrations: [path.join(__dirname, "../../db/migration/*{.ts,.js}")],
-      migrationsRun: true,
-      synchronize: false,
-      sslConfig,
-    }),
+    TypeOrmModule.forRoot(options),
     UsersModule,
   ],
   controllers: [AppController],

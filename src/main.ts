@@ -10,8 +10,8 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import * as fastifyRateLimit from "fastify-rate-limit";
-import { default as helmet } from "fastify-helmet";
+import * as fastifyRateLimit from "@fastify/rate-limit";
+import { default as helmet } from "@fastify/helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 import { ApplicationLogger } from "./logging/ApplicationLogger";
 import { ResponseInterceptor } from "./interceptors/response.interceptor";

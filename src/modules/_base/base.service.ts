@@ -17,7 +17,8 @@ export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, Update
   ) {}
 
   async get(ctx: IReqCtx, id: number): Promise<ClassDTO | null> {
-    const item = await this.repo.findOne(id);
+    // @ts-expect-error TS error
+    const item = await this.repo.findOneBy({ id });
     if (!item) {
       return null;
     }
@@ -50,7 +51,8 @@ export class BaseService<Entity, ClassDTO, CreateDTO extends DTO<Entity>, Update
   async update(ctx: IReqCtx, id: number, dto: UpdateDTO): Promise<ClassDTO> {
     dto = plainToInstance(this.updateClz, dto);
     // Workaround method: https://github.com/typeorm/typeorm/issues/4477#issuecomment-579142518
-    let item = await this.repo.findOne(id);
+    // @ts-expect-error TS error
+    let item = await this.repo.findOneBy({ id });
     if (item == null) {
       throw new HttpException(404, `The ${id} does not exist`, ErrorCodes.INVALID_USER);
     }
