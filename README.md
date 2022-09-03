@@ -44,9 +44,9 @@ The [node-config](https://www.npmjs.com/package/config) package to manage config
 
 Default config values are found in [default.json](./config/default.json).  
 These values can be overridden by:
-
+- Creating config files as described in [node-config docs](https://github.com/node-config/node-config/wiki/Configuration-Files)
 - Creating a `local.json` file in _config/_
-- Creating a `.env` file in the project directory.
+- Creating a `.env` file in the project directory. (supported via dotenv)
 - Setting environment variables. See the environment variable mappings
   in [custom-environment-variables.json](./config/custom-environment-variables.json).
 
@@ -55,20 +55,28 @@ These values can be overridden by:
 [Typeorm](https://typeorm.io/) is used for database operations.
 
 It uses PostgreSQL by default, but that can be changed by changing the `type`
-in [app.module.ts](./src/modules/app/app.module.ts).  
+in [db-data-source.ts](./src/db/db-data-source.ts).  
 See [TypeORM documentation](https://typeorm.io/#/) for supported databases.
 
 ### Migrations
 
 Typeorm is configured to use migrations instead of `synchronize: true`.
 
-To take advantage of TypeORM's [ability to generate migrations](https://typeorm.io/#/migrations/) by
-inspecting your entities, the cli needs to be configured. Create a `.env` file based
-on [.env.sample](.env.sample).
+Migrations can be generated using:
+```bash
+npm run migration:generate --name=your_migration_name
 
-You can then generate migrations using `npm run migration:generate <your_migration_name>`.  
-You can also use `npm run migration:create <your_migration_name>` to only create the file and write
-the migration logic yourself.
+# linux/mac
+npm run migration:generate:l --name=your_migration_name  
+```
+
+You can also use the following to only create the file and write the migration logic yourself.
+```bash
+npm run migration:create --name=your_migration_name
+
+# linux/mac
+npm run migration:create:l --name=your_migration_name  
+```
 
 When the server starts, migrations will run automatically, or, you can run the migrations
 using `npm run migration:run`
