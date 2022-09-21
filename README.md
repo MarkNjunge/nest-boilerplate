@@ -50,6 +50,14 @@ These values can be overridden by:
 - Setting environment variables. See the environment variable mappings
   in [custom-environment-variables.json](./config/custom-environment-variables.json).
 
+## CORS
+[CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is configurable via the config.
+
+The following values are acceptable for `config.cors.origins`:
+- `*` - Will accept any origin.   
+**Note:** It will respond with the origin requested,  not `*`. e.g. `access-control-allow-origin: https://example.com`
+- `https://example.com,https://example2.com` - Will accept all domains in the comma separated list.
+
 ## Database
 
 [Typeorm](https://typeorm.io/) is used for database operations.

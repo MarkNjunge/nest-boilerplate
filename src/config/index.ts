@@ -41,7 +41,7 @@ interface RateLimit {
 }
 
 interface Cors {
-  origin: string;
+  origins: string;
   methods: string;
   allowedHeaders: string;
 }

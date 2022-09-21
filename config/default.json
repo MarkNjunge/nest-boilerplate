@@ -23,7 +23,7 @@
     "timeWindow": "1m"
   },
   "cors": {
-    "origin": "*",
+    "origins": "*",
     "methods": "*",
     "allowedHeaders": "*"
   },

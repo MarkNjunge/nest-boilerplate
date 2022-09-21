@@ -16,7 +16,7 @@
     "timeWindow": "RATE_LIMIT_TIME_WINDOW"
   },
   "cors": {
-    "origin": "CORS_ORIGIN",
+    "origins": "CORS_ORIGINS",
     "methods": "CORS_METHOD",
     "allowedHeaders": "CORS_HEADERS"
   },
