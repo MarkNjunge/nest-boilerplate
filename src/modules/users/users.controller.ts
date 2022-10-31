@@ -6,7 +6,7 @@ import {
   Get,
   Param,
   Delete,
-  Put,
+  Put, Query,
 } from "@nestjs/common";
 import { AuthGuard } from "@/guards/auth.guard";
 import {
@@ -21,7 +21,7 @@ import { UserDto, CreateUserDto, UpdateUserDto } from "../../models/user";
 import { AddressDto, CreateAddressDto } from "../../models/address";
 import { ApiResponseDto } from "@/models/_shared/ApiResponse.dto";
 import { ArrayValidationPipe } from "@/pipes/array-validation.pipe";
-import { HttpException, ErrorCodes } from "@/utils";
+import { HttpException, ErrorCodes, parseQuery } from "@/utils";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
 
 @Controller("users")
@@ -44,8 +44,8 @@ export class UsersController {
   @Get("/")
   @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
-  async list(@ReqCtx() ctx: IReqCtx): Promise<UserDto[]> {
-    return this.usersService.list(ctx);
+  async list(@ReqCtx() ctx: IReqCtx, @Query() query: string): Promise<UserDto[]> {
+    return this.usersService.list(ctx, parseQuery(query));
   }
 
   @Post("/")

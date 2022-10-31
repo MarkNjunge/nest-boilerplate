@@ -84,12 +84,12 @@ export class Logger {
   }
 
   private static getData(tag: string, message: string, meta?: ILogMeta): any {
-    const data = meta?.data ?? {};
+    const data = clone(meta?.data) ?? {};
     data.tag = tag;
     data.message = message;
     data.correlationId = meta?.ctx?.correlationId;
     data.ip = meta?.ctx?.ip;
-    return redact(clone(data));
+    return redact(data);
   }
 }
 

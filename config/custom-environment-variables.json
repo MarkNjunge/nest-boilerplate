@@ -3,8 +3,7 @@
   "port": "PORT",
   "apiKey": "API_KEY",
   "db": {
-    "url": "DB_URL",
-    "ssl": "DB_SSL"
+    "url": "DB_URL"
   },
   "swagger": {
     "enabled": "SWAGGER_ENABLED",

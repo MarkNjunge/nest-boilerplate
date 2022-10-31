@@ -28,6 +28,8 @@ module.exports = {
     "padding-line-between-statements": "off",
     "@typescript-eslint/indent": "off",
     "@typescript-eslint/no-unnecessary-condition": "off",
-    "@typescript-eslint/strict-boolean-expressions": "off"
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/lines-between-class-members": "off"
   },
 };

@@ -1,11 +1,9 @@
 /* eslint-disable max-nested-callbacks,max-lines-per-function */
 import { Test, TestingModule } from "@nestjs/testing";
-import { Repository } from "typeorm";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import { UserEntity, UserDto, CreateUserDto } from "../../models/user";
-import { AddressEntity, CreateAddressDto, AddressDto } from "../../models/address";
+import { UserDto, CreateUserDto } from "@/models/user";
+import { CreateAddressDto, AddressDto } from "@/models/address";
 import { emptyCtx } from "@/decorators/request-context.decorator";
 
 describe("Users Controller", () => {
@@ -36,17 +34,7 @@ describe("Users Controller", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [
-        UsersService,
-        {
-          provide: getRepositoryToken(UserEntity),
-          useClass: Repository,
-        },
-        {
-          provide: getRepositoryToken(AddressEntity),
-          useClass: Repository,
-        },
-      ],
+      providers: [ UsersService ],
     }).compile();
 
     usersController = module.get<UsersController>(UsersController);
@@ -63,7 +51,7 @@ describe("Users Controller", () => {
         .spyOn(usersService, "list")
         .mockImplementation(async () => Promise.resolve([user]));
 
-      expect(await usersController.list(emptyCtx())).toEqual([user]);
+      expect(await usersController.list(emptyCtx(), "")).toEqual([user]);
     });
   });
 

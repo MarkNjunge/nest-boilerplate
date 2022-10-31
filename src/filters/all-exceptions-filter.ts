@@ -7,6 +7,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "@/logging/Logger";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
+import { DBError } from "objection";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -36,7 +37,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const correlationId = request.headers["x-correlation-id"] as string;
     const ip = request.headers["x-ip"] as string;
-    const message = e.message;
+    const message = e instanceof DBError ? e.name : e.message;
     const apiError: ApiErrorDto = {
       status,
       message,

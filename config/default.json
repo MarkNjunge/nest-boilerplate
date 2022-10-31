@@ -4,7 +4,7 @@
   "apiKey": "api-key",
   "db": {
     "url": "postgres://username:password@host:port/database",
-    "ssl": false
+    "logQueries": false
   },
   "swagger": {
     "enabled": true,

@@ -1,57 +1,66 @@
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@/logging/Logger";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { ResponseUtils, HttpException, ErrorCodes } from "@/utils";
-import { BaseService } from "../_base/base.service";
-import { CreateUserDto, UpdateUserDto, UserDto, UserEntity } from "../../models/user";
-import { AddressDto, AddressEntity, CreateAddressDto } from "../../models/address";
+import { ErrorCodes, HttpException, Query } from "@/utils";
+import { CreateUserDto, UpdateUserDto, UserDto } from "@/models/user";
+import { AddressDto, CreateAddressDto } from "@/models/address";
 import { IReqCtx } from "@/decorators/request-context.decorator";
+import { UserModel } from "@/models/user/user.model";
+import { AddressModel } from "@/models/address/address.model";
+import { ContactModel } from "@/models/contact/contact.model";
+import { CreateContactDto, UpdateContactDto } from "@/models/contact";
+import { BaseRepository } from "@/db/base.repository";
 
 @Injectable()
-export class UsersService extends BaseService<UserEntity, UserDto, CreateUserDto, UpdateUserDto> {
+export class UsersService {
   private logger = new Logger("UsersService");
+  private userRepo = new BaseRepository<UserModel, CreateUserDto, UpdateUserDto>(UserModel);
+  private addressRepo = new BaseRepository<AddressModel, CreateAddressDto, any>(AddressModel);
+  private contactRepo =
+    new BaseRepository<ContactModel, CreateContactDto, UpdateContactDto>(ContactModel);
+  private fetches = "[contact,addresses]";
 
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly usersRepository: Repository<UserEntity>,
-    @InjectRepository(AddressEntity)
-    private readonly addressesRepository: Repository<AddressEntity>,
-  ) {
-    super(UserDto, CreateUserDto, UpdateUserDto, usersRepository);
-  }
-
-  async create(ctx: IReqCtx, dto: CreateUserDto): Promise<UserDto> {
-    this.logger.debug(`Creating user ${dto.username}`, { data: { dto }, ctx });
-    return super.create(ctx, dto);
-  }
-
-  async createBulk(ctx: IReqCtx, dtos: CreateUserDto[]): Promise<UserDto[]> {
-    this.logger.debug(`Creating ${dtos.length} users`, { data: { dtos }, ctx });
-    return super.createBulk(ctx, dtos);
-  }
-
-  async update(ctx: IReqCtx, id: number, dto: UpdateUserDto): Promise<UserDto> {
-    this.logger.debug(`Updating user ${id}`, { data: { dto }, ctx });
-    return super.update(ctx, id, dto);
-  }
-
-  async delete(ctx: IReqCtx, id: number): Promise<void> {
-    this.logger.debug(`Deleting user ${id}`, { data: { id }, ctx });
-    await super.delete(ctx, id);
-  }
-
-  async createAddress(ctx: IReqCtx, id: number, dto: CreateAddressDto): Promise<AddressDto> {
-    this.logger.debug(`Creating address for user ${id}`, { data: { dto }, ctx });
-
-    const user = await this.usersRepository.findOneBy({ id });
-    if (user === null) {
-      throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
+  async get(ctx: IReqCtx, id: number): Promise<UserDto> {
+    const user = await this.userRepo.get(id, this.fetches);
+    if (!user) {
+      throw new HttpException(404, `User ${id} does not exist`, ErrorCodes.INVALID_USER, { id });
     }
 
-    const address = AddressEntity.fromCreateDto(user, dto);
-    const created = await this.addressesRepository.save(address);
+    return user;
+  }
 
-    return ResponseUtils.cleanObject(AddressDto, created);
+  async create(ctx: IReqCtx, data: CreateUserDto): Promise<UserDto> {
+    this.logger.debug(`Creating user ${data.username}`, { data, ctx });
+    return this.userRepo.create(data);
+  }
+
+  async createBulk(ctx: IReqCtx, data: CreateUserDto[]): Promise<UserDto[]> {
+    this.logger.debug(`Creating ${data.length} users`, { data, ctx });
+    return this.userRepo.createBulk(data);
+  }
+
+  async list(ctx: IReqCtx, query: Query): Promise<UserDto[]> {
+    return this.userRepo.list(query, this.fetches);
+  }
+
+  async update(ctx: IReqCtx, id: number, data: UpdateUserDto): Promise<UserDto> {
+    this.logger.debug(`Updating user ${id}`, { data, ctx });
+    await this.contactRepo.query()
+      .patch({ email: data.contact.email })
+      .where("user_id", "=", id);
+    return this.userRepo.updateById(id, data, this.fetches);
+  }
+
+  async delete(ctx: IReqCtx, id: number): Promise<number> {
+    this.logger.debug(`Deleting user ${id}`, { data: { id }, ctx });
+    return this.userRepo.deleteById(id);
+  }
+
+  async createAddress(ctx: IReqCtx, id: number, data: CreateAddressDto): Promise<AddressDto> {
+    this.logger.debug(`Creating address for user ${id}`, { data, ctx });
+
+    const user = await this.get(ctx, id);
+    data.userId = user.id;
+
+    return this.addressRepo.create(data);
   }
 }

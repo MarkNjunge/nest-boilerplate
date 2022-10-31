@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
+import { ApiHideProperty, ApiProperty } from "@nestjs/swagger";
+import { IsEmpty, IsNotEmpty } from "class-validator";
 
 export class AddressDto {
   @ApiProperty()
@@ -20,4 +20,8 @@ export class CreateAddressDto {
   @IsNotEmpty()
   @ApiProperty()
   country: string;
+
+  @IsEmpty()
+  @ApiHideProperty()
+  userId?: number;
 }

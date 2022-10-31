@@ -15,6 +15,7 @@ import { default as helmet } from "@fastify/helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 import { ApplicationLogger } from "./logging/ApplicationLogger";
 import { ResponseInterceptor } from "./interceptors/response.interceptor";
+import { DbService } from "@/modules/_db/db.service";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -42,6 +43,10 @@ async function bootstrap(): Promise<void> {
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalPipes(new ValidationPipe());
   app.use(requestHeadersMiddleware);
+
+  const dbService = app.get<DbService>(DbService);
+  // await dbService.testConnection(); // Catch this
+  await dbService.migrateLatest();
 
   await app.listen(config.port, "0.0.0.0");
   logger.info(`App running at http://127.0.0.1:${config.port}`);
