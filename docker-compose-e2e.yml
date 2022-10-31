@@ -1,7 +1,7 @@
 version: "3"
 services:
   postgres:
-    image: postgres:11.2
+    image: postgres:15
     container_name: nest-bp-e2e_pgsql
     logging:
       driver: none
