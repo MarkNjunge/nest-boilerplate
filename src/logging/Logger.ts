@@ -22,8 +22,9 @@ export class Logger {
     winston.info({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
-  error(message: string, meta?: ILogMeta): void {
+  error(error: Error, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
+    const message = error.stack ?? error.message;
     winston.error({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 

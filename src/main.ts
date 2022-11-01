@@ -20,7 +20,7 @@ import { DbService } from "@/modules/_db/db.service";
 initializeWinston();
 const logger = new Logger("Application");
 
-bootstrap().catch((e: Error) => logger.error(e.message));
+bootstrap().catch((e: Error) => logger.error(e));
 
 async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
