@@ -6,9 +6,14 @@ import { UserDto, CreateUserDto } from "@/models/user";
 import { CreateAddressDto, AddressDto } from "@/models/address";
 import { emptyCtx } from "@/decorators/request-context.decorator";
 
+const mockUsersService: Partial<UsersService> = {
+  list: jest.fn(),
+  create: jest.fn(),
+  createAddress: jest.fn()
+};
+
 describe("Users Controller", () => {
   let usersController: UsersController;
-  let usersService: UsersService;
 
   const createAddressDto: CreateAddressDto = {
     city: "Nairobi",
@@ -34,11 +39,10 @@ describe("Users Controller", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [ UsersService ],
+      providers: [ { provide: UsersService, useValue: mockUsersService } ],
     }).compile();
 
     usersController = module.get<UsersController>(UsersController);
-    usersService = module.get<UsersService>(UsersService);
   });
 
   it("should be defined", () => {
@@ -48,7 +52,7 @@ describe("Users Controller", () => {
   describe("getAllUsers", () => {
     it("should return array", async () => {
       jest
-        .spyOn(usersService, "list")
+        .spyOn(mockUsersService, "list")
         .mockImplementation(async () => Promise.resolve([user]));
 
       expect(await usersController.list(emptyCtx(), "")).toEqual([user]);
@@ -58,7 +62,7 @@ describe("Users Controller", () => {
   describe("createUser", () => {
     it("should return created user", async () => {
       jest
-        .spyOn(usersService, "create")
+        .spyOn(mockUsersService, "create")
         .mockImplementation(async () => Promise.resolve(user));
 
       expect(await usersController.create(emptyCtx(), createUserDto as CreateUserDto)).toBe(user);
@@ -68,7 +72,7 @@ describe("Users Controller", () => {
   describe("createAddress", () => {
     it("should return body", async () => {
       jest
-        .spyOn(usersService, "createAddress")
+        .spyOn(mockUsersService, "createAddress")
         .mockImplementation(async () => Promise.resolve(address));
 
       expect(await usersController.createAddress(emptyCtx(), 1, createAddressDto)).toBe(
