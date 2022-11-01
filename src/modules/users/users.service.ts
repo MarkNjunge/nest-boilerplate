@@ -1,23 +1,26 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Logger } from "@/logging/Logger";
-import { ErrorCodes, HttpException, Query } from "@/utils";
+import { blankQuery, ErrorCodes, HttpException, Query } from "@/utils";
 import { CreateUserDto, UpdateUserDto, UserDto } from "@/models/user";
 import { AddressDto, CreateAddressDto } from "@/models/address";
 import { IReqCtx } from "@/decorators/request-context.decorator";
-import { UserModel } from "@/models/user/user.model";
-import { AddressModel } from "@/models/address/address.model";
-import { ContactModel } from "@/models/contact/contact.model";
-import { CreateContactDto, UpdateContactDto } from "@/models/contact";
-import { BaseRepository } from "@/db/base.repository";
+import { USER_REPOSITORY, UserRepository } from "@/db/repositories/user.repository";
+import { ADDRESS_REPOSITORY, AddressRepository } from "@/db/repositories/address.repository";
+import { CONTACT_REPOSITORY, ContactRepository } from "@/db/repositories/contact.repository";
 
 @Injectable()
 export class UsersService {
   private logger = new Logger("UsersService");
-  private userRepo = new BaseRepository<UserModel, CreateUserDto, UpdateUserDto>(UserModel);
-  private addressRepo = new BaseRepository<AddressModel, CreateAddressDto, any>(AddressModel);
-  private contactRepo =
-    new BaseRepository<ContactModel, CreateContactDto, UpdateContactDto>(ContactModel);
   private fetches = "[contact,addresses]";
+
+  constructor(
+    @Inject(USER_REPOSITORY)
+    protected readonly userRepo: UserRepository,
+    @Inject(ADDRESS_REPOSITORY)
+    protected readonly addressRepo: AddressRepository,
+    @Inject(CONTACT_REPOSITORY)
+    protected readonly contactRepo: ContactRepository,
+  ) {}
 
   async get(ctx: IReqCtx, id: number): Promise<UserDto> {
     const user = await this.userRepo.get(id, this.fetches);
@@ -38,7 +41,7 @@ export class UsersService {
     return this.userRepo.createBulk(data);
   }
 
-  async list(ctx: IReqCtx, query: Query): Promise<UserDto[]> {
+  async list(ctx: IReqCtx, query: Query = blankQuery()): Promise<UserDto[]> {
     return this.userRepo.list(query, this.fetches);
   }
 

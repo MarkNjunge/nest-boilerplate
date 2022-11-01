@@ -22,6 +22,8 @@ export interface Query {
   orders: QueryOrder[];
 }
 
+export const blankQuery = (limit = 10): Query => ({ limit, filters: [], orders: [] });
+
 export function parseQuery(reqQuery: any): Query {
   const filters: QueryFilter[] = [];
   const orders: QueryOrder[] = [];
