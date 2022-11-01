@@ -14,7 +14,7 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Auth guard](#auth-guard)
 - [Rate limiting](#rate-limiting)
 - [Request body validation](#request-body-validation)
-- [Exception Handling](#exception-handling)
+- [Exception Handling](#errors--exception-handling)
 - [Docker support](#docker)
 - [Testing](#testing)
 - [Continuous Integration](#ci)
@@ -60,34 +60,23 @@ The following values are acceptable for `config.cors.origins`:
 
 ## Database
 
-[Typeorm](https://typeorm.io/) is used for database operations.
+[Objection](https://vincit.github.io/objection.js/) is used for database operations.
 
-It uses PostgreSQL by default, but that can be changed by changing the `type`
-in [db-data-source.ts](./src/db/db-data-source.ts).  
-See [TypeORM documentation](https://typeorm.io/#/) for supported databases.
+It uses PostgreSQL by default, but that can be changed by changing the `client`
+in [knexfile.ts](./src/db/knexfile.ts).  
+See [Knex documentation](https://knexjs.org/guide/#node-js) for supported databases.
 
 ### Migrations
 
-Typeorm is configured to use migrations instead of `synchronize: true`.
+Schema changes require migrations.
 
-Migrations can be generated using:
+Migrations can be created using:
 ```bash
-npm run migration:generate --name=your_migration_name
-
-# linux/mac
-npm run migration:generate:l --name=your_migration_name  
-```
-
-You can also use the following to only create the file and write the migration logic yourself.
-```bash
-npm run migration:create --name=your_migration_name
-
-# linux/mac
-npm run migration:create:l --name=your_migration_name  
+npm run migration:make
 ```
 
 When the server starts, migrations will run automatically, or, you can run the migrations
-using `npm run migration:run`
+using `npm run migration:latest`
 
 ## Swagger
 
@@ -186,7 +175,7 @@ app.useGlobalGuards(new AuthGuard());
 ## Rate Limiting
 
 A rate limiter is configured
-using [fastify-rate-limit](https://github.com/fastify/fastify-rate-limit).  
+using [@fastify/rate-limit](https://github.com/fastify/fastify-rate-limit).  
 It defaults to 100 request per minute per IP (configurable in [default.json](./config/default.json))
 .
 
