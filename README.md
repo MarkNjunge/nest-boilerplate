@@ -53,18 +53,32 @@ These values can be overridden by:
 ## CORS
 [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is configurable via the config.
 
+
 The following values are acceptable for `config.cors.origins`:
 - `*` - Will accept any origin.   
-**Note:** It will respond with the origin requested,  not `*`. e.g. `access-control-allow-origin: https://example.com`
 - `https://example.com,https://example2.com` - Will accept all domains in the comma separated list.
+
+**Note:** The `access-control-allow-origin` header will always respond with the origin in the request, even if `*` is used.
 
 ## Database
 
-[Objection](https://vincit.github.io/objection.js/) is used for database operations.
+[Objection](https://vincit.github.io/objection.js/) (which uses [Knex.js](https://knexjs.org/)) 
+is used for database operations.
 
 It uses PostgreSQL by default, but that can be changed by changing the `client`
 in [knexfile.ts](./src/db/knexfile.ts).  
 See [Knex documentation](https://knexjs.org/guide/#node-js) for supported databases.
+
+Conversion of column names from camel case to snake case is automatically done in most cases.   
+It however does not work in all cases. See excerpt below from Objection docs
+([Snake case to camel case conversion](https://vincit.github.io/objection.js/recipes/snake-case-to-camel-case-conversion.html)):
+
+> When the conversion is done on objection level only database columns of the returned 
+rows (model instances) are convered to camel case. You still need to use snake case in 
+relationMappings and queries. Note that insert, patch, update and their variants still 
+take objects in camel case. The reasoning is that objects passed to those methods 
+usually come from the client that also uses camel case.
+
 
 ### Migrations
 
@@ -85,6 +99,41 @@ Swagger documentation is automatically generated from the routes.
 By default it is available at http://127.0.0.1:3000/docs
 
 See config in [default.json](./config/default.json).
+
+## Query Parsing
+
+URL query to DB query parsing is available. See [UsersController.list](./src/modules/users/users.controller.ts).
+
+**Note:** There is currently no limitation put on the complexity of the query, so this should be exposed with caution. 
+
+Example:
+```
+limit=10&page=1&orderBy=(averageRating,DESC)&filter=(authors,=,Bill Bryson):(yearPublished,>,2000)
+```
+
+```SQL
+SELECT "*"
+FROM   "..."
+WHERE  "authors" = 'Bill Bryson'
+  AND "year_published" > '2000'
+ORDER  BY "average_rating" DESC
+  LIMIT  10 
+```
+
+### Paging
+
+Paging can either be done using `limit` and `page`.
+
+### Filters
+
+Filters take the format of `(column,operand,value)` where the operand can be `=,>,>=,<,<=`.  
+Column names are automatically converted to snake case.  
+Multiple filters can be specified using a colon `:` as the delimiter.
+
+### Ordering
+
+Ordering takes the format of `(column,direction)` where direction can be `desc,DESC,asc,ASC`.  
+Multiple orderings can be specified using a colon `:` as the delimiter.
 
 ## Logging
 

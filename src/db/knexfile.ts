@@ -14,8 +14,7 @@ class CustomMigrationSource {
     const tsRx = /^(?!.*d).*ts/;
     const jsRx = /.*js$/;
     const migrationFiles = fs.readdirSync(migrationsDir)
-      .filter(file => tsRx.test(file) || jsRx.test(file)); // excludes .d.ts
-      // .filter(file => file.match(/.*(js|(?<!\.d\.ts))$/)); // excludes .d.ts
+      .filter(file => tsRx.test(file) || jsRx.test(file)); // excludes .d.ts and .js.map
     return Promise.resolve(migrationFiles);
   }
 
