@@ -23,6 +23,7 @@ import { ApiResponseDto } from "@/models/_shared/ApiResponse.dto";
 import { ArrayValidationPipe } from "@/pipes/array-validation.pipe";
 import { HttpException, ErrorCodes, parseQuery } from "@/utils";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
+import { CleanResponse } from "@/decorators/clean-response.decorator";
 
 @Controller("users")
 @ApiTags("Users")
@@ -32,6 +33,7 @@ export class UsersController {
   @Get("/:id")
   @ApiOperation({ summary: "Get a user" })
   @ApiResponse({ status: 200, type: UserDto })
+  @CleanResponse(UserDto)
   async get(@ReqCtx() ctx: IReqCtx, @Param("id") id: number): Promise<UserDto> {
     const user = await this.usersService.get(ctx, id);
     if (!user) {
@@ -44,6 +46,7 @@ export class UsersController {
   @Get("/")
   @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
+  @CleanResponse(UserDto)
   async list(@ReqCtx() ctx: IReqCtx, @Query() query: string): Promise<UserDto[]> {
     return this.usersService.list(ctx, parseQuery(query));
   }

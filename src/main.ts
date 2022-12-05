@@ -1,4 +1,4 @@
-import { NestFactory } from "@nestjs/core";
+import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
 import { AppModule } from "./modules/app/app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
@@ -40,7 +40,7 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()));
   app.useGlobalPipes(new ValidationPipe());
   app.use(requestHeadersMiddleware);
 
