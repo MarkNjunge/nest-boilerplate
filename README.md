@@ -10,6 +10,7 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Config](#config)
 - [Database](#database)
 - [Swagger (API docs)](#swagger)
+- [Query Parsing](#query-parsing)
 - [Logging](#logging)
 - [Auth guard](#auth-guard)
 - [Rate limiting](#rate-limiting)
@@ -193,10 +194,11 @@ The private keys are specified in [redact.ts](src/utils/redact.ts)
 }
 ```
 
-### Correlation
+## Request Context
 
-A correlation ID header is set and can be used to correlate requests.  
-It can be accessed using the `@ReqCtx()` header.
+Request context. be accessed using the `@ReqCtx()` header.
+
+It contains a `correlationId`.  
 
 ```typescript
 @Get()
@@ -275,6 +277,11 @@ An example of a response to an invalid body:
 
 NB: Raising an error when unknown values are passed can be disabled by
 setting `validator.forbidUnknown` to `false` in the config.
+
+## Response Mapping
+
+Cleaning response objects using can be enabled using the `@CleanResponse(ClassName)` decorator. 
+It uses [class-transformer](https://www.npmjs.com/package/class-transformer). 
 
 ## Errors & Exception Handling
 
