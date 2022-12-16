@@ -11,7 +11,7 @@ const migrationsDir = path.resolve(path.join(__dirname, "migrations"));
 class CustomMigrationSource {
   // noinspection JSUnusedGlobalSymbols
   async getMigrations() {
-    const tsRx = /^(?!.*d).*ts/;
+    const tsRx = /^(?!.\.*d).*ts/;
     const jsRx = /.*js$/;
     const migrationFiles = fs.readdirSync(migrationsDir)
       .filter(file => tsRx.test(file) || jsRx.test(file)); // excludes .d.ts and .js.map
