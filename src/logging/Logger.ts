@@ -117,7 +117,7 @@ export function initializeWinston(): void {
     transports: [
       new SampleTransport(),
       new winston.transports.Console({
-        format: combine(myFormat, colorize({ all: true })),
+        format: combine(myFormat, colorize({ all: true, colors: { debug: "brightBlue" } })),
       }),
     ],
   });
