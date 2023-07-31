@@ -103,7 +103,7 @@ See config in [default.json](./config/default.json).
 
 ## Query Parsing
 
-URL query to DB query parsing is available. See [UsersController.list](./src/modules/users/users.controller.ts).
+URL query to DB query parsing is available. See [query-parser.ts](./src/utils/query-parser.ts).
 
 **Note:** There is currently no limitation put on the complexity of the query, so this should be exposed with caution. 
 

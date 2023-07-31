@@ -28,6 +28,7 @@ export function parseQuery(reqQuery: any): Query {
   const filters: QueryFilter[] = [];
   const orders: QueryOrder[] = [];
 
+  // TODO Implement properly
   if (reqQuery.after) {
     filters.push({ key: "id", op: ">", value: reqQuery.after });
     orders.push({ key: "id", direction: "ASC" });
