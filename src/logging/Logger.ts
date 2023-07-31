@@ -22,10 +22,14 @@ export class Logger {
     winston.info({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
-  error(error: Error, meta?: ILogMeta): void {
+  error(error: string | Error, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    const message = error.stack ?? error.message;
-    winston.error({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
+    const message = typeof error === "string" ? error : error.message;
+    const data = Logger.getData(tag, message, meta);
+    if ((error as Error).stack) {
+      data.stacktrace = (error as Error).stack;
+    }
+    winston.error({ message: `[${tag}] ${message}`, data });
   }
 
   warn(message: string, meta?: ILogMeta): void {
