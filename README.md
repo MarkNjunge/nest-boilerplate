@@ -19,6 +19,7 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Docker support](#docker)
 - [Testing](#testing)
 - [Continuous Integration](#ci)
+- [SWC (Speedy Web Compiler)](#swc)
 
 ## Installation
 
@@ -74,11 +75,11 @@ Conversion of column names from camel case to snake case is automatically done i
 It however does not work in all cases. See excerpt below from Objection docs
 ([Snake case to camel case conversion](https://vincit.github.io/objection.js/recipes/snake-case-to-camel-case-conversion.html)):
 
-> When the conversion is done on objection level only database columns of the returned 
-rows (model instances) are convered to camel case. You still need to use snake case in 
-relationMappings and queries. Note that insert, patch, update and their variants still 
-take objects in camel case. The reasoning is that objects passed to those methods 
-usually come from the client that also uses camel case.
+> When the conversion is done on objection level only database columns of the returned
+> rows (model instances) are convered to camel case. You still need to use snake case in
+> relationMappings and queries. Note that insert, patch, update and their variants still
+> take objects in camel case. The reasoning is that objects passed to those methods
+> usually come from the client that also uses camel case.
 
 
 ### Migrations
@@ -362,3 +363,17 @@ npm run test:e2e:local
 
 [Github Actions config](./.github/workflows/main-workflow.yml)  
 ![](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)
+
+# swc
+
+SWC is available in the project, but it generates incorrect imports on Windows when using paths,
+similar to https://github.com/swc-project/swc/issues/7592.
+
+It can however be run manually:
+```
+# Compile
+npx swc ./src -d dist -w
+
+# Type check
+tsc --noEmit
+```
