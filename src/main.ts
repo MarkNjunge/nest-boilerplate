@@ -82,8 +82,6 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
   });
 
   if (bool(config.rateLimit.enabled)) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-errors: Type issues
     await app.register(fastifyRateLimit, {
       max: config.rateLimit.max,
       timeWindow: config.rateLimit.timeWindow,

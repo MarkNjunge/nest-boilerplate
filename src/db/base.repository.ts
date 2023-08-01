@@ -37,7 +37,7 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
   ): Promise<Model> {
     // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
     return await this.model.query(trxOrKnex)
-      .insertGraph(data)
+      .insertGraph(data as any)
       .returning("*") as Model;
   }
 
@@ -47,7 +47,7 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
   ): Promise<Model[]> {
     // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
     return await this.model.query(trxOrKnex)
-      .insertGraph(data)
+      .insertGraph(data as any)
       .returning("*") as Model;
   }
 
@@ -59,13 +59,13 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
     trxOrKnex?: TransactionOrKnex,
   ): Promise<Model> {
     return await this.model.query(trxOrKnex)
-      .patchAndFetchById(id, data)
+      .patchAndFetchById(id, data as any)
       .withGraphJoined(fetches) as Model;
   }
 
   async deleteById(
     id: number,
   ): Promise<number> {
-    return this.model.query().deleteById(id);
+    return this.model.query().deleteById(id) as any;
   }
 }
