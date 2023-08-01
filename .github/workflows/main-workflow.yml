@@ -6,10 +6,12 @@ jobs:
     name: Test
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "16.15.1"
+          node-version: "18.17.0"
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
       - name: Install dependencies
         env:
           CI: true
