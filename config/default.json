@@ -20,7 +20,7 @@
   "rateLimit": {
     "enabled": true,
     "max": 100,
-    "timeWindow": "1m"
+    "timeWindow": 60
   },
   "cors": {
     "origins": "*",

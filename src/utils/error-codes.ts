@@ -6,6 +6,7 @@ export class ErrorCodes {
   static NOT_FOUND = "NotFound";
   static VALIDATION_ERROR = "ValidationError";
   static INVALID_USER = "InvalidUser";
+  static TOO_MANY_REQUESTS = "TooManyRequests";
 }
 
 export function getErrorCode(status: number | string): string {
@@ -14,6 +15,8 @@ export function getErrorCode(status: number | string): string {
     return ErrorCodes.INVALID_AUTHENTICATION;
   } else if (status === "404") {
     return ErrorCodes.NOT_FOUND;
+  } else if (status === "429") {
+    return ErrorCodes.TOO_MANY_REQUESTS;
   } else if (status.match(/4\d\d/)) {
     return ErrorCodes.CLIENT_ERROR;
   } else {

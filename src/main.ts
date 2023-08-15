@@ -10,7 +10,6 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import * as fastifyRateLimit from "@fastify/rate-limit";
 import { default as helmet } from "@fastify/helmet";
 import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
 import { ApplicationLogger } from "./logging/ApplicationLogger";
@@ -27,7 +26,7 @@ async function bootstrap(): Promise<void> {
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({ trustProxy: true }),
     {
       logger: process.env.NODE_ENV === "production" ?
         false :
@@ -80,13 +79,6 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
     methods: config.cors.methods,
     allowedHeaders: config.cors.allowedHeaders,
   });
-
-  if (bool(config.rateLimit.enabled)) {
-    await app.register(fastifyRateLimit, {
-      max: config.rateLimit.max,
-      timeWindow: config.rateLimit.timeWindow,
-    });
-  }
 }
 
 function initializeSwagger(app: NestFastifyApplication): void {

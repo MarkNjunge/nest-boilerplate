@@ -227,7 +227,7 @@ app.useGlobalGuards(new AuthGuard());
 ## Rate Limiting
 
 A rate limiter is configured
-using [@fastify/rate-limit](https://github.com/fastify/fastify-rate-limit).  
+using [@nestjs/throttler](https://github.com/nestjs/throttler).  
 It defaults to 100 request per minute per IP (configurable in [default.json](./config/default.json))
 .
 

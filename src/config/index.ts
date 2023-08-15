@@ -41,7 +41,7 @@ interface SwaggerContact {
 interface RateLimit {
   enabled: boolean;
   max: number;
-  timeWindow: string;
+  timeWindow: number;
 }
 
 interface Cors {
