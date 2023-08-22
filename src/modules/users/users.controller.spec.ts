@@ -1,4 +1,3 @@
-/* eslint-disable max-nested-callbacks,max-lines-per-function */
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";

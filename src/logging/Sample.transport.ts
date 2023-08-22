@@ -14,13 +14,10 @@ export class SampleTransport extends Transport {
   }
 
   log(info: any, callback: () => void): void {
-    if (callback) {
-      setImmediate(callback);
-    }
+    setImmediate(callback);
 
     const cb = (err?: any) => {
       if (err) {
-        // eslint-disable-next-line no-console
         console.error(err);
         this.emit("warn", err);
       } else {
@@ -48,10 +45,10 @@ export class SampleTransport extends Transport {
       this.batchTimeoutID = -1;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const entriesCopy = clone(this.batchEntries);
     this.batchEntries = [];
 
-    // eslint-disable-next-line no-console
     // console.log(entriesCopy.map(e => e.message));
     cb();
   }

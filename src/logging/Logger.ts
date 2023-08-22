@@ -12,6 +12,8 @@ export class ILogMeta {
   data?: any;
 
   ctx?: IReqCtx;
+
+  error?: Error;
 }
 
 export class Logger {
@@ -47,7 +49,6 @@ export class Logger {
     winston.verbose({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
   }
 
-  // eslint-disable-next-line max-lines-per-function
   logRoute(
     request: FastifyRequest,
     response: FastifyReply,

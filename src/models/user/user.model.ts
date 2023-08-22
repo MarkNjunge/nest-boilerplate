@@ -8,6 +8,7 @@ export class UserModel extends BaseModel {
   contact: ContactDto;
   addresses: AddressDto[];
 
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   static get tableName() {
     return "users";
   }

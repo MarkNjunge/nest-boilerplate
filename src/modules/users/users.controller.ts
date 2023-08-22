@@ -21,7 +21,7 @@ import { UserDto, CreateUserDto, UpdateUserDto } from "../../models/user";
 import { AddressDto, CreateAddressDto } from "../../models/address";
 import { ApiResponseDto } from "@/models/_shared/ApiResponse.dto";
 import { ArrayValidationPipe } from "@/pipes/array-validation.pipe";
-import { HttpException, ErrorCodes, parseQuery } from "@/utils";
+import { parseQuery } from "@/utils";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
 import { CleanResponse } from "@/decorators/clean-response.decorator";
 
@@ -35,12 +35,7 @@ export class UsersController {
   @ApiResponse({ status: 200, type: UserDto })
   @CleanResponse(UserDto)
   async get(@ReqCtx() ctx: IReqCtx, @Param("id") id: number): Promise<UserDto> {
-    const user = await this.usersService.get(ctx, id);
-    if (!user) {
-      throw new HttpException(404, `The user ${id} does not exist`, ErrorCodes.INVALID_USER);
-    }
-
-    return user;
+    return this.usersService.get(ctx, id);
   }
 
   @Get("/")

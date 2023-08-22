@@ -6,7 +6,7 @@ import { HttpException, ErrorCodes } from "@/utils";
 export type Type<T = any> = new(...args: any[]) => T;
 
 @Injectable()
-export class ArrayValidationPipe implements PipeTransform<any> {
+export class ArrayValidationPipe implements PipeTransform {
   private readonly type: Type;
 
   constructor(type: Type) {

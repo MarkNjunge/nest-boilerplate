@@ -1,4 +1,3 @@
-/* eslint-disable max-nested-callbacks,max-lines-per-function */
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "./users.service";
 import { AddressDto, CreateAddressDto } from "@/models/address";

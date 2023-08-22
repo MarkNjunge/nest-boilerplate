@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { BaseRepository } from "@/db/base.repository";
 import { UserModel } from "@/models/user/user.model";
 import { CreateUserDto, UpdateUserDto } from "@/models/user";

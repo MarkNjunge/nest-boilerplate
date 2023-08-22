@@ -11,7 +11,7 @@ import { ResponseUtils } from "@/utils";
 export class ResponseInterceptor implements NestInterceptor {
   constructor(private readonly reflector: Reflector) {}
 
-  intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<FastifyRequest>();
 
@@ -28,6 +28,7 @@ export class ResponseInterceptor implements NestInterceptor {
         }),
       )
       .pipe(map(data => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (clz) {
           return ResponseUtils.cleanObject(clz, data);
         } else {

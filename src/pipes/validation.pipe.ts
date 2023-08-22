@@ -26,7 +26,6 @@ export class ValidationPipe implements PipeTransform {
     );
   }
 
-  // eslint-disable-next-line max-lines-per-function
   static async validate(value: any, { metatype }: ArgumentMetadata): Promise<ValidationErrorDto[]> {
     // Account for an empty request body
     if (value === null) {
@@ -76,7 +75,7 @@ export class ValidationPipe implements PipeTransform {
   }
 
   static toValidate(metatype: any): boolean {
-    const types: Array<() => any> = [String, Boolean, Number, Array, Object];
+    const types: (() => any)[] = [String, Boolean, Number, Array, Object];
 
     return !types.includes(metatype);
   }

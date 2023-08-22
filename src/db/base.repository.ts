@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { ModelClass, QueryBuilderType, TransactionOrKnex } from "objection";
 import { BaseModel } from "@/models/_base.model";
 import { applyQuery, Query } from "@/utils";
@@ -17,18 +18,18 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
   async get(
     id: number,
     fetches = "",
-  ): Promise<Model> {
-    return await this.model.query()
+  ): Promise<Model | null> {
+    return this.model.query()
       .findById(id)
-      .withGraphJoined(fetches) as Model;
+      .withGraphJoined(fetches) as unknown as Model;
   }
 
   async list(
     query: Query,
     fetches = "",
   ): Promise<Model[]> {
-    return await applyQuery(query, this.model.query())
-      .withGraphJoined(fetches) as Model[];
+    return applyQuery(query, this.model.query())
+      .withGraphJoined(fetches) as unknown as Model[];
   }
 
   async create(
@@ -36,7 +37,7 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
     trxOrKnex?: TransactionOrKnex,
   ): Promise<Model> {
     // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
-    return await this.model.query(trxOrKnex)
+    return this.model.query(trxOrKnex)
       .insertGraph(data as any)
       .returning("*") as Model;
   }
@@ -46,21 +47,20 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
     trxOrKnex?: TransactionOrKnex,
   ): Promise<Model[]> {
     // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
-    return await this.model.query(trxOrKnex)
+    return this.model.query(trxOrKnex)
       .insertGraph(data as any)
       .returning("*") as Model;
   }
 
-  // eslint-disable-next-line max-params
   async updateById(
     id: number,
     data: UpdateDto,
     fetches = "",
     trxOrKnex?: TransactionOrKnex,
-  ): Promise<Model> {
-    return await this.model.query(trxOrKnex)
+  ): Promise<Model | null> {
+    return this.model.query(trxOrKnex)
       .patchAndFetchById(id, data as any)
-      .withGraphJoined(fetches) as Model;
+      .withGraphJoined(fetches) as unknown as Model;
   }
 
   async deleteById(

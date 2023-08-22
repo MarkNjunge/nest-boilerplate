@@ -27,7 +27,6 @@ class CustomMigrationSource {
 
   // noinspection JSUnusedGlobalSymbols
   getMigration(migration) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require(path.join(migrationsDir, migration));
   }
 }

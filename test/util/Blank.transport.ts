@@ -5,7 +5,7 @@ export class BlankTransport extends Transport {
     super(opts);
   }
 
-  log(info, callback): void {
+  log(info, callback: () => void): void {
     setImmediate(() => {
       this.emit("logged", info);
     });

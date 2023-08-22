@@ -5,19 +5,21 @@ module.exports = {
     sourceType: "module",
   },
   plugins: ["@typescript-eslint/eslint-plugin"],
-  extends: [
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "@marknjunge/eslint-config-ts",
-  ],
+  extends: ["@marknjunge/eslint-config-ts",],
   root: true,
   env: {
     node: true,
     jest: true,
   },
+  overrides: [
+    {
+      files: ["*.js"],
+      extends: ["plugin:@typescript-eslint/disable-type-checked"],
+    }
+  ],
   rules: {
-    "padding-line-between-statements": "off",
-    "@typescript-eslint/indent": "off",
-    "@typescript-eslint/no-unnecessary-condition": "off",
+
+    // Specific to nest
+    // "@typescript-eslint/class-literal-property-style": "Off",
   },
 };

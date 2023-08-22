@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { BaseRepository } from "@/db/base.repository";
 import { AddressModel } from "@/models/address/address.model";
 import { CreateAddressDto } from "@/models/address";

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import * as request from "supertest";
 import { CreateAddressDto } from "../src/models/address";
 

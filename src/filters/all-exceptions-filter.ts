@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import {
   ExceptionFilter,
   Catch,
@@ -17,7 +18,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
     this.logger = new Logger("HttpExceptionFilter");
   }
 
-  // eslint-disable-next-line max-lines-per-function
   catch(e: HttpException | Error, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();

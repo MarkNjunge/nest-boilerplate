@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { BaseRepository } from "@/db/base.repository";
 import { ContactModel } from "@/models/contact/contact.model";
 import { CreateContactDto, UpdateContactDto } from "@/models/contact";

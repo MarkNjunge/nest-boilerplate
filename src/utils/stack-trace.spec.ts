@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { parseStacktrace } from "./stack-trace";
 
 describe("stack-trace", () => {
