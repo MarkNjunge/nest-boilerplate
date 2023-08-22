@@ -57,7 +57,7 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
     data: UpdateDto,
     fetches = "",
     trxOrKnex?: TransactionOrKnex,
-  ): Promise<Model | null> {
+  ): Promise<Model> {
     return this.model.query(trxOrKnex)
       .patchAndFetchById(id, data as any)
       .withGraphJoined(fetches) as unknown as Model;

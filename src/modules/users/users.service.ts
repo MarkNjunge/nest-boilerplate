@@ -46,6 +46,7 @@ export class UsersService {
   }
 
   async update(ctx: IReqCtx, id: number, data: UpdateUserDto): Promise<UserDto> {
+    await this.get(ctx, id);
     this.logger.debug(`Updating user ${id}`, { data, ctx });
     await this.contactRepo.query()
       .patch({ email: data.contact.email })
