@@ -19,7 +19,6 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Docker support](#docker)
 - [Testing](#testing)
 - [Continuous Integration](#ci)
-- [SWC (Speedy Web Compiler)](#swc)
 
 ## Installation
 
@@ -363,17 +362,3 @@ npm run test:e2e:local
 
 [Github Actions config](./.github/workflows/main-workflow.yml)  
 ![](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)
-
-# swc
-
-SWC is available in the project, but it generates incorrect imports on Windows when using paths,
-similar to https://github.com/swc-project/swc/issues/7592.
-
-It can however be run manually:
-```
-# Compile
-npx swc ./src -d dist -w
-
-# Type check
-tsc --noEmit
-```
