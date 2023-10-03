@@ -4,17 +4,17 @@ import { AppService } from "./app.service";
 import { UsersModule } from "../users/users.module";
 import { DbModule } from "@/modules/_db/db.module";
 import { bool, config } from "@/config";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { ThrottlerGuard, ThrottlerModule, seconds } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 
 const modules: DynamicModule[] = [];
 const providers: Provider[] = [];
 
 if (bool(config.rateLimit.enabled)) {
-  modules.push(ThrottlerModule.forRoot({
-    ttl: config.rateLimit.timeWindow,
-    limit: config.rateLimit.max,
-  }));
+  modules.push(ThrottlerModule.forRoot([{
+    ttl: seconds(config.rateLimit.timeWindow),
+    limit: config.rateLimit.max
+  }]));
   providers.push({
     provide: APP_GUARD,
     useClass: ThrottlerGuard,
