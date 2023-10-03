@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { map, Observable } from "rxjs";
 import { tap } from "rxjs/operators";
@@ -17,9 +22,13 @@ export class ResponseInterceptor implements NestInterceptor {
 
     const correlationId = request.headers["x-correlation-id"] as string;
     const ip = request.headers["x-ip"] as string;
-    const clz = this.reflector.get<ClassConstructor<any>>(CleanResponseKey, context.getHandler());
+    const clz = this.reflector.get<ClassConstructor<any>>(
+      CleanResponseKey,
+      context.getHandler(),
+    );
 
-    return next.handle()
+    return next
+      .handle()
       .pipe(
         tap(() => {
           const response = ctx.getResponse<FastifyReply>();
@@ -27,13 +36,15 @@ export class ResponseInterceptor implements NestInterceptor {
           void response.header("x-ip", ip);
         }),
       )
-      .pipe(map(data => {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (clz) {
-          return ResponseUtils.cleanObject(clz, data);
-        } else {
-          return data;
-        }
-      }));
+      .pipe(
+        map(data => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (clz) {
+            return ResponseUtils.cleanObject(clz, data);
+          } else {
+            return data;
+          }
+        }),
+      );
   }
 }

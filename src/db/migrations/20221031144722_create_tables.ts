@@ -4,14 +4,13 @@ export async function up(knex: Knex): Promise<void> {
   return knex.schema
     .createTable("users", table => {
       table.increments("id").primary();
-      table.string("username", 32)
-        .notNullable();
+      table.string("username", 32).notNullable();
     })
     .createTable("contacts", table => {
       table.increments("id").primary();
-      table.string("email", 64)
-        .notNullable();
-      table.integer("user_id")
+      table.string("email", 64).notNullable();
+      table
+        .integer("user_id")
         .unique()
         .notNullable()
         .references("id")
@@ -21,13 +20,10 @@ export async function up(knex: Knex): Promise<void> {
     })
     .createTable("addresses", table => {
       table.increments("id").primary();
-      table.string("city", 32)
-        .notNullable()
-        .unique();
-      table.string("country", 32)
-        .notNullable()
-        .unique();
-      table.integer("user_id")
+      table.string("city", 32).notNullable().unique();
+      table.string("country", 32).notNullable().unique();
+      table
+        .integer("user_id")
         .unique()
         .notNullable()
         .references("id")
@@ -36,7 +32,6 @@ export async function up(knex: Knex): Promise<void> {
         .onDelete("CASCADE");
     });
 }
-
 
 export async function down(knex: Knex): Promise<void> {
   return knex.schema

@@ -2,8 +2,16 @@ import { BaseRepository } from "@/db/base.repository";
 import { UserModel } from "@/models/user/user.model";
 import { CreateUserDto, UpdateUserDto } from "@/models/user";
 
-export type UserRepository = BaseRepository<UserModel, CreateUserDto, UpdateUserDto>;
-export const userRepository = new BaseRepository<UserModel, CreateUserDto, UpdateUserDto>(UserModel);
+export type UserRepository = BaseRepository<
+  UserModel,
+  CreateUserDto,
+  UpdateUserDto
+>;
+export const userRepository = new BaseRepository<
+  UserModel,
+  CreateUserDto,
+  UpdateUserDto
+>(UserModel);
 export const USER_REPOSITORY = "USER_REPOSITORY";
 
 /**

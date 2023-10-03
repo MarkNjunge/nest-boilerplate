@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-} from "@nestjs/common";
+import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { FastifyRequest } from "fastify";
 import { config } from "@/config";
@@ -25,7 +21,11 @@ function validateRequest(request: FastifyRequest): boolean {
   const apiKey = match ? match[1] : null;
 
   if (apiKey !== config.apiKey) {
-    throw new HttpException(401, "Invalid api key", ErrorCodes.INVALID_AUTHENTICATION);
+    throw new HttpException(
+      401,
+      "Invalid api key",
+      ErrorCodes.INVALID_AUTHENTICATION,
+    );
   }
 
   return true;

@@ -22,7 +22,11 @@ export interface Query {
   orders: QueryOrder[];
 }
 
-export const blankQuery = (limit = 10): Query => ({ limit, filters: [], orders: [] });
+export const blankQuery = (limit = 10): Query => ({
+  limit,
+  filters: [],
+  orders: [],
+});
 
 export function parseQuery(reqQuery: any): Query {
   const filters: QueryFilter[] = [];
@@ -36,9 +40,7 @@ export function parseQuery(reqQuery: any): Query {
 
   if (reqQuery.filter) {
     reqQuery.filter.split(":").forEach(f => {
-      const match = f
-        .replace(/[()]/g, "")
-        .match(/(.*),(.*),(.*)/);
+      const match = f.replace(/[()]/g, "").match(/(.*),(.*),(.*)/);
 
       if (!match) {
         return;
@@ -49,18 +51,15 @@ export function parseQuery(reqQuery: any): Query {
   }
 
   if (reqQuery.orderBy) {
-    reqQuery.orderBy.split(":")
-      .forEach(q => {
-        const match = q
-          .replace(/[()]/g, "")
-          .match(/(.*),(.*)/);
+    reqQuery.orderBy.split(":").forEach(q => {
+      const match = q.replace(/[()]/g, "").match(/(.*),(.*)/);
 
-        if (!match) {
-          return;
-        }
+      if (!match) {
+        return;
+      }
 
-        orders.push({ key: snakeCase(match[1]), direction: match[2] });
-      });
+      orders.push({ key: snakeCase(match[1]), direction: match[2] });
+    });
   }
 
   const limit = reqQuery.limit ? parseInt(reqQuery.limit) : 20;
@@ -76,7 +75,7 @@ export function parseQuery(reqQuery: any): Query {
 
 export function applyQuery<M extends Model, R = M[]>(
   query: Query,
-  dbQuery: Objection.QueryBuilder<M, R>
+  dbQuery: Objection.QueryBuilder<M, R>,
 ): Objection.QueryBuilder<M, R> {
   if (query.page) {
     const offset = query.page == 1 ? 0 : (query.page - 1) * query.limit;

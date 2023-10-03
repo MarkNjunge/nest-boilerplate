@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-} from "@nestjs/common";
+import { ExceptionFilter, Catch, ArgumentsHost } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "@/logging/Logger";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
@@ -25,12 +21,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Get the location where the error was thrown from to use as a logging tag
     const parsedStack = parseStacktrace(e.stack ?? "");
-    const tag = parsedStack.length > 0 ? parsedStack[0].methodName : "<unknown>";
+    const tag =
+      parsedStack.length > 0 ? parsedStack[0].methodName : "<unknown>";
 
     // Get the correct http status
     const { status, code, meta } = {
       status: (e as HttpException).status ?? 500,
-      code: (e as HttpException).code ?? getErrorCode((e as HttpException).status ?? 500),
+      code:
+        (e as HttpException).code ??
+        getErrorCode((e as HttpException).status ?? 500),
       meta: (e as HttpException).meta ?? undefined,
     };
     response.statusCode = status;

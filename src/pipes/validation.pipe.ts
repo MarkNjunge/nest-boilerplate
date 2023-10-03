@@ -1,8 +1,4 @@
-import {
-  PipeTransform,
-  Injectable,
-  ArgumentMetadata,
-} from "@nestjs/common";
+import { PipeTransform, Injectable, ArgumentMetadata } from "@nestjs/common";
 import { validate, ValidationError } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { config } from "@/config";
@@ -26,7 +22,10 @@ export class ValidationPipe implements PipeTransform {
     );
   }
 
-  static async validate(value: any, { metatype }: ArgumentMetadata): Promise<ValidationErrorDto[]> {
+  static async validate(
+    value: any,
+    { metatype }: ArgumentMetadata,
+  ): Promise<ValidationErrorDto[]> {
     // Account for an empty request body
     if (value === null) {
       value = Object.assign({}, value);
@@ -63,10 +62,11 @@ export class ValidationPipe implements PipeTransform {
       .filter(v => !v.constraints)
       .forEach(error => {
         if (error.children) {
-          const validationErrors = ValidationPipe.getValidationErrorsFromChildren(
-            error.property,
-            error.children,
-          );
+          const validationErrors =
+            ValidationPipe.getValidationErrorsFromChildren(
+              error.property,
+              error.children,
+            );
           nestedErrors.push(...validationErrors);
         }
       });

@@ -6,7 +6,8 @@ import {
   Get,
   Param,
   Delete,
-  Put, Query,
+  Put,
+  Query,
 } from "@nestjs/common";
 import { AuthGuard } from "@/guards/auth.guard";
 import {
@@ -14,7 +15,8 @@ import {
   ApiBadRequestResponse,
   ApiOperation,
   ApiTags,
-  ApiSecurity, ApiBody,
+  ApiSecurity,
+  ApiBody,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { UserDto, CreateUserDto, UpdateUserDto } from "../../models/user";
@@ -42,7 +44,10 @@ export class UsersController {
   @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
   @CleanResponse(UserDto)
-  async list(@ReqCtx() ctx: IReqCtx, @Query() query: string): Promise<UserDto[]> {
+  async list(
+    @ReqCtx() ctx: IReqCtx,
+    @Query() query: string,
+  ): Promise<UserDto[]> {
     return this.usersService.list(ctx, parseQuery(query));
   }
 
@@ -56,7 +61,10 @@ export class UsersController {
     type: UserDto,
   })
   @ApiBadRequestResponse({ description: "Missing or too many params" })
-  async create(@ReqCtx() ctx: IReqCtx, @Body() dto: CreateUserDto): Promise<UserDto> {
+  async create(
+    @ReqCtx() ctx: IReqCtx,
+    @Body() dto: CreateUserDto,
+  ): Promise<UserDto> {
     return this.usersService.create(ctx, dto);
   }
 
@@ -105,7 +113,10 @@ export class UsersController {
     description: "The user has been deleted",
     type: ApiResponseDto,
   })
-  async delete(@ReqCtx() ctx: IReqCtx, @Param("id") id: number): Promise<ApiResponseDto> {
+  async delete(
+    @ReqCtx() ctx: IReqCtx,
+    @Param("id") id: number,
+  ): Promise<ApiResponseDto> {
     await this.usersService.delete(ctx, id);
 
     return { message: "User deleted" };

@@ -21,7 +21,10 @@ export class Logger {
 
   info(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.info({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
+    winston.info({
+      message: `[${tag}] ${message}`,
+      data: Logger.getData(tag, message, meta),
+    });
   }
 
   error(error: string | Error, meta?: ILogMeta): void {
@@ -36,17 +39,26 @@ export class Logger {
 
   warn(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.warn({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
+    winston.warn({
+      message: `[${tag}] ${message}`,
+      data: Logger.getData(tag, message, meta),
+    });
   }
 
   debug(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.debug({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
+    winston.debug({
+      message: `[${tag}] ${message}`,
+      data: Logger.getData(tag, message, meta),
+    });
   }
 
   verbose(message: string, meta?: ILogMeta): void {
     const tag = meta?.tag ?? this.name;
-    winston.verbose({ message: `[${tag}] ${message}`, data: Logger.getData(tag, message, meta) });
+    winston.verbose({
+      message: `[${tag}] ${message}`,
+      data: Logger.getData(tag, message, meta),
+    });
   }
 
   logRoute(
@@ -122,7 +134,10 @@ export function initializeWinston(): void {
     transports: [
       new SampleTransport(),
       new winston.transports.Console({
-        format: combine(myFormat, colorize({ all: true, colors: { debug: "brightBlue" } })),
+        format: combine(
+          myFormat,
+          colorize({ all: true, colors: { debug: "brightBlue" } }),
+        ),
       }),
     ],
   });

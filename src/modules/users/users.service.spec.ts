@@ -1,9 +1,18 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "./users.service";
 import { AddressDto, CreateAddressDto } from "@/models/address";
-import { USER_REPOSITORY, UserRepository } from "@/db/repositories/user.repository";
-import { ADDRESS_REPOSITORY, AddressRepository } from "@/db/repositories/address.repository";
-import { CONTACT_REPOSITORY, ContactRepository } from "@/db/repositories/contact.repository";
+import {
+  USER_REPOSITORY,
+  UserRepository,
+} from "@/db/repositories/user.repository";
+import {
+  ADDRESS_REPOSITORY,
+  AddressRepository,
+} from "@/db/repositories/address.repository";
+import {
+  CONTACT_REPOSITORY,
+  ContactRepository,
+} from "@/db/repositories/contact.repository";
 import { UserModel } from "@/models/user/user.model";
 import { emptyCtx } from "@/decorators/request-context.decorator";
 import { CreateUserDto } from "@/models/user";
@@ -59,7 +68,9 @@ describe("UsersService", () => {
     it("should return an array", async () => {
       jest
         .spyOn(mockUserRepository, "list")
-        .mockImplementation(async () => Promise.resolve([user as any as UserModel]));
+        .mockImplementation(async () =>
+          Promise.resolve([user as any as UserModel]),
+        );
 
       const actual = await usersService.list(emptyCtx());
       expect(actual).toEqual([user]);
@@ -70,9 +81,14 @@ describe("UsersService", () => {
     it("should return an object", async () => {
       jest
         .spyOn(mockUserRepository, "create")
-        .mockImplementation(async () => Promise.resolve(user as any as UserModel));
+        .mockImplementation(async () =>
+          Promise.resolve(user as any as UserModel),
+        );
 
-      const actual = await usersService.create(emptyCtx(), createUserDto as CreateUserDto);
+      const actual = await usersService.create(
+        emptyCtx(),
+        createUserDto as CreateUserDto,
+      );
       expect(actual).toEqual(user);
     });
   });
@@ -81,13 +97,21 @@ describe("UsersService", () => {
     it("should return an object", async () => {
       jest
         .spyOn(mockAddressRepository, "create")
-        .mockImplementation(async () => Promise.resolve(address as AddressModel));
+        .mockImplementation(async () =>
+          Promise.resolve(address as AddressModel),
+        );
 
       jest
         .spyOn(mockUserRepository, "get")
-        .mockImplementation(async () => Promise.resolve(user as any as UserModel));
+        .mockImplementation(async () =>
+          Promise.resolve(user as any as UserModel),
+        );
 
-      const actual = await usersService.createAddress(emptyCtx(), 1, createAddressDto);
+      const actual = await usersService.createAddress(
+        emptyCtx(),
+        1,
+        createAddressDto,
+      );
       expect(actual).toEqual(address);
     });
   });

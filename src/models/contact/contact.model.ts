@@ -7,5 +7,4 @@ export class ContactModel extends BaseModel {
   static get tableName() {
     return "contacts";
   }
-
 }

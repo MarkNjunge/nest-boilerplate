@@ -12,8 +12,7 @@ export function requestHeadersMiddleware(
   const correlationId = crypto.randomBytes(8).toString("hex");
   const ip = extractIp(request);
 
-  request.headers["x-request-time"] = dayjs().valueOf()
-    .toString();
+  request.headers["x-request-time"] = dayjs().valueOf().toString();
   request.headers["x-correlation-id"] = correlationId;
   request.headers["x-ip"] = ip;
   request.params = { correlationId, ip };

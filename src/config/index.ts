@@ -3,7 +3,8 @@ import * as path from "path";
 dotenv.config();
 
 // Knex CLI migrations
-process.env.NODE_CONFIG_DIR = process.env.NODE_CONFIG_DIR ?? path.join(__dirname, "../../config");
+process.env.NODE_CONFIG_DIR =
+  process.env.NODE_CONFIG_DIR ?? path.join(__dirname, "../../config");
 
 import * as configPackage from "config";
 
@@ -67,5 +68,4 @@ export function bool(value: boolean | string): boolean {
   }
 
   return value === "true";
-
 }

@@ -9,7 +9,12 @@ export class HttpException extends Error {
 
   meta?: any;
 
-  constructor(status: number, message: string, code?: string, meta: any = undefined) {
+  constructor(
+    status: number,
+    message: string,
+    code?: string,
+    meta: any = undefined,
+  ) {
     super(message);
     this.status = status;
     this.message = message;

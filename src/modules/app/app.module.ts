@@ -11,10 +11,14 @@ const modules: DynamicModule[] = [];
 const providers: Provider[] = [];
 
 if (bool(config.rateLimit.enabled)) {
-  modules.push(ThrottlerModule.forRoot([{
-    ttl: seconds(config.rateLimit.timeWindow),
-    limit: config.rateLimit.max
-  }]));
+  modules.push(
+    ThrottlerModule.forRoot([
+      {
+        ttl: seconds(config.rateLimit.timeWindow),
+        limit: config.rateLimit.max,
+      },
+    ]),
+  );
   providers.push({
     provide: APP_GUARD,
     useClass: ThrottlerGuard,
@@ -22,15 +26,8 @@ if (bool(config.rateLimit.enabled)) {
 }
 
 @Module({
-  imports: [
-    ...modules,
-    DbModule,
-    UsersModule,
-  ],
+  imports: [...modules, DbModule, UsersModule],
   controllers: [AppController],
-  providers: [
-    ...providers,
-    AppService
-  ],
+  providers: [...providers, AppService],
 })
 export class AppModule {}

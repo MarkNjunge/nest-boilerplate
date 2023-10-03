@@ -8,7 +8,7 @@ import { emptyCtx } from "@/decorators/request-context.decorator";
 const mockUsersService: Partial<UsersService> = {
   list: jest.fn(),
   create: jest.fn(),
-  createAddress: jest.fn()
+  createAddress: jest.fn(),
 };
 
 describe("Users Controller", () => {
@@ -38,7 +38,7 @@ describe("Users Controller", () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [ { provide: UsersService, useValue: mockUsersService } ],
+      providers: [{ provide: UsersService, useValue: mockUsersService }],
     }).compile();
 
     usersController = module.get<UsersController>(UsersController);
@@ -64,7 +64,12 @@ describe("Users Controller", () => {
         .spyOn(mockUsersService, "create")
         .mockImplementation(async () => Promise.resolve(user));
 
-      expect(await usersController.create(emptyCtx(), createUserDto as CreateUserDto)).toBe(user);
+      expect(
+        await usersController.create(
+          emptyCtx(),
+          createUserDto as CreateUserDto,
+        ),
+      ).toBe(user);
     });
   });
 
@@ -74,9 +79,9 @@ describe("Users Controller", () => {
         .spyOn(mockUsersService, "createAddress")
         .mockImplementation(async () => Promise.resolve(address));
 
-      expect(await usersController.createAddress(emptyCtx(), 1, createAddressDto)).toBe(
-        address,
-      );
+      expect(
+        await usersController.createAddress(emptyCtx(), 1, createAddressDto),
+      ).toBe(address);
     });
   });
 });

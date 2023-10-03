@@ -16,9 +16,9 @@ export class DbService {
     Model.knex(this.knex);
 
     if (config.db.logQueries) {
-    this.knex.on("query", queryData => {
-      this.logger.debug(this.fillBindings(queryData.sql, queryData.bindings));
-    });
+      this.knex.on("query", queryData => {
+        this.logger.debug(this.fillBindings(queryData.sql, queryData.bindings));
+      });
     }
   }
 

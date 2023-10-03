@@ -11,12 +11,11 @@ const migrationsDir = path.resolve(path.join(__dirname, "migrations"));
 class CustomMigrationSource {
   // noinspection JSUnusedGlobalSymbols
   async getMigrations() {
-    const migrationFiles = fs.readdirSync(migrationsDir)
-      .filter(file => {
-        const isTs = file.endsWith(".ts") && !file.endsWith(".d.ts");
-        const isJs = file.endsWith(".js");
-        return isTs || isJs;
-      });
+    const migrationFiles = fs.readdirSync(migrationsDir).filter(file => {
+      const isTs = file.endsWith(".ts") && !file.endsWith(".d.ts");
+      const isJs = file.endsWith(".js");
+      return isTs || isJs;
+    });
     return Promise.resolve(migrationFiles);
   }
 

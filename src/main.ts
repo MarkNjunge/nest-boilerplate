@@ -28,9 +28,8 @@ async function bootstrap(): Promise<void> {
     AppModule,
     new FastifyAdapter({ trustProxy: true }),
     {
-      logger: process.env.NODE_ENV === "production" ?
-        false :
-        new ApplicationLogger(),
+      logger:
+        process.env.NODE_ENV === "production" ? false : new ApplicationLogger(),
     },
   );
 
