@@ -12,6 +12,7 @@
     "start:dev": "nest start --watch -b swc --type-check",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "start:e2e": "nest start -b swc",
     "migration:make": "knex migrate:make --knexfile src/db/knexfile.ts -x ts",
     "migration:latest": "knex migrate:latest --knexfile src/db/knexfile.ts",
     "migration:down": "knex migrate:down --knexfile src/db/knexfile.ts",
