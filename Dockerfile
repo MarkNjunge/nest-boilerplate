@@ -1,5 +1,5 @@
 # Builder image
-FROM node:18.17.0-alpine3.18 as builder
+FROM node:20.8.1
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN npm run build
 RUN npm prune --production
 
 # Final image
-FROM node:18.17.0-alpine3.18
+FROM node:20.8.1
 
 WORKDIR /app
 
