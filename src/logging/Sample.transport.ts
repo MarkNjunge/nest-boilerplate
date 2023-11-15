@@ -33,7 +33,7 @@ export class SampleTransport extends Transport {
         this.batchTimeoutID = -1;
         this.doBatchRequest(cb);
       }, this.batchInterval);
-    } else if (this.batchEntries.length === this.batchCount) {
+    } else if (this.batchEntries.length >= this.batchCount) {
       this.doBatchRequest(cb);
     }
   }
