@@ -63,5 +63,14 @@ describe("clone", () => {
 
       expect(clone(x)).not.toBe(x);
     });
+
+    it("can clone buffers", () => {
+      const x: any = {
+        a: "b",
+        b: Buffer.from("abc123"),
+      };
+
+      expect(clone(x)).not.toBe(x);
+    });
   });
 });

@@ -1,36 +1,7 @@
-export function clone<T = any>(obj: T, checkCyclic = true): T {
-  // It's faster to check if the object is cyclic and switch, than to always use JSON
-  if (checkCyclic && isCyclic(obj)) {
-    return cloneJson<T>(obj);
-  }
+import * as _ from "lodash";
 
-  if (obj == null || typeof obj != "object") {
-    return obj;
-  }
-
-  const temp = new (obj as any).constructor();
-  for (const key in obj) {
-    temp[key] = clone(obj[key]);
-  }
-
-  return temp;
-}
-
-function cloneJson<T = any>(obj: T): T {
-  const cache: any[] = [];
-  const str = JSON.stringify(obj, (key, value) => {
-    if (typeof value === "object" && value !== null) {
-      if (cache.indexOf(value) !== -1) {
-        // Circular reference found, discard key
-        return;
-      }
-      // Store value in our collection
-      cache.push(value);
-    }
-    return value;
-  });
-
-  return JSON.parse(str);
+export function clone<T = any>(obj: T): T {
+  return _.cloneDeep(obj);
 }
 
 /**
