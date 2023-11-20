@@ -45,7 +45,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       meta,
     };
 
-    this.logger.error(e, { tag, ctx: { correlationId, ip } });
+    this.logger.error(e.name, { tag, ctx: { correlationId, ip } }, e);
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);

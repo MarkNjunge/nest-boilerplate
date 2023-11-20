@@ -27,12 +27,11 @@ export class Logger {
     });
   }
 
-  error(error: string | Error, meta?: ILogMeta): void {
+  error(message: string, meta?: ILogMeta, error?: Error): void {
     const tag = meta?.tag ?? this.name;
-    const message = typeof error === "string" ? error : error.message;
     const data = Logger.getData(tag, message, meta);
-    if ((error as Error).stack) {
-      data.stacktrace = (error as Error).stack;
+    if (error?.stack) {
+      data.stacktrace = error.stack;
     }
     winston.error({ message: `[${tag}] ${message}`, data });
   }

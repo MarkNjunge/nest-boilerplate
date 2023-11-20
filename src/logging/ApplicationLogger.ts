@@ -9,7 +9,7 @@ export class ApplicationLogger implements LoggerService {
   }
 
   error(message: string): void {
-    this.logger.error(new Error(message));
+    this.logger.error(message);
   }
 
   warn(message: string): void {

@@ -20,7 +20,7 @@ import multipart from "@fastify/multipart";
 initializeWinston();
 const logger = new Logger("Application");
 
-bootstrap().catch((e: Error) => logger.error(e));
+bootstrap().catch((e: Error) => logger.error(`Startup error: ${e}`, {}, e));
 
 async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
