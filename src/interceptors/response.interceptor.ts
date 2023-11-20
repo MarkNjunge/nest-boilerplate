@@ -9,8 +9,8 @@ import { map, Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { Reflector } from "@nestjs/core";
 import { ClassConstructor } from "class-transformer";
-import { CleanResponseKey } from "@/decorators/clean-response.decorator";
 import { ResponseUtils } from "@/utils";
+import { SerializeKey } from "@/decorators/serialize.decorator";
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -23,7 +23,7 @@ export class ResponseInterceptor implements NestInterceptor {
     const correlationId = request.headers["x-correlation-id"] as string;
     const ip = request.headers["x-ip"] as string;
     const clz = this.reflector.get<ClassConstructor<any>>(
-      CleanResponseKey,
+      SerializeKey,
       context.getHandler(),
     );
 

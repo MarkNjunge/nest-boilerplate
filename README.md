@@ -280,7 +280,7 @@ setting `validator.forbidUnknown` to `false` in the config.
 
 ## Response Mapping
 
-Cleaning response objects using can be enabled using the `@CleanResponse(ClassName)` decorator. 
+Cleaning response objects using can be enabled using the `@Serialize(ClassName)` decorator. 
 It uses [class-transformer](https://www.npmjs.com/package/class-transformer). 
 
 ## Errors & Exception Handling

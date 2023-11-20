@@ -25,7 +25,7 @@ import { ApiResponseDto } from "@/models/_shared/ApiResponse.dto";
 import { ArrayValidationPipe } from "@/pipes/array-validation.pipe";
 import { parseQuery } from "@/utils";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
-import { CleanResponse } from "@/decorators/clean-response.decorator";
+import { Serialize } from "@/decorators/serialize.decorator";
 
 @Controller("users")
 @ApiTags("Users")
@@ -35,7 +35,7 @@ export class UsersController {
   @Get("/:id")
   @ApiOperation({ summary: "Get a user" })
   @ApiResponse({ status: 200, type: UserDto })
-  @CleanResponse(UserDto)
+  @Serialize(UserDto)
   async get(@ReqCtx() ctx: IReqCtx, @Param("id") id: number): Promise<UserDto> {
     return this.usersService.get(ctx, id);
   }
@@ -43,7 +43,7 @@ export class UsersController {
   @Get("/")
   @ApiOperation({ summary: "Get all users" })
   @ApiResponse({ status: 200, type: UserDto, isArray: true })
-  @CleanResponse(UserDto)
+  @Serialize(UserDto)
   async list(
     @ReqCtx() ctx: IReqCtx,
     @Query() query: string,
