@@ -27,7 +27,7 @@ export class ValidationPipe implements PipeTransform {
     { metatype }: ArgumentMetadata,
   ): Promise<ValidationErrorDto[]> {
     // Account for an empty request body
-    if (value === null) {
+    if (value == null) {
       value = Object.assign({}, value);
     }
 

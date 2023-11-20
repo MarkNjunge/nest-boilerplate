@@ -15,6 +15,7 @@ import { requestHeadersMiddleware } from "./middleware/request-headers.middlewar
 import { ApplicationLogger } from "./logging/ApplicationLogger";
 import { ResponseInterceptor } from "./interceptors/response.interceptor";
 import { DbService } from "@/modules/_db/db.service";
+import multipart from "@fastify/multipart";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -78,6 +79,8 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
     methods: config.cors.methods,
     allowedHeaders: config.cors.allowedHeaders,
   });
+
+  await app.register(multipart, { attachFieldsToBody: "keyValues" });
 }
 
 function initializeSwagger(app: NestFastifyApplication): void {
