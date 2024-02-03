@@ -33,5 +33,9 @@
   "logging": {
     "timestampFormat": "YYYY-MM-DD HH:mm:ss.SSS",
     "logDataConsole": false
+  },
+  "fileUpload": {
+    "maxSize": 5242880,
+    "removeAfterUpload": true
   }
 }

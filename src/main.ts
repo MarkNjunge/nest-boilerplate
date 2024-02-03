@@ -16,6 +16,7 @@ import { ApplicationLogger } from "./logging/ApplicationLogger";
 import { ResponseInterceptor } from "./interceptors/response.interceptor";
 import { DbService } from "@/modules/_db/db.service";
 import multipart from "@fastify/multipart";
+import { FileHandler } from "@/utils/file-handler";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -80,7 +81,15 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
     allowedHeaders: config.cors.allowedHeaders,
   });
 
-  await app.register(multipart, { attachFieldsToBody: "keyValues" });
+  await app.register(multipart, {
+    attachFieldsToBody: "keyValues",
+    limits: {
+      fileSize: config.fileUpload.maxSize
+    },
+    onFile: async part => {
+      (part as any).value = await FileHandler.writeUploadFile(part);
+    }
+  });
 }
 
 function initializeSwagger(app: NestFastifyApplication): void {

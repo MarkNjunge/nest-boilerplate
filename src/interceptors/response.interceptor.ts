@@ -11,6 +11,7 @@ import { Reflector } from "@nestjs/core";
 import { ClassConstructor } from "class-transformer";
 import { ResponseUtils } from "@/utils";
 import { SerializeKey } from "@/decorators/serialize.decorator";
+import { FileHandler } from "@/utils/file-handler";
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -29,6 +30,10 @@ export class ResponseInterceptor implements NestInterceptor {
 
     return next
       .handle()
+      .pipe(tap(() => {
+        // Cleanup any files uploaded
+        FileHandler.deleteRequestFiles(request);
+      }))
       .pipe(
         tap(() => {
           const response = ctx.getResponse<FastifyReply>();

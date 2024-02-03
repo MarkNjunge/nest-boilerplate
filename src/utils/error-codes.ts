@@ -6,6 +6,7 @@ export class ErrorCodes {
   static VALIDATION_ERROR = "ValidationError";
   static INVALID_USER = "InvalidUser";
   static TOO_MANY_REQUESTS = "TooManyRequests";
+  static FILE_TOO_LARGE = "FileTooLarge";
 }
 
 export function getErrorCode(status: number | string): string {

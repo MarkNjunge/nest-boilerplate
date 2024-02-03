@@ -5,6 +5,7 @@ import { Logger } from "@/logging/Logger";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
 import { DBError } from "objection";
+import { FileHandler } from "@/utils/file-handler";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -19,18 +20,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();
 
+    // The 'fields' field of MultipartFile is a circular reference,
+    // which will cause a "Maximum call stack size exceeded" error in redact
+    FileHandler.removeCircularFields(request);
+
+    // Cleanup any files uploaded
+    FileHandler.deleteRequestFiles(request, true);
+
     // Get the location where the error was thrown from to use as a logging tag
     const parsedStack = parseStacktrace(e.stack ?? "");
     const tag =
       parsedStack.length > 0 ? parsedStack[0].methodName : "<unknown>";
 
     // Get the correct http status
+    const httpE = e as HttpException;
     const { status, code, meta } = {
-      status: (e as HttpException).status ?? 500,
-      code:
-        (e as HttpException).code ??
-        getErrorCode((e as HttpException).status ?? 500),
-      meta: (e as HttpException).meta ?? undefined,
+      status: httpE.status ?? 500,
+      code: httpE.code ?? getErrorCode(httpE.status ?? 500),
+      meta: httpE.meta ?? undefined,
     };
     response.statusCode = status;
 
@@ -45,7 +52,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       meta,
     };
 
-    this.logger.error(e.name, { tag, ctx: { correlationId, ip } }, e);
+    this.logger.error(message, { tag, ctx: { correlationId, ip } }, e);
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);

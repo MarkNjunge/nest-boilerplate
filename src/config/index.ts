@@ -18,6 +18,11 @@ interface Config {
   cors: Cors;
   validator: Validator;
   logging: Logging;
+  fileUpload: {
+    maxSize: number;
+    uploadDir: string;
+    removeAfterUpload: string;
+  };
 }
 
 interface Db {

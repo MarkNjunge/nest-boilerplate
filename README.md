@@ -11,6 +11,7 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Database](#database)
 - [Swagger (API docs)](#swagger)
 - [Query Parsing](#query-parsing)
+- [File Upload](#file-upload)
 - [Logging](#logging)
 - [Auth guard](#auth-guard)
 - [Rate limiting](#rate-limiting)
@@ -135,6 +136,37 @@ Multiple filters can be specified using a colon `:` as the delimiter.
 
 Ordering takes the format of `(column,direction)` where direction can be `desc,DESC,asc,ASC`.  
 Multiple orderings can be specified using a colon `:` as the delimiter.
+
+## File Upload
+
+File uploads are enabled.
+
+### Config
+
+`maxSize: number` - Max size in bytes. Default 5MB.  
+`uploadDir: string` - Upload directory. If blank, it will default to the OS's temp directory.  
+`removeAfterUpload: string` - Whether to delete files after the request completes.
+
+Upload a single file
+```
+@ApiProperty({ type: "string", format: "binary" })
+@IsNotEmpty()
+@IsObject({ message: "$property must be a single file" })
+@ValidateNested({ message: "$property must be a file" })
+@Type(() => UploadedFileDto)
+file2: UploadedFileDto;
+```
+
+Upload multiple files
+```
+@ApiProperty({ type: "array", items: { type: "string", format: "binary" } })
+@IsNotEmpty()
+@IsArray({ message: "$property must be multiple files" })
+@ValidateNested({ message: "$property must be a file", each: true })
+@Type(() => UploadedFileDto)
+file1: UploadedFileDto[];
+```
+See [FileUploadDto](./src/models/file-upload/file-upload.dto.ts) for a full example.
 
 ## Logging
 
