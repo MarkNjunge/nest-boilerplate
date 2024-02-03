@@ -5,6 +5,7 @@
   "author": "Mark Njung'e",
   "license": "MIT",
   "scripts": {
+    "prepare": "husky",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "docs": "npx compodoc -p tsconfig.json -s",
@@ -26,8 +27,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "docker-compose -f docker-compose-e2e.yml up --abort-on-container-exit --exit-code-from test",
     "posttest:e2e": "docker-compose -f docker-compose-e2e.yml down --rmi all",
-    "test:e2e:local": "jest --config ./test/jest-e2e.json",
-    "prepare": "husky install"
+    "test:e2e:local": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@fastify/helmet": "^11.0.0",
@@ -68,7 +68,7 @@
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
     "eslint": "^8.46.0",
-    "husky": "^8.0.3",
+    "husky": "^9.0.10",
     "jest": "^29.6.2",
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.1",
