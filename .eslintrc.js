@@ -4,8 +4,8 @@ module.exports = {
     project: "tsconfig.json",
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint/eslint-plugin"],
-  extends: ["@marknjunge/eslint-config-ts", "plugin:prettier/recommended"],
+  plugins: ["@typescript-eslint", "@stylistic"],
+  extends: ["@marknjunge/eslint-config-ts"],
   root: true,
   env: {
     node: true,
@@ -18,8 +18,8 @@ module.exports = {
     }
   ],
   rules: {
-
     // Specific to nest
     // "@typescript-eslint/class-literal-property-style": "Off",
+    "@stylistic/lines-between-class-members": "off" // Doesn't work well with decorators
   },
 };
