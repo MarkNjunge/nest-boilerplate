@@ -17,7 +17,7 @@ const logger = new Logger("FileHandler");
 export class FileHandler {
 
   static async writeUploadFile(part: MultipartFile): Promise<UploadedFileDto> {
-    const uploadPath = path.resolve(config.fileUpload.uploadDir) || os.tmpdir();
+    const uploadPath = path.resolve(config.fileUpload.uploadDir || os.tmpdir());
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
