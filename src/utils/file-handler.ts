@@ -54,6 +54,14 @@ export class FileHandler {
     }
 
     Object.keys(request.body || {}).forEach(key => {
+      if (Array.isArray(request.body?.[key])) {
+        Object.keys(request.body[key]).forEach(subKey => {
+          delete request.body?.[key][subKey].file;
+          delete request.body?.[key][subKey].fields;
+          delete request.body?.[key][subKey].toBuffer;
+        });
+      }
+
       delete request.body?.[key].file;
       delete request.body?.[key].fields;
       delete request.body?.[key].toBuffer;
