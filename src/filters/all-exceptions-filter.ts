@@ -43,6 +43,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const correlationId = request.headers["x-correlation-id"] as string;
     const ip = request.headers["x-ip"] as string;
+    response.header("x-correlation-id", correlationId);
+    response.header("x-ip", ip);
+
     const message = e instanceof DBError ? e.name : e.message;
     const apiError: ApiErrorDto = {
       status,
