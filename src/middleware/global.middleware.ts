@@ -3,7 +3,7 @@ import * as dayjs from "dayjs";
 import * as crypto from "crypto";
 import { extractIp } from "@/utils";
 
-export function requestHeadersMiddleware(
+export function globalMiddleware(
   request: FastifyRequest,
   _response: FastifyReply,
   // eslint-disable-next-line @typescript-eslint/ban-types

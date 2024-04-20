@@ -2,7 +2,6 @@ import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
 import { AppModule } from "./modules/app/app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
-import { LoggingInterceptor } from "./interceptors/logging.interceptor";
 import { ValidationPipe } from "./pipes/validation.pipe";
 import { config, bool } from "./config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
@@ -11,9 +10,9 @@ import {
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import { default as helmet } from "@fastify/helmet";
-import { requestHeadersMiddleware } from "./middleware/request-headers.middleware";
+import { globalMiddleware } from "./middleware/global.middleware";
 import { ApplicationLogger } from "./logging/ApplicationLogger";
-import { ResponseInterceptor } from "./interceptors/response.interceptor";
+import { GlobalInterceptor } from "./interceptors/global.interceptor";
 import { DbService } from "@/modules/_db/db.service";
 import multipart from "@fastify/multipart";
 import { FileHandler } from "@/utils/file-handler";
@@ -39,10 +38,9 @@ async function bootstrap(): Promise<void> {
   initializeSwagger(app);
 
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalInterceptors(new LoggingInterceptor());
-  app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()));
+  app.useGlobalInterceptors(new GlobalInterceptor(new Reflector()));
   app.useGlobalPipes(new ValidationPipe());
-  app.use(requestHeadersMiddleware);
+  app.use(globalMiddleware);
 
   const dbService = app.get<DbService>(DbService);
   // await dbService.testConnection(); // Catch this
