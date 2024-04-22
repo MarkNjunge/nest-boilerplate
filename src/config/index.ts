@@ -23,6 +23,13 @@ interface Config {
     uploadDir: string;
     removeAfterUpload: string;
   };
+  instrumentation: {
+    enabled: boolean;
+    debug: boolean;
+    traceUrl: string;
+    metricsUrl: string;
+    lokiHost: string;
+  };
 }
 
 interface Db {

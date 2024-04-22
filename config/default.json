@@ -37,5 +37,12 @@
   "fileUpload": {
     "maxSize": 5242880,
     "removeAfterUpload": true
+  },
+  "instrumentation": {
+    "enabled": false,
+    "debug": false,
+    "traceUrl": "http://localhost:4318/v1/traces",
+    "metricsUrl": "http://localhost:4318/v1/metrics",
+    "lokiHost": "http://127.0.0.1:9100"
   }
 }

@@ -41,9 +41,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
     response.statusCode = status;
 
-    const correlationId = request.headers["x-correlation-id"] as string;
+    const traceId = request.headers["x-trace-id"] as string;
     const ip = request.headers["x-ip"] as string;
-    response.header("x-correlation-id", correlationId);
+    response.header("x-trace-id", traceId);
     response.header("x-ip", ip);
 
     const message = e instanceof DBError ? e.name : e.message;
@@ -51,11 +51,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status,
       message,
       code,
-      correlationId,
+      traceId,
       meta,
     };
 
-    this.logger.error(message, { tag, ctx: { correlationId, ip } }, e);
+    this.logger.error(message, { tag, ctx: { traceId, ip } }, e);
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);

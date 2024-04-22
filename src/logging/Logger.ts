@@ -5,6 +5,8 @@ import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
 import { redact, clone } from "@/utils";
 import { IReqCtx } from "@/decorators/request-context.decorator";
+import { LokiTransport } from "@/logging/loki.transport";
+import * as Transport from "winston-transport";
 
 export class ILogMeta {
   tag?: string;
@@ -69,7 +71,6 @@ export class Logger {
     const method = request.method;
     const url = request.url;
     const tag = "ROUTE";
-    const correlationId = request.headers["x-correlation-id"] as string;
     const ip = request.headers["x-ip"] as string;
 
     const requestTime = parseInt(request.headers["x-request-time"] as string);
@@ -97,14 +98,14 @@ export class Logger {
 
     const message = `${method} ${url} - ${statusCode} - ${duration}ms`;
 
-    this.info(message, { tag, data, ctx: { correlationId, ip } });
+    this.info(message, { tag, data });
   }
 
   private static getData(tag: string, message: string, meta?: ILogMeta): any {
     const data = clone(meta?.data) ?? {};
     data.tag = tag;
     data.message = message;
-    data.correlationId = meta?.ctx?.correlationId;
+    data.traceId = meta?.ctx?.traceId;
     data.ip = meta?.ctx?.ip;
     return redact(data);
   }
@@ -127,17 +128,23 @@ export function initializeWinston(): void {
     return formatted;
   });
 
+  const transports: Transport[] = [
+    new winston.transports.Console({
+      format: combine(
+        myFormat,
+        colorize({ all: true, colors: { debug: "brightBlue" } }),
+      ),
+    }),
+    new SampleTransport(),
+  ];
+  if (config.instrumentation.enabled) {
+    transports.push(new LokiTransport(config.instrumentation.lokiHost));
+  }
+
   winston.configure({
     level: "debug",
     format: combine(timestamp(), myFormat),
-    transports: [
-      new SampleTransport(),
-      new winston.transports.Console({
-        format: combine(
-          myFormat,
-          colorize({ all: true, colors: { debug: "brightBlue" } }),
-        ),
-      }),
-    ],
+    transports,
   });
+
 }

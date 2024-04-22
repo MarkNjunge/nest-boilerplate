@@ -25,7 +25,7 @@ export class GlobalInterceptor implements NestInterceptor {
     const request = ctx.getRequest<FastifyRequest>();
     const response = ctx.getResponse<FastifyReply>();
 
-    const correlationId = request.headers["x-correlation-id"] as string;
+    const traceId = request.headers["x-trace-id"] as string;
     const ip = request.headers["x-ip"] as string;
     const clz = this.reflector.get<ClassConstructor<any> | undefined>(
       SerializeKey,
@@ -40,7 +40,7 @@ export class GlobalInterceptor implements NestInterceptor {
           FileHandler.deleteRequestFiles(request);
 
           // Add response headers
-          void response.header("x-correlation-id", correlationId);
+          void response.header("x-trace-id", traceId);
           void response.header("x-ip", ip);
 
           // Clean object

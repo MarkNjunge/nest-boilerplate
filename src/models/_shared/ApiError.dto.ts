@@ -12,7 +12,7 @@ export class ApiErrorDto {
   message: string;
 
   @ApiProperty()
-  correlationId: string;
+  traceId: string;
 
   @ApiProperty()
   @IsOptional()

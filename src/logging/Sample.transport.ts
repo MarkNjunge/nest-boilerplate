@@ -6,7 +6,7 @@ export class SampleTransport extends Transport {
   // Batch
   private batchEntries: any[] = [];
   private batchInterval = 2000;
-  private batchCount = 10;
+  private batchCount = 100;
   private batchTimeoutID = -1;
 
   constructor(opts = {}) {
@@ -49,7 +49,9 @@ export class SampleTransport extends Transport {
     const entriesCopy = clone(this.batchEntries);
     this.batchEntries = [];
 
+    // TODO Send logs to remote
     // console.log(entriesCopy.map(e => e.message));
+
     cb();
   }
 }

@@ -25,5 +25,12 @@
   "logging": {
     "timestampFormat": "LOGGING_TIMESTAMP_FORMAT",
     "sensitiveParams": "LOGGING_SENSITIVE_PARAMS"
+  },
+  "instrumentation": {
+    "enabled": "INSTRUMENTATION_ENABLED",
+    "debug": "INSTRUMENTATION_DEBUG",
+    "traceUrl": "INSTRUMENTATION_TRACE_URL",
+    "metricsUrl": "INSTRUMENTATION_METRICS_URL",
+    "lokiHost": "INSTRUMENTATION_LOKI_HOST"
   }
 }

@@ -13,11 +13,13 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Query Parsing](#query-parsing)
 - [File Upload](#file-upload)
 - [Logging](#logging)
+- [Request Context](#request-context)
 - [Auth guard](#auth-guard)
 - [Rate limiting](#rate-limiting)
 - [Request body validation](#request-body-validation)
 - [Exception Handling](#errors--exception-handling)
-- [Docker support](#docker)
+- [OpenTelemetry](#opentelemetry)
+- [Docker](#docker)
 - [Testing](#testing)
 - [Continuous Integration](#ci)
 
@@ -211,7 +213,7 @@ this.logger.debug("Hello!", "AppService.getHello", { data: { user: "mark" } });
 To log to other locations, a [custom transport](https://github.com/winstonjs/winston-transport) is
 needed. See [SampleTransport](src/logging/Sample.transport.ts) for an example.
 
-#### Redact Private Keys
+### Redact Private Keys
 
 Private keys are automatically redacted in logged data.
 
@@ -226,16 +228,20 @@ The private keys are specified in [redact.ts](src/utils/redact.ts)
 }
 ```
 
+### Grafana Loki
+
+A log transport to Grafana Loki is implemented for observability. See [OpenTelemetry](#opentelemetry).
+
 ## Request Context
 
 Request context. be accessed using the `@ReqCtx()` header.
 
-It contains a `correlationId`.  
+It contains a `traceId`.  
 
 ```typescript
 @Get()
 function getHello(@ReqCtx() ctx: IReqCtx) {
-  console.log(ctx.correlationId) // c855677c64c654d1
+  console.log(ctx.traceId) // 0d8df9931b05fbcd2262bc696a1410a6
 }
 ```
 
@@ -328,7 +334,7 @@ throw new HttpException(404, `User ${1} was not found`, ErrorCodes.INVALID_USER,
   "status": 404,
   "message": "User 1 was not found",
   "code": "InvalidUser",
-  "correlationId": "775523bae019485d",
+  "traceId": "775523bae019485d",
   "meta": {
     "id": 1
   }
@@ -342,9 +348,35 @@ Regular errors an unhandled exceptions are also caught and returned as a 500 res
   "status": 500,
   "message": "Uncaught exception",
   "code": "InternalError",
-  "correlationId": "d3cb1b2b3388e3b1"
+  "traceId": "d3cb1b2b3388e3b1"
 }
 ```
+
+## OpenTelemetry
+
+[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for traces and metrics.  
+
+See [instrumentation.ts](./src/utils/instrumentation.ts) for config.
+
+See [Observability directory](./observability/README.MD) for a compose file with various services for collecting and viewing signals.
+
+> Logs is not yet supported in the SDK, so a log transport to Grafana Loki is present to fill the gap.
+
+### Traces
+
+Automatic instrumentation is enabled and will suite most needs.
+Custom spans can be created as described in the [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#create-spans).
+
+### Metrics
+
+[See OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#metrics)
+
+```typescript
+const meter = opentelemetry.metrics.getMeter("UserService");
+const getUserCounter = this.meter.createCounter("get_user")
+getUserCounter.add(1, { user_id: id });
+```
+
 
 ## Docker
 
