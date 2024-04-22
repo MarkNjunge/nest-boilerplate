@@ -10,6 +10,7 @@ import { config } from "@/config";
 import * as util from "util";
 import * as stream from "stream";
 import { Logger } from "@/logging/Logger";
+import * as crypto from "crypto";
 
 const pump = util.promisify(stream.pipeline);
 
@@ -27,7 +28,8 @@ export class FileHandler {
       part.filename = (Math.random() * 10000).toFixed(0);
     }
 
-    const filepath = path.join(uploadPath, part.filename);
+    const randomId = crypto.randomBytes(4).toString("hex");
+    const filepath = path.join(uploadPath, `${randomId}__${part.filename}`);
     logger.debug(`Writing file to ${filepath}`);
     const writeStream = fs.createWriteStream(filepath);
     await pump(part.file, writeStream);
