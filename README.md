@@ -354,13 +354,13 @@ Regular errors an unhandled exceptions are also caught and returned as a 500 res
 
 ## OpenTelemetry
 
-[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for traces and metrics.  
+[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for traces and metrics.
 
-See [instrumentation.ts](./src/utils/instrumentation.ts) for config.
+See the [./observability](./observability/README.MD) for a compose file with various services for collecting and viewing signals.
 
-See [Observability directory](./observability/README.MD) for a compose file with various services for collecting and viewing signals.
+**Note:** Instrumentation needs to be enabled via [config](#config)
 
-> Logs is not yet supported in the SDK, so a log transport to Grafana Loki is present to fill the gap.
+> Logs is not yet supported in the [OpenTelemetry SDK](https://opentelemetry.io/docs/languages/js/instrumentation/#logs), so a log Winston transport to Grafana Loki is present to fill the gap.
 
 ### Traces
 

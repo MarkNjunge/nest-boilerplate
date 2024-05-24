@@ -68,5 +68,4 @@ function init() {
   });
 
   sdk.start();
-  console.log("instrumenting");
 }

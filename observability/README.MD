@@ -8,7 +8,7 @@ OpenTelemetry observability stack with Grafana
 - Prometheus - Metrics
 
 ## Signal Paths
-Traces: `App -> Collector -> Temp -> Grafana`
+Traces: `App -> Collector -> Tempo -> Grafana`
 
 Metrics: `App -> Collector -> Prometheus -> Grafana`
 
