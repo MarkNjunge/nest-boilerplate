@@ -91,6 +91,10 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
   });
 }
 
+process.on("uncaughtException", (e, origin) => {
+  logger.error(`${origin}: ${e.message}`, {}, e);
+});
+
 function initializeSwagger(app: NestFastifyApplication): void {
   if (!bool(config.swagger.enabled)) {
     return;
