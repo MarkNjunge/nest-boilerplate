@@ -29,8 +29,18 @@
   "instrumentation": {
     "enabled": "INSTRUMENTATION_ENABLED",
     "debug": "INSTRUMENTATION_DEBUG",
-    "traceUrl": "INSTRUMENTATION_TRACE_URL",
-    "metricsUrl": "INSTRUMENTATION_METRICS_URL",
-    "lokiHost": "INSTRUMENTATION_LOKI_HOST"
+    "tracing": {
+      "enabled": "INSTRUMENTATION_TRACING_ENABLED",
+      "url": "INSTRUMENTATION_TRACING_URL"
+    },
+    "metrics": {
+      "enabled": "INSTRUMENTATION_METRICS_ENABLED",
+      "url": "INSTRUMENTATION_METRICS_URL"
+    },
+    "logs": {
+      "enabled": "INSTRUMENTATION_LOGS_ENABLED",
+      "url": "INSTRUMENTATION_LOGS_URL",
+      "logData": "INSTRUMENTATION_LOGS_LOG_DATA"
+    }
   }
 }

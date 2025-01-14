@@ -59,7 +59,7 @@ export class OtelTransport extends Transport {
 
     const { message, level, ...splat } = info;
 
-    if (this.config.instrumentation.logData.toString() !== "true") {
+    if (this.config.instrumentation.logs.logData.toString() !== "true") {
       delete splat.data;
     }
 

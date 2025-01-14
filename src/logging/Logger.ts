@@ -135,7 +135,7 @@ export function initializeWinston(): void {
     }),
     new SampleTransport(),
   ];
-  if (config.instrumentation.enabled) {
+  if (config.instrumentation.enabled.toString() === "true" && config.instrumentation.logs.enabled.toString() === "true") {
     transports.push(new OtelTransport(config));
   }
 

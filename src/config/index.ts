@@ -26,11 +26,19 @@ export interface Config {
   instrumentation: {
     enabled: boolean;
     debug: boolean;
-    traceUrl: string;
-    metricsUrl: string;
-    logsUrl: string;
-    logData: boolean;
-    lokiHost: string;
+    tracing: {
+      enabled: boolean;
+      url: string;
+    };
+    metrics: {
+      enabled: boolean;
+      url: string;
+    };
+    logs: {
+      enabled: boolean;
+      url: string;
+      logData: boolean;
+    };
   };
 }
 

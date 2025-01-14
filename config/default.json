@@ -41,10 +41,18 @@
   "instrumentation": {
     "enabled": false,
     "debug": false,
-    "traceUrl": "http://localhost:4318/v1/traces",
-    "metricsUrl": "http://localhost:4318/v1/metrics",
-    "logsUrl": "http://localhost:4318/v1/logs",
-    "logData": true,
-    "lokiHost": "http://127.0.0.1:9100"
+    "tracing": {
+      "enabled": true,
+      "url": "http://localhost:4318/v1/traces"
+    },
+    "metrics": {
+      "enabled": true,
+      "url": "http://localhost:4318/v1/metrics"
+    },
+    "logs": {
+      "enabled": true,
+      "url": "http://localhost:4318/v1/logs",
+      "logData": true
+    }
   }
 }
