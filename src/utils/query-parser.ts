@@ -1,6 +1,12 @@
 import { snakeCase } from "./snake-case";
 import { Model } from "objection";
 import * as Objection from "objection";
+import {
+  IsInt,
+  IsOptional,
+  registerDecorator, ValidationArguments,
+  ValidationOptions
+} from "class-validator";
 
 export interface QueryFilter<T extends Record<string, any> = any> {
   key: string | keyof T;
@@ -13,6 +19,81 @@ type OrderByDirection = "asc" | "desc" | "ASC" | "DESC";
 export interface QueryOrder<T extends Record<string, any> = any> {
   key: string | keyof T;
   direction: OrderByDirection;
+}
+
+export function IsValidOrderBy(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: "isValidOrderBy",
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: validationOptions,
+      validator: {
+        validate(value: string, args: ValidationArguments) {
+          return validateOrderBy(value);
+        },
+        defaultMessage(validationArguments?: ValidationArguments): string {
+          return `${propertyName} must match '(key,direction)'`;
+        }
+      },
+    });
+  };
+}
+
+export function validateOrderBy(s: string): boolean {
+  if (s.length === 0) {
+    return true;
+  }
+
+  return !s.split(":").some(group => !/\(([a-zA-Z0-9]+),(asc|desc)\)/gi.test(group));
+}
+
+export function IsValidFilter(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: "isValidFilter",
+      target: object.constructor,
+      propertyName: propertyName,
+      constraints: [],
+      options: validationOptions,
+      validator: {
+        validate(value: string, args: ValidationArguments) {
+          return validateFilter(value);
+        },
+        defaultMessage(validationArguments?: ValidationArguments): string {
+          return `${propertyName} must match '(key,operand,value)'`;
+        }
+      },
+    });
+  };
+}
+
+
+export function validateFilter(s: string): boolean {
+  if (s.length === 0) {
+    return true;
+  }
+
+  return !s.split(":").some(group => !/\(([a-zA-Z0-9]+),(.+),([a-zA-Z0-9 ]+)\)/gi.test(group));
+}
+
+export class RawQuery {
+  @IsInt({message: "limit must be a number"})
+  @IsOptional()
+  limit: number;
+
+  @IsOptional()
+  @IsInt({message: "page must be a number"})
+  page: number;
+
+  @IsOptional()
+  @IsValidOrderBy()
+  orderBy: string;
+
+  @IsOptional()
+  @IsValidFilter()
+  filter: string;
 }
 
 export interface Query<T extends Record<string, any> = any> {

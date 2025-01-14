@@ -23,7 +23,7 @@ import { UserDto, CreateUserDto, UpdateUserDto } from "../../models/user";
 import { AddressDto, CreateAddressDto } from "../../models/address";
 import { ApiResponseDto } from "@/models/_shared/ApiResponse.dto";
 import { ArrayValidationPipe } from "@/pipes/array-validation.pipe";
-import { parseQuery } from "@/utils";
+import { parseQuery, RawQuery } from "@/utils";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
 import { Serialize } from "@/decorators/serialize.decorator";
 
@@ -46,7 +46,7 @@ export class UsersController {
   @Serialize(UserDto)
   async list(
     @ReqCtx() ctx: IReqCtx,
-    @Query() query: string,
+    @Query() query: RawQuery,
   ): Promise<UserDto[]> {
     return this.usersService.list(ctx, parseQuery(query));
   }
