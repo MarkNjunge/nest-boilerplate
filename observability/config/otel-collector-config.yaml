@@ -14,10 +14,16 @@ exporters:
     endpoint: tempo:4317
     tls:
       insecure: true
-  prometheus:
-    endpoint: 0.0.0.0:8889
-    namespace: ms
-    send_timestamps: true
+#  prometheus:
+#    endpoint: 0.0.0.0:8889
+#    namespace: ms
+#    send_timestamps: true
+  prometheusremotewrite:
+    # help and type are missing: https://github.com/prometheus/prometheus/issues/13163
+    endpoint: http://prometheus:9090/api/v1/write
+    namespace: nb
+    tls:
+      insecure: true
   debug:
 #    verbosity: detailed
 
@@ -35,7 +41,7 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [prometheus]
+      exporters: [prometheusremotewrite]
     logs:
       receivers: [otlp]
       processors: [batch]
