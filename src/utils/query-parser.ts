@@ -2,24 +2,24 @@ import { snakeCase } from "./snake-case";
 import { Model } from "objection";
 import * as Objection from "objection";
 
-export interface QueryFilter {
-  key: string;
+export interface QueryFilter<T extends Record<string, any> = any> {
+  key: string | keyof T;
   op: string;
-  value: string;
+  value: any;
 }
 
 type OrderByDirection = "asc" | "desc" | "ASC" | "DESC";
 
-export interface QueryOrder {
-  key: string;
+export interface QueryOrder<T extends Record<string, any> = any> {
+  key: string | keyof T;
   direction: OrderByDirection;
 }
 
-export interface Query {
+export interface Query<T extends Record<string, any> = any> {
   limit: number;
   page?: number;
-  filters: QueryFilter[];
-  orders: QueryOrder[];
+  filters?: QueryFilter<T>[];
+  orders?: QueryOrder<T>[];
 }
 
 export const blankQuery = (limit = 10): Query => ({
@@ -28,7 +28,7 @@ export const blankQuery = (limit = 10): Query => ({
   orders: [],
 });
 
-export function parseQuery(reqQuery: any): Query {
+export function parseQuery<T extends Record<string, any> = any>(reqQuery: any): Query<T> {
   const filters: QueryFilter[] = [];
   const orders: QueryOrder[] = [];
 
@@ -82,20 +82,20 @@ export function applyQuery<M extends Model, R = M[]>(
     dbQuery = dbQuery.offset(offset);
   }
 
-  for (const filter of query.filters) {
+  for (const filter of (query.filters ?? [])) {
     if (filter.value === "null") {
       if (filter.op === "=") {
-        dbQuery = dbQuery.whereNull(filter.key);
+        dbQuery = dbQuery.whereNull(filter.key as string);
       } else {
-        dbQuery = dbQuery.whereNotNull(filter.key);
+        dbQuery = dbQuery.whereNotNull(filter.key as string);
       }
     } else {
-      dbQuery = dbQuery.where(filter.key, filter.op, filter.value);
+      dbQuery = dbQuery.where(filter.key as string, filter.op, filter.value);
     }
   }
 
-  for (const order of query.orders) {
-    dbQuery = dbQuery.orderBy(order.key, order.direction);
+  for (const order of (query.orders ?? [])) {
+    dbQuery = dbQuery.orderBy(order.key as string, order.direction);
   }
 
   dbQuery = dbQuery.limit(query.limit);
