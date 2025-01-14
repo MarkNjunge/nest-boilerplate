@@ -3,7 +3,7 @@ import "./utils/instrumentation";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
 import { AppModule } from "./modules/app/app.module";
-import { AllExceptionsFilter } from "./filters/all-exceptions-filter";
+import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
 import { ValidationPipe } from "./pipes/validation.pipe";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import {

@@ -46,16 +46,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.header("x-trace-id", traceId);
     response.header("x-ip", ip);
 
-    const message = e instanceof DBError ? e.name : e.message;
     const apiError: ApiErrorDto = {
       status,
-      message,
+      message: e instanceof DBError ? "Database error" : e.message,
       code,
       traceId,
       meta,
     };
 
-    this.logger.error(message, { tag, ctx: { traceId, ip } }, e);
+    this.logger.error(e.message, { tag, ctx: { traceId, ip } }, e);
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);
