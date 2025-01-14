@@ -9,28 +9,29 @@ import { LokiTransport } from "@/logging/loki.transport";
 import * as Transport from "winston-transport";
 
 export class ILogMeta {
+  // A tag indicating what this error relates to. Usually based on the stack.
   tag?: string;
 
+  // Explicit traceId if instrumentation does not inject it
+  traceId?: string;
+
+  // Extra data
   data?: any;
-
-  ctx?: IReqCtx;
-
-  error?: Error;
 }
 
 export class Logger {
   constructor(private readonly name: string) {}
 
-  info(message: string, meta?: ILogMeta): void {
-    const tag = meta?.tag ?? this.name;
+  info(message: string, meta: ILogMeta = {}): void {
+    const tag = meta.tag ?? this.name;
     winston.info({
       message: `[${tag}] ${message}`,
       data: Logger.getData(tag, message, meta),
     });
   }
 
-  error(message: string, meta?: ILogMeta, error?: Error): void {
-    const tag = meta?.tag ?? this.name;
+  error(message: string, meta: ILogMeta = {}, error?: Error): void {
+    const tag = meta.tag ?? this.name;
     const data = Logger.getData(tag, message, meta);
     if (error?.stack) {
       data.stacktrace = error.stack;
@@ -38,24 +39,24 @@ export class Logger {
     winston.error({ message: `[${tag}] ${message}`, data });
   }
 
-  warn(message: string, meta?: ILogMeta): void {
-    const tag = meta?.tag ?? this.name;
+  warn(message: string, meta: ILogMeta = {}): void {
+    const tag = meta.tag ?? this.name;
     winston.warn({
       message: `[${tag}] ${message}`,
       data: Logger.getData(tag, message, meta),
     });
   }
 
-  debug(message: string, meta?: ILogMeta): void {
-    const tag = meta?.tag ?? this.name;
+  debug(message: string, meta: ILogMeta = {}): void {
+    const tag = meta.tag ?? this.name;
     winston.debug({
       message: `[${tag}] ${message}`,
       data: Logger.getData(tag, message, meta),
     });
   }
 
-  verbose(message: string, meta?: ILogMeta): void {
-    const tag = meta?.tag ?? this.name;
+  verbose(message: string, meta: ILogMeta = {}): void {
+    const tag = meta.tag ?? this.name;
     winston.verbose({
       message: `[${tag}] ${message}`,
       data: Logger.getData(tag, message, meta),
@@ -101,12 +102,13 @@ export class Logger {
     this.info(message, { tag, data });
   }
 
-  private static getData(tag: string, message: string, meta?: ILogMeta): any {
-    const data = clone(meta?.data) ?? {};
+  private static getData(tag: string, message: string, meta: ILogMeta = {}): any {
+    const data = clone(meta.data) ?? {};
     data.tag = tag;
     data.message = message;
-    data.traceId = meta?.ctx?.traceId;
-    data.ip = meta?.ctx?.ip;
+    if (meta.traceId) {
+      data.traceId = meta.traceId;
+    }
     return redact(data);
   }
 }

@@ -54,7 +54,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       meta,
     };
 
-    this.logger.error(e.message, { tag, ctx: { traceId, ip } }, e);
+    this.logger.error(e.message, { tag }, e);
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);
