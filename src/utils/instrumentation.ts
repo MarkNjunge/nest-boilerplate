@@ -9,7 +9,13 @@ import {
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import {
+  LoggerProvider,
+  BatchLogRecordProcessor,
+} from "@opentelemetry/sdk-logs";
+import * as logsAPI from "@opentelemetry/api-logs";
 import { config } from "@/config";
+import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
 
 if (config.instrumentation.enabled.toString() === "true") {
   init();
@@ -33,6 +39,12 @@ function init() {
   const urlIgnorePaths = ["loki/api/v1/push"]; // Ignore POST request for Loki logs
   const rx = RegExp(urlIgnorePaths.join("|"));
 
+  // Logs
+  const loggerProvider = new LoggerProvider({ resource });
+  const logExporter = new OTLPLogExporter({ url: config.instrumentation.logsUrl });
+  loggerProvider.addLogRecordProcessor(new BatchLogRecordProcessor(logExporter));
+  logsAPI.logs.setGlobalLoggerProvider(loggerProvider);
+
   const sdk = new NodeSDK({
     resource,
     traceExporter,
@@ -51,12 +63,8 @@ function init() {
           }
         },
         "@opentelemetry/instrumentation-winston": {
-          enabled: true,
-          disableLogSending: true,
-          logHook: (span, record) => {
-            // Add attributes to data
-            // record.data.attributes = (span as any).attributes;
-          }
+          enabled: true, // Injects trace_id into logs
+          disableLogSending: true, // Doesn't work even if enabled
         },
         "@opentelemetry/instrumentation-pg": { enabled: false }, // Already covered by knex
         "@opentelemetry/instrumentation-dns": { enabled: false },

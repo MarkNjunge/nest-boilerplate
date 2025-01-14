@@ -8,7 +8,7 @@ process.env.NODE_CONFIG_DIR =
 
 import * as configPackage from "config";
 
-interface Config {
+export interface Config {
   env: string;
   port: number;
   apiKey: string;
@@ -28,6 +28,8 @@ interface Config {
     debug: boolean;
     traceUrl: string;
     metricsUrl: string;
+    logsUrl: string;
+    logData: boolean;
     lokiHost: string;
   };
 }

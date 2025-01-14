@@ -4,9 +4,8 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
 import { redact, clone } from "@/utils";
-import { IReqCtx } from "@/decorators/request-context.decorator";
-import { LokiTransport } from "@/logging/loki.transport";
 import * as Transport from "winston-transport";
+import { OtelTransport } from "@/logging/otel.transport";
 
 export class ILogMeta {
   // A tag indicating what this error relates to. Usually based on the stack.
@@ -19,48 +18,40 @@ export class ILogMeta {
   data?: any;
 }
 
+interface LogObject {
+  tag: string;
+  message: string;
+  data: any;
+  stacktrace?: string;
+
+  trace_id?: string;
+}
+
 export class Logger {
   constructor(private readonly name: string) {}
 
   info(message: string, meta: ILogMeta = {}): void {
-    const tag = meta.tag ?? this.name;
-    winston.info({
-      message: `[${tag}] ${message}`,
-      data: Logger.getData(tag, message, meta),
-    });
+    winston.info(this.getLogObject(message, meta));
   }
 
   error(message: string, meta: ILogMeta = {}, error?: Error): void {
-    const tag = meta.tag ?? this.name;
-    const data = Logger.getData(tag, message, meta);
+    const logObject = this.getLogObject(message, meta);
     if (error?.stack) {
-      data.stacktrace = error.stack;
+      logObject.stacktrace = error.stack;
     }
-    winston.error({ message: `[${tag}] ${message}`, data });
+    winston.error(logObject);
   }
 
   warn(message: string, meta: ILogMeta = {}): void {
-    const tag = meta.tag ?? this.name;
-    winston.warn({
-      message: `[${tag}] ${message}`,
-      data: Logger.getData(tag, message, meta),
-    });
+    winston.warn(this.getLogObject(message, meta));
   }
 
   debug(message: string, meta: ILogMeta = {}): void {
-    const tag = meta.tag ?? this.name;
-    winston.debug({
-      message: `[${tag}] ${message}`,
-      data: Logger.getData(tag, message, meta),
-    });
+    winston.debug(this.getLogObject(message, meta));
   }
 
   verbose(message: string, meta: ILogMeta = {}): void {
-    const tag = meta.tag ?? this.name;
-    winston.verbose({
-      message: `[${tag}] ${message}`,
-      data: Logger.getData(tag, message, meta),
-    });
+    winston.verbose(this.getLogObject(message, meta));
   }
 
   logRoute(
@@ -102,14 +93,19 @@ export class Logger {
     this.info(message, { tag, data });
   }
 
-  private static getData(tag: string, message: string, meta: ILogMeta = {}): any {
-    const data = clone(meta.data) ?? {};
-    data.tag = tag;
-    data.message = message;
+  private getLogObject(message: string, meta: ILogMeta): LogObject {
+    const tag = meta.tag ?? this.name;
+    const obj: LogObject = {
+      tag,
+      message: `[${tag}] ${message}`,
+      data: clone(meta.data ?? {})
+    };
+
     if (meta.traceId) {
-      data.traceId = meta.traceId;
+      obj.trace_id = meta.traceId;
     }
-    return redact(data);
+
+    return redact(obj);
   }
 }
 
@@ -140,7 +136,7 @@ export function initializeWinston(): void {
     new SampleTransport(),
   ];
   if (config.instrumentation.enabled) {
-    transports.push(new LokiTransport(config.instrumentation.lokiHost));
+    transports.push(new OtelTransport(config));
   }
 
   winston.configure({
