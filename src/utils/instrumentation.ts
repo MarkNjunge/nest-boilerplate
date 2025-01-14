@@ -5,9 +5,8 @@ import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { Resource } from "@opentelemetry/resources";
 import {
-  SEMRESATTRS_SERVICE_INSTANCE_ID,
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { config } from "@/config";
@@ -22,9 +21,8 @@ function init() {
   }
 
   const resource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: "nest-boilerplate",
-    [SEMRESATTRS_SERVICE_VERSION]: "0.1.0",
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]: "instance-1",
+    [ATTR_SERVICE_NAME]: "nest-boilerplate",
+    [ATTR_SERVICE_VERSION]: "0.1.0",
   });
   const traceExporter = new OTLPTraceExporter({ url: config.instrumentation.traceUrl });
   const metricReader = new PeriodicExportingMetricReader({
