@@ -25,8 +25,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "docker-compose -f docker-compose-e2e.yml up --abort-on-container-exit --exit-code-from test",
-    "posttest:e2e": "docker-compose -f docker-compose-e2e.yml down --rmi all",
+    "test:e2e": "docker compose -f docker-compose-e2e.yml up --abort-on-container-exit --exit-code-from test",
+    "posttest:e2e": "docker compose -f docker-compose-e2e.yml down --rmi all",
     "test:e2e:local": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {

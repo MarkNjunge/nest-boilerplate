@@ -398,7 +398,7 @@ docker run -p 3000:3000 nest-boilerplate
 Docker Compose can be used to start the application and a database.
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Testing
