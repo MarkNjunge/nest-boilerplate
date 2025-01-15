@@ -24,6 +24,10 @@ exporters:
     namespace: nb
     tls:
       insecure: true
+  otlphttp:
+    endpoint: http://loki:3100/otlp
+    tls:
+      insecure: true
   debug:
 #    verbosity: detailed
 
@@ -45,4 +49,4 @@ service:
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug]
+      exporters: [otlphttp]
