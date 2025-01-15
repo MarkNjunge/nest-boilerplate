@@ -1,0 +1,14 @@
+# For configuration options, see
+#   https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards
+
+apiVersion: 1
+
+providers:
+  - name: "prometheus"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    editable: false
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards

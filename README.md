@@ -427,6 +427,12 @@ npm run test:e2e
 npm run test:e2e:local
 ```
 
+### Load test
+
+Load tests are written using [Grafana k6](https://grafana.com/oss/k6/).
+
+See [load-test/](./load-test) directory.
+
 # CI
 
 [Github Actions config](./.github/workflows/main-workflow.yml)  

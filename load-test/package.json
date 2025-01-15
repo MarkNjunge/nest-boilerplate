@@ -1,0 +1,22 @@
+{
+  "name": "load-test",
+  "scripts": {
+    "pretest:html": "webpack",
+    "test:html": "cross-env K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=report.html K6_WEB_DASHBOARD_PERIOD=1s k6 run dist/script.bundle.js",
+    "pretest:prom": "webpack",
+    "test:prom": "env-cmd -f .env.prom k6 run -o experimental-prometheus-rw dist/script.bundle.js"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@types/k6": "^0.54.2",
+    "babel-loader": "^9.2.1",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.3.0",
+    "cross-env": "^7.0.3",
+    "env-cmd": "^10.1.0"
+  }
+}
