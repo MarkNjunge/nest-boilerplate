@@ -16,7 +16,7 @@ exporters:
       insecure: true
 #  prometheus:
 #    endpoint: 0.0.0.0:8889
-#    namespace: ms
+#    namespace: nb
 #    send_timestamps: true
   prometheusremotewrite:
     # help and type are missing: https://github.com/prometheus/prometheus/issues/13163
@@ -33,6 +33,7 @@ exporters:
 
 extensions:
   zpages:
+    # See https://github.com/open-telemetry/opentelemetry-collector/blob/main/extension/zpagesextension/README.md
     endpoint: 0.0.0.0:55679
 
 service:
