@@ -30,8 +30,11 @@ datasources:
     isDefault: false
     jsonData:
       tracesToLogsV2:
-        customQuery: true
         datasourceUid: loki
-        filterByTraceID: true
-        query: '{trace_id="${__trace.traceId}"}'
+        filterByTraceID: false
+        customQuery: true
+        query: '{$${__tags}} | trace_id="$${__trace.traceId}"'
+        spanEndTimeShift: "5m"
+        spanStartTimeShift: "-5m"
+        tags: [{key: "service.name", value: "service_name"}]
     version: 1
