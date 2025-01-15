@@ -46,7 +46,7 @@ export function validateOrderBy(s: string): boolean {
     return true;
   }
 
-  return !s.split(":").some(group => !/\(([a-zA-Z0-9]+),(asc|desc)\)/gi.test(group));
+  return !s.split(":").some(group => !/\(([a-zA-Z0-9_-]+),(asc|desc)\)/gi.test(group));
 }
 
 export function IsValidFilter(validationOptions?: ValidationOptions) {
@@ -75,7 +75,7 @@ export function validateFilter(s: string): boolean {
     return true;
   }
 
-  return !s.split(":").some(group => !/\(([a-zA-Z0-9]+),(.+),([a-zA-Z0-9 ]+)\)/gi.test(group));
+  return !s.split(":").some(group => !/\(([a-zA-Z0-9_-]+),(.+),(.+)\)/gi.test(group));
 }
 
 export class RawQuery {
