@@ -2,7 +2,6 @@ import { snakeCase } from "./snake-case";
 import { Model } from "objection";
 import * as Objection from "objection";
 import {
-  IsInt,
   IsOptional,
   registerDecorator, ValidationArguments,
   ValidationOptions
@@ -79,21 +78,19 @@ export function validateFilter(s: string): boolean {
 }
 
 export class RawQuery {
-  @IsInt({message: "limit must be a number"})
   @IsOptional()
-  limit: number;
+  limit?: number;
 
   @IsOptional()
-  @IsInt({message: "page must be a number"})
-  page: number;
+  page?: number;
 
   @IsOptional()
   @IsValidOrderBy()
-  orderBy: string;
+  orderBy?: string;
 
   @IsOptional()
   @IsValidFilter()
-  filter: string;
+  filter?: string;
 }
 
 export interface Query<T extends Record<string, any> = any> {
@@ -144,7 +141,7 @@ export function parseQuery<T extends Record<string, any> = any>(reqQuery: any): 
   }
 
   const limit = reqQuery.limit ? parseInt(reqQuery.limit) : 20;
-  const page = reqQuery.page ? parseInt(reqQuery.page) : undefined; // Explicitly undefined
+  const page = reqQuery.page ? parseInt(reqQuery.page) : 1;
 
   return {
     limit,

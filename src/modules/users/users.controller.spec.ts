@@ -54,7 +54,7 @@ describe("Users Controller", () => {
         .spyOn(mockUsersService, "list")
         .mockImplementation(async () => Promise.resolve([user]));
 
-      expect(await usersController.list(emptyCtx(), "")).toEqual([user]);
+      expect(await usersController.list(emptyCtx(), {})).toEqual([user]);
     });
   });
 
