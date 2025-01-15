@@ -4,11 +4,11 @@ export async function up(knex: Knex): Promise<void> {
   return knex.schema
     .createTable("users", table => {
       table.increments("id").primary();
-      table.string("username", 32).notNullable();
+      table.string("username", 64).notNullable();
     })
     .createTable("contacts", table => {
       table.increments("id").primary();
-      table.string("email", 64).notNullable();
+      table.string("email").notNullable();
       table
         .integer("user_id")
         .unique()
@@ -20,8 +20,8 @@ export async function up(knex: Knex): Promise<void> {
     })
     .createTable("addresses", table => {
       table.increments("id").primary();
-      table.string("city", 32).notNullable().unique();
-      table.string("country", 32).notNullable().unique();
+      table.string("city").notNullable();
+      table.string("country").notNullable();
       table
         .integer("user_id")
         .unique()
