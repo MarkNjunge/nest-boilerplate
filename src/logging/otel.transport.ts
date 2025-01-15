@@ -51,7 +51,7 @@ export class OtelTransport extends Transport {
 
   constructor(protected readonly config: Config) {
     super({});
-    this.logger = logsAPI.logs.getLogger("nest-boilerplate");
+    this.logger = logsAPI.logs.getLogger(config.appName);
   }
 
   log(info: any, callback: () => void): void {

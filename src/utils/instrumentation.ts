@@ -21,8 +21,8 @@ function init() {
   }
 
   const resource = new Resource({
-    [ATTR_SERVICE_NAME]: "nest-boilerplate",
-    [ATTR_SERVICE_VERSION]: "0.1.0",
+    [ATTR_SERVICE_NAME]: config.appName,
+    [ATTR_SERVICE_VERSION]: config.appVersion,
   });
 
   // Ignore certain urls from tracing

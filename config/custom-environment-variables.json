@@ -1,4 +1,6 @@
 {
+  "appName": "APP_NAME",
+  "appVersion": "APP_VERSION",
   "env": "NODE_ENV",
   "port": "PORT",
   "apiKey": "API_KEY",

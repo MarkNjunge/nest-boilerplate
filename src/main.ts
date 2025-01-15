@@ -101,13 +101,8 @@ function initializeSwagger(app: NestFastifyApplication): void {
   }
 
   const options = new DocumentBuilder()
-    .setTitle(config.swagger.title)
-    .setDescription(config.swagger.description)
-    .setContact(
-      config.swagger.contact.name,
-      config.swagger.contact.url,
-      config.swagger.contact.email,
-    )
+    .setTitle(config.appName)
+    .setVersion(config.appVersion)
     .addSecurity("api-key", {
       type: "http",
       in: "header",

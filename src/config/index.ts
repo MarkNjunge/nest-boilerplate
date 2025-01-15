@@ -9,6 +9,8 @@ process.env.NODE_CONFIG_DIR =
 import * as configPackage from "config";
 
 export interface Config {
+  appName: string;
+  appVersion: string;
   env: string;
   port: number;
   apiKey: string;
@@ -50,15 +52,6 @@ interface Db {
 interface Swagger {
   enabled: boolean;
   endpoint: string;
-  title: string;
-  description: string;
-  contact: SwaggerContact;
-}
-
-interface SwaggerContact {
-  name: string;
-  url: string;
-  email: string;
 }
 
 interface RateLimit {

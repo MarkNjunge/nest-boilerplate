@@ -1,4 +1,6 @@
 {
+  "appName": "nest-boilerplate",
+  "appVersion": "0.1.0",
   "env": "development",
   "port": 3000,
   "apiKey": "api-key",
@@ -8,14 +10,7 @@
   },
   "swagger": {
     "enabled": true,
-    "endpoint": "docs",
-    "title": "nest-boilerplate",
-    "description": "A starter template for NestJS with support for swagger, config, logging, validation, exception handling, docker, testing and CI.",
-    "contact": {
-      "name": "Mark Njung'e",
-      "url": "https://marknjunge.com",
-      "email": "contact@marknjunge.com"
-    }
+    "endpoint": "docs"
   },
   "rateLimit": {
     "enabled": true,
