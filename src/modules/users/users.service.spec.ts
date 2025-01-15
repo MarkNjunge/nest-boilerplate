@@ -1,32 +1,23 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { UsersService } from "./users.service";
 import { AddressDto, CreateAddressDto } from "@/models/address";
-import {
-  USER_REPOSITORY,
-  UserRepository,
-} from "@/db/repositories/user.repository";
-import {
-  ADDRESS_REPOSITORY,
-  AddressRepository,
-} from "@/db/repositories/address.repository";
-import {
-  CONTACT_REPOSITORY,
-  ContactRepository,
-} from "@/db/repositories/contact.repository";
 import { UserModel } from "@/models/user/user.model";
 import { emptyCtx } from "@/decorators/request-context.decorator";
 import { CreateUserDto } from "@/models/user";
 import { AddressModel } from "@/models/address/address.model";
+import { DbService } from "@/modules/_db/db.service";
 
-const mockUserRepository: Partial<UserRepository> = {
-  list: jest.fn(),
-  create: jest.fn(),
-  get: jest.fn(),
+const mockDbService = {
+  user: {
+    list: jest.fn(),
+    create: jest.fn(),
+    get: jest.fn(),
+  },
+  address: {
+    create: jest.fn(),
+  },
+  contact: {}
 };
-const mockAddressRepository: Partial<AddressRepository> = {
-  create: jest.fn(),
-};
-const mockContactRepository: Partial<ContactRepository> = {};
 
 describe("UsersService", () => {
   let usersService: UsersService;
@@ -55,9 +46,7 @@ describe("UsersService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
-        { provide: USER_REPOSITORY, useValue: mockUserRepository },
-        { provide: ADDRESS_REPOSITORY, useValue: mockAddressRepository },
-        { provide: CONTACT_REPOSITORY, useValue: mockContactRepository },
+        { provide: DbService, useValue: mockDbService },
       ],
     }).compile();
 
@@ -67,7 +56,7 @@ describe("UsersService", () => {
   describe("getAllUsers", () => {
     it("should return an array", async () => {
       jest
-        .spyOn(mockUserRepository, "list")
+        .spyOn(mockDbService.user, "list")
         .mockImplementation(async () =>
           Promise.resolve([user as any as UserModel]),
         );
@@ -80,7 +69,7 @@ describe("UsersService", () => {
   describe("createUser", () => {
     it("should return an object", async () => {
       jest
-        .spyOn(mockUserRepository, "create")
+        .spyOn(mockDbService.user, "create")
         .mockImplementation(async () =>
           Promise.resolve(user as any as UserModel),
         );
@@ -96,13 +85,13 @@ describe("UsersService", () => {
   describe("createAddress", () => {
     it("should return an object", async () => {
       jest
-        .spyOn(mockAddressRepository, "create")
+        .spyOn(mockDbService.address, "create")
         .mockImplementation(async () =>
           Promise.resolve(address as AddressModel),
         );
 
       jest
-        .spyOn(mockUserRepository, "get")
+        .spyOn(mockDbService.user, "get")
         .mockImplementation(async () =>
           Promise.resolve(user as any as UserModel),
         );

@@ -4,12 +4,25 @@ import { Model } from "objection";
 import knexConfig from "../../db/knexfile";
 import { config } from "@/config";
 import { Logger } from "@/logging/Logger";
+import { BaseRepository } from "@/modules/_db/base.repository";
+import { UserModel } from "@/models/user/user.model";
+import { CreateUserDto, UpdateUserDto } from "@/models/user";
+import { AddressModel } from "@/models/address/address.model";
+import { CreateAddressDto } from "@/models/address";
+import { ContactModel } from "@/models/contact/contact.model";
+import { CreateContactDto, UpdateContactDto } from "@/models/contact";
+
+
 
 @Injectable()
 export class DbService {
   knex: KType;
 
   private logger = new Logger("DbService");
+
+  user: BaseRepository<UserModel, CreateUserDto, UpdateUserDto>;
+  address: BaseRepository<AddressModel, CreateAddressDto, any>;
+  contact: BaseRepository<ContactModel, CreateContactDto, UpdateContactDto>;
 
   constructor() {
     this.knex = Knex(knexConfig);
@@ -20,6 +33,10 @@ export class DbService {
         this.logger.debug(this.fillBindings(queryData.sql, queryData.bindings));
       });
     }
+
+    this.user = new BaseRepository<UserModel, CreateUserDto, UpdateUserDto>(UserModel);
+    this.address = new BaseRepository<AddressModel, CreateAddressDto, any>(AddressModel);
+    this.contact = new BaseRepository<ContactModel, CreateContactDto, UpdateContactDto>(ContactModel);
   }
 
   async testConnection() {

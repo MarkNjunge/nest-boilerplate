@@ -3,6 +3,16 @@ import { ModelClass, QueryBuilderType, TransactionOrKnex } from "objection";
 import { BaseModel } from "@/models/_base.model";
 import { applyQuery, Query } from "@/utils";
 
+/**
+ * How to create a custom repository implementation
+ */
+// export class UserRepository extends BaseRepository<UserModel, CreateUserDto, UpdateUserDto> {
+//   constructor() {
+//     super(UserModel);
+//   }
+// }
+// export const userRepository = new UserRepository();
+
 export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
   constructor(protected readonly model: ModelClass<Model>) {}
 
