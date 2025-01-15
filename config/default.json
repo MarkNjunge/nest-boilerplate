@@ -36,6 +36,7 @@
   "instrumentation": {
     "enabled": false,
     "debug": false,
+    "sampleRatio": 1,
     "tracing": {
       "enabled": true,
       "url": "http://localhost:4318/v1/traces"

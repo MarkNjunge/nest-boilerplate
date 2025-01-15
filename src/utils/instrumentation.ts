@@ -10,6 +10,7 @@ import { BatchLogRecordProcessor, LoggerProvider } from "@opentelemetry/sdk-logs
 import * as logsAPI from "@opentelemetry/api-logs";
 import { config } from "@/config";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
+import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-node";
 
 if (config.instrumentation.enabled.toString() === "true") {
   init();
@@ -30,6 +31,7 @@ function init() {
   const httpUrlIgnoreRx = RegExp(httpUrlIgnore.join("|"));
 
   const configuration: Partial<NodeSDKConfiguration> = {
+    sampler: new TraceIdRatioBasedSampler(config.instrumentation.sampleRatio),
     resource,
     instrumentations: [
       getNodeAutoInstrumentations({

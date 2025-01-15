@@ -28,6 +28,7 @@ export interface Config {
   instrumentation: {
     enabled: boolean;
     debug: boolean;
+    sampleRatio: number;
     tracing: {
       enabled: boolean;
       url: string;

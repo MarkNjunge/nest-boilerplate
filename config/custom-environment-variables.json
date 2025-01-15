@@ -31,6 +31,7 @@
   "instrumentation": {
     "enabled": "INSTRUMENTATION_ENABLED",
     "debug": "INSTRUMENTATION_DEBUG",
+    "sampleRatio": "INSTRUMENTATION_SAMPLE_RATIO",
     "tracing": {
       "enabled": "INSTRUMENTATION_TRACING_ENABLED",
       "url": "INSTRUMENTATION_TRACING_URL"
