@@ -7,6 +7,9 @@ services:
     ports:
       - "9000:3000"
     environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
       - GF_PATHS_CONFIG=/conf/grafana-custom.ini
     volumes:
       - ./config/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
