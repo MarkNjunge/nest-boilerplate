@@ -59,10 +59,8 @@ These values can be overridden by:
 
 
 The following values are acceptable for `config.cors.origins`:
-- `*` - Will accept any origin.   
+- `*` - Will accept any origin. The `access-control-allow-origin` header will always respond with the exact origin of the request, no a `*`.   
 - `https://example.com,https://example2.com` - Will accept all domains in the comma separated list.
-
-**Note:** The `access-control-allow-origin` header will always respond with the origin in the request, even if `*` is used.
 
 ## Database
 
@@ -102,8 +100,6 @@ Swagger documentation is automatically generated from the routes.
 
 By default it is available at http://127.0.0.1:3000/docs
 
-See config in [default.json](./config/default.json).
-
 ## Query Parsing
 
 URL query to DB query parsing is available. See [query-parser.ts](./src/utils/query-parser.ts).
@@ -141,7 +137,7 @@ Multiple orderings can be specified using a colon `:` as the delimiter.
 
 ## File Upload
 
-File uploads are enabled.
+File uploads are available.
 
 ### Config
 
@@ -172,21 +168,22 @@ See [FileUploadDto](./src/models/file-upload/file-upload.dto.ts) for a full exam
 
 ## Logging
 
-A custom logger is implemented using [winston](https://www.npmjs.com/package/winston).
+[Winston](https://www.npmjs.com/package/winston) is used as a logging library.
 
-Create a logger instance using `new CustomLogger()`.  
+Create a logger instance using `new Logger()`.  
 A parameter can be passed into the constructor and to be used as a tag (defaults to "Application").
 
 For example,
 
 ```Typescript
-const logger = new CustomLogger("AppService");
+import { Logger } from "@/logging/Logger";
+
+const logger = new Logger("AppService");
 ```
 
 ```typescript
 this.logger.debug("Hello!");
 
-// Output:
 // 2019-05-10 19:47:21.570 | debug: [AppService] Hello!
 ```
 
@@ -195,7 +192,6 @@ A custom tag can be passed into the log functions.
 ```Typescript
 this.logger.debug("Hello!", { tag: "AppService.getHello" });
 
-// Output
 // 2019-05-10 19:54:43.062 | debug: [AppService.getHello] Hello!
 ```
 
@@ -203,11 +199,12 @@ Extra data can be passed into the log functions. To enable printing it to the co
 config `logging.logDataConsole` to `true`.
 
 ```Typescript
-this.logger.debug("Hello!", "AppService.getHello", { data: { user: "mark" } });
+this.logger.debug(`Hello ${ctx.traceId}`, { data: { traceId: ctx.traceId } });
 
-// Output
-// 2022-07-10 11:59:43.319 | debug: [AppService] Hello!
-// {"user":"mark"}
+// 2025-01-15 15:11:57.090 | debug: [AppService.getHello] Hello 47e4a86ea7c0676916b45bed6c80d1bb
+// {
+//   "traceId": "47e4a86ea7c0676916b45bed6c80d1bb"
+// }
 ```
 
 To log to other locations, a [custom transport](https://github.com/winstonjs/winston-transport) is
@@ -227,10 +224,6 @@ The private keys are specified in [redact.ts](src/utils/redact.ts)
   }
 }
 ```
-
-### Grafana Loki
-
-A log transport to Grafana Loki is implemented for observability. See [OpenTelemetry](#opentelemetry).
 
 ## Request Context
 
@@ -341,7 +334,7 @@ throw new HttpException(404, `User ${1} was not found`, ErrorCodes.INVALID_USER,
 }
 ```
 
-Regular errors an unhandled exceptions are also caught and returned as a 500 response.
+Regular errors and unhandled exceptions are also caught and returned as a 500 response.
 
 ```json
 {
@@ -354,22 +347,29 @@ Regular errors an unhandled exceptions are also caught and returned as a 500 res
 
 ## OpenTelemetry
 
-[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for traces and metrics.
+[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for traces, metrics and logs.
 
-See the [./observability](./observability/README.MD) for a compose file with various services for collecting and viewing signals.
+[@opentelemetry/auto-instrumentations-node](https://www.npmjs.com/package/@opentelemetry/auto-instrumentations-node) is set up to automatically collect metrics and spans for various services
+
+See the [observability README](./observability/README.MD) for a compose file with various services for collecting and viewing signals.
 
 **Note:** Instrumentation needs to be enabled via [config](#config)
 
-> Logs is not yet supported in the [OpenTelemetry SDK](https://opentelemetry.io/docs/languages/js/instrumentation/#logs), so a log Winston transport to Grafana Loki is present to fill the gap.
-
 ### Traces
 
-Automatic instrumentation is enabled and will suite most needs.
+Automatic instrumentation is enabled and will suite most needs. 
+
 Custom spans can be created as described in the [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#create-spans).
 
 ### Metrics
 
-[See OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#metrics)
+HTTP metrics are automatically collected by `@opentelemetry/instrumentation-http`
+
+```
+sum by(http_route) (rate(nb_http_server_duration_milliseconds_count[1m]))
+```
+
+See [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#metrics) for how to create custom metrics.
 
 ```typescript
 const meter = opentelemetry.metrics.getMeter("UserService");
@@ -377,6 +377,11 @@ const getUserCounter = this.meter.createCounter("get_user")
 getUserCounter.add(1, { user_id: id });
 ```
 
+### Logs
+
+Logs are sent to the OpenTelemetry Collector using the [OtelTransport](src/logging/otel.transport.ts).
+
+See [logging](#logging) for how to log.
 
 ## Docker
 

@@ -119,8 +119,8 @@ export function initializeWinston(): void {
     );
 
     let formatted = `${formattedTimestamp} | ${level}: ${message}`;
-    if (bool(config.logging.logDataConsole) && data !== undefined) {
-      formatted += `\n${JSON.stringify(data)}`;
+    if (bool(config.logging.logDataConsole) && (data !== undefined && Object.keys(data).length !== 0)) {
+      formatted += `\n${JSON.stringify(data, null, 2)}`;
     }
 
     return formatted;

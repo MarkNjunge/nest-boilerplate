@@ -31,7 +31,8 @@
   },
   "fileUpload": {
     "maxSize": 5242880,
-    "removeAfterUpload": true
+    "removeAfterUpload": true,
+    "_uploadDir": "See README"
   },
   "instrumentation": {
     "enabled": false,

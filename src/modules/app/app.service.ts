@@ -7,7 +7,10 @@ export class AppService {
   logger: Logger = new Logger("AppService");
 
   getHello(ctx: IReqCtx): string {
-    this.logger.debug(`Hello ${ctx.traceId}`, { tag: "AppService.getHello" });
+    this.logger.debug(`Hello ${ctx.traceId}`, {
+      tag: "AppService.getHello",
+      data: { traceId: ctx.traceId }
+    });
 
     return `Hello ${ctx.traceId}!`;
   }
