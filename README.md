@@ -59,7 +59,7 @@ These values can be overridden by:
 
 
 The following values are acceptable for `config.cors.origins`:
-- `*` - Will accept any origin. The `access-control-allow-origin` header will always respond with the exact origin of the request, no a `*`.   
+- `*` - Will accept any origin. The `access-control-allow-origin` header will always respond with the exact origin of the request, not a `*`.   
 - `https://example.com,https://example2.com` - Will accept all domains in the comma separated list.
 
 ## Database
@@ -122,7 +122,7 @@ ORDER  BY "average_rating" DESC
 
 ### Paging
 
-Paging can either be done using `limit` and `page`.
+Paging can be done using `limit` and `page`.
 
 ### Filters
 
@@ -137,34 +137,15 @@ Multiple orderings can be specified using a colon `:` as the delimiter.
 
 ## File Upload
 
-File uploads are available.
+File uploads are configured.
+
+See [FileUploadDto](./src/models/file-upload/file-upload.dto.ts) for an example dto.
 
 ### Config
 
 `maxSize: number` - Max size in bytes. Default 5MB.  
 `uploadDir: string` - Upload directory. If blank, it will default to the OS's temp directory.  
-`removeAfterUpload: string` - Whether to delete files after the request completes.
-
-Upload a single file
-```
-@ApiProperty({ type: "string", format: "binary" })
-@IsNotEmpty()
-@IsObject({ message: "$property must be a single file" })
-@ValidateNested({ message: "$property must be a file" })
-@Type(() => UploadedFileDto)
-file2: UploadedFileDto;
-```
-
-Upload multiple files
-```
-@ApiProperty({ type: "array", items: { type: "string", format: "binary" } })
-@IsNotEmpty()
-@IsArray({ message: "$property must be multiple files" })
-@ValidateNested({ message: "$property must be a file", each: true })
-@Type(() => UploadedFileDto)
-file1: UploadedFileDto[];
-```
-See [FileUploadDto](./src/models/file-upload/file-upload.dto.ts) for a full example.
+`removeAfterUpload: boolean` - Whether to delete files after the request completes.
 
 ## Logging
 
@@ -207,8 +188,9 @@ this.logger.debug(`Hello ${ctx.traceId}`, { data: { traceId: ctx.traceId } });
 // }
 ```
 
-To log to other locations, a [custom transport](https://github.com/winstonjs/winston-transport) is
-needed. See [SampleTransport](src/logging/Sample.transport.ts) for an example.
+### Custom Transports
+
+See [SampleTransport](src/logging/Sample.transport.ts) for an example.
 
 ### Redact Private Keys
 
@@ -257,27 +239,16 @@ class Controller {
 }
 ```
 
-## Auth Guard
+## Authentication
 
-An authentication guard is available in [auth.guard.ts](./src/guards/auth.guard.ts)
+A simple authentication scheme is implemented in [auth.guard.ts](./src/guards/auth.guard.ts)
 
-It can be enabled by adding a `UseGuards` decorator to a controller or route
-
-```Typescript
-@UseGuards(AuthGuard)
-```
-
-or globally
-
-```Typescript
-app.useGlobalGuards(new AuthGuard());
-```
 
 ## Rate Limiting
 
 A rate limiter is configured
 using [@nestjs/throttler](https://github.com/nestjs/throttler).  
-It defaults to 100 request per minute per IP (configurable in [default.json](./config/default.json))
+It defaults to 100 request per minute (configurable in [default.json](./config/default.json))
 .
 
 ## Request Body Validation
@@ -372,7 +343,7 @@ Regular errors and unhandled exceptions are also caught and returned as a 500 re
 
 See the [observability README](./observability/README.MD) for a compose file with various services for collecting and viewing signals.
 
-**Note:** Instrumentation needs to be enabled via [config](#config)
+**Note:** Global and per signal instrumentation needs to be enabled via [config](#config)
 
 ### Traces
 
