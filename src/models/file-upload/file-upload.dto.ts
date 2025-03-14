@@ -15,14 +15,14 @@ export class FileUploadDto {
   @IsString()
   ref: string;
 
-  @ApiProperty({ type: "array", items: { type: "string", format: "binary" } })
+  @ApiProperty({ type: "array", items: { type: "file", format: "binary" } })
   @IsNotEmpty()
   @IsArray({ message: "$property must be multiple files" })
   @ValidateNested({ message: "$property must be a file", each: true })
   @Type(() => UploadedFileDto)
   file1: UploadedFileDto[];
 
-  @ApiProperty({ type: "string", format: "binary" })
+  @ApiProperty({ type: "file", format: "binary" })
   @IsNotEmpty()
   @IsObject({ message: "$property must be a single file" })
   @ValidateNested({ message: "$property must be a file" })
