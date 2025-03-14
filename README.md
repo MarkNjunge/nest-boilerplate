@@ -227,14 +227,33 @@ The private keys are specified in [redact.ts](src/utils/redact.ts)
 
 ## Request Context
 
-Request context. be accessed using the `@ReqCtx()` header.
+[nestjs-cls](https://papooch.github.io/nestjs-cls/) is implemented to maintain the request state.
 
-It contains a `traceId`.  
+The request ID is the trace ID if observability is enabled, otherwise it's a random string.
+
+It can be accessed using the `AppClsService`.
 
 ```typescript
-@Get()
-function getHello(@ReqCtx() ctx: IReqCtx) {
-  console.log(ctx.traceId) // 0d8df9931b05fbcd2262bc696a1410a6
+class Service {
+  constructor(
+    // This needs to be ClsService<AppClsStore>. AppClsService will not work.
+    private readonly clsService: ClsService<AppClsStore>
+  ) {}
+  
+  handler() {
+    this.clsService.getId();
+  }
+}
+```
+
+Alternatively, the `@ReqCtx()` can be used.
+
+```typescript
+class Controller {
+  @Get()
+  getHello(@ReqCtx() ctx: IReqCtx) {
+    console.log(ctx.traceId) // 0d8df9931b05fbcd2262bc696a1410a6
+  }
 }
 ```
 

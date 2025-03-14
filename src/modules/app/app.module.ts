@@ -6,6 +6,8 @@ import { DbModule } from "@/modules/_db/db.module";
 import { bool, config } from "@/config";
 import { ThrottlerGuard, ThrottlerModule, seconds } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
+import { ClsModule } from "nestjs-cls";
+import { appClsOptions } from "@/cls/app-cls";
 
 const modules: DynamicModule[] = [];
 const providers: Provider[] = [];
@@ -26,7 +28,12 @@ if (bool(config.rateLimit.enabled)) {
 }
 
 @Module({
-  imports: [...modules, DbModule, UsersModule],
+  imports: [
+    ClsModule.forRoot(appClsOptions),
+    ...modules,
+    DbModule,
+    UsersModule
+  ],
   controllers: [AppController],
   providers: [...providers, AppService],
 })

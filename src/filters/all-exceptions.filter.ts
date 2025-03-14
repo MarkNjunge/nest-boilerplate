@@ -6,12 +6,15 @@ import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
 import { DBError } from "objection";
 import { FileHandler } from "@/utils/file-handler";
+import { AppClsService, CLS_REQ_IP } from "@/cls/app-cls";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   logger: Logger;
 
-  constructor() {
+  constructor(
+    protected readonly clsService: AppClsService
+  ) {
     this.logger = new Logger("HttpExceptionFilter");
   }
 
@@ -41,8 +44,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
     response.statusCode = status;
 
-    const traceId = request.headers["x-trace-id"] as string;
-    const ip = request.headers["x-ip"] as string;
+    const traceId = this.clsService.getId();
+    const ip = this.clsService.get(CLS_REQ_IP);
+
     response.header("x-trace-id", traceId);
     response.header("x-ip", ip);
 

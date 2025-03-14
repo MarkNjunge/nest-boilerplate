@@ -1,5 +1,6 @@
 import * as Transport from "winston-transport";
 import { clone } from "@/utils";
+import { AppClsService } from "@/cls/app-cls";
 
 // Batching adapted from https://github.com/winstonjs/winston/blob/master/lib/winston/transports/http.js
 export class SampleTransport extends Transport {
@@ -9,7 +10,10 @@ export class SampleTransport extends Transport {
   private batchCount = 100;
   private batchTimeoutID = -1;
 
-  constructor(opts = {}) {
+  constructor(
+    opts = {},
+    protected readonly clsService: AppClsService
+  ) {
     super(opts);
   }
 
@@ -24,6 +28,7 @@ export class SampleTransport extends Transport {
         this.emit("logged", info);
       }
     };
+    info.traceId = this.clsService.getId();
 
     this.batchEntries.push(info);
 
@@ -50,7 +55,9 @@ export class SampleTransport extends Transport {
     this.batchEntries = [];
 
     // TODO Send logs to remote
-    // console.log(entriesCopy.map(e => e.message));
+    // for (let entry of entriesCopy) {
+    //   console.log(entry.traceId, entry.message);
+    // }
 
     cb();
   }

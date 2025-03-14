@@ -6,6 +6,8 @@ import * as dayjs from "dayjs";
 import { redact, clone } from "@/utils";
 import * as Transport from "winston-transport";
 import { OtelTransport } from "@/logging/otel.transport";
+import { ClsServiceManager } from "nestjs-cls";
+import { AppClsService } from "@/cls/app-cls";
 
 export class ILogMeta {
   // A tag indicating what this error relates to. Usually based on the stack.
@@ -28,7 +30,10 @@ interface LogObject {
 }
 
 export class Logger {
-  constructor(private readonly name: string) {}
+  constructor(
+    private readonly name: string,
+    private readonly clsService: AppClsService = ClsServiceManager.getClsService(),
+  ) {}
 
   info(message: string, meta: ILogMeta = {}): void {
     winston.info(this.getLogObject(message, meta));
@@ -59,13 +64,13 @@ export class Logger {
     response: FastifyReply,
     responseBody?: any,
   ): void {
+    const { requestTime, ip } = this.clsService.get();
+
     const statusCode = response.statusCode;
     const method = request.method;
     const url = request.url;
     const tag = "ROUTE";
-    const ip = request.headers["x-ip"] as string;
 
-    const requestTime = parseInt(request.headers["x-request-time"] as string);
     const requestTimeISO = dayjs(requestTime).toISOString();
     const duration = dayjs().valueOf() - requestTime;
 
@@ -133,7 +138,7 @@ export function initializeWinston(): void {
         colorize({ all: true, colors: { debug: "brightBlue" } }),
       ),
     }),
-    new SampleTransport(),
+    new SampleTransport({}, ClsServiceManager.getClsService()),
   ];
   if (config.instrumentation.enabled.toString() === "true" && config.instrumentation.logs.enabled.toString() === "true") {
     transports.push(new OtelTransport(config));

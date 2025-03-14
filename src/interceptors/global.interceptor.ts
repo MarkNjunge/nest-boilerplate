@@ -13,20 +13,24 @@ import { ResponseUtils } from "@/utils";
 import { SerializeKey } from "@/decorators/serialize.decorator";
 import { FileHandler } from "@/utils/file-handler";
 import { Logger } from "@/logging/Logger";
+import { AppClsService, CLS_REQ_IP } from "@/cls/app-cls";
 
 @Injectable()
 export class GlobalInterceptor implements NestInterceptor {
   logger: Logger = new Logger("ROUTE");
 
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly clsService: AppClsService
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<FastifyRequest>();
     const response = ctx.getResponse<FastifyReply>();
 
-    const traceId = request.headers["x-trace-id"] as string;
-    const ip = request.headers["x-ip"] as string;
+    const traceId = this.clsService.getId();
+    const ip = this.clsService.get(CLS_REQ_IP);
     const clz = this.reflector.get<ClassConstructor<any> | undefined>(
       SerializeKey,
       context.getHandler(),

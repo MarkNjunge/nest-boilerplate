@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { emptyCtx } from "@/decorators/request-context.decorator";
+import { ClsModule } from "nestjs-cls";
 
 describe("AppController", () => {
   let appController: AppController;
@@ -9,6 +10,7 @@ describe("AppController", () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ClsModule],
       controllers: [AppController],
       providers: [AppService],
     }).compile();

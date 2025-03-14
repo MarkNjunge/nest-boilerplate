@@ -17,6 +17,8 @@ import { GlobalInterceptor } from "./interceptors/global.interceptor";
 import { DbService } from "@/modules/_db/db.service";
 import multipart from "@fastify/multipart";
 import { FileHandler } from "@/utils/file-handler";
+import { ClsServiceManager } from "nestjs-cls";
+import { AppClsService } from "@/cls/app-cls";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -38,8 +40,10 @@ async function bootstrap(): Promise<void> {
   await enablePlugins(app);
   initializeSwagger(app);
 
-  app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalInterceptors(new GlobalInterceptor(new Reflector()));
+  const clsService: AppClsService = ClsServiceManager.getClsService();
+
+  app.useGlobalFilters(new AllExceptionsFilter(clsService));
+  app.useGlobalInterceptors(new GlobalInterceptor(new Reflector(), clsService));
   app.useGlobalPipes(new ValidationPipe());
   app.use(globalMiddleware);
 

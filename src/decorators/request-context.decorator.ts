@@ -1,6 +1,8 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 import { FastifyRequest } from "fastify";
 import * as crypto from "crypto";
+import { AppClsService } from "@/cls/app-cls";
+import { ClsServiceManager } from "nestjs-cls";
 
 export interface IReqCtx {
   traceId: string;
@@ -9,10 +11,11 @@ export interface IReqCtx {
 
 export const ReqCtx = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): IReqCtx => {
+    const clsService: AppClsService = ClsServiceManager.getClsService();
     const request: FastifyRequest = ctx.switchToHttp().getRequest();
 
-    const traceId = request.headers["x-trace-id"] as string;
-    const ip = request.headers["x-ip"] as string;
+    const traceId = clsService.getId();
+    const { ip } = clsService.get();
 
     return { traceId, ip };
   },
