@@ -13,6 +13,16 @@ export class AppController {
     return this.appService.getHello(ctx);
   }
 
+  @Get("/ready")
+  ready(){
+    return this.appService.ready();
+  }
+
+  @Get("/live")
+  live(){
+    return this.appService.live();
+  }
+
   @Post("/upload")
   @ApiConsumes("multipart/form-data")
   @ApiBody({type:FileUploadDto})

@@ -7,6 +7,7 @@ export class ErrorCodes {
   static INVALID_USER = "InvalidUser";
   static TOO_MANY_REQUESTS = "TooManyRequests";
   static FILE_TOO_LARGE = "FileTooLarge";
+  static LIVE_ERROR = "LiveError";
 }
 
 export function getErrorCode(status: number | string): string {

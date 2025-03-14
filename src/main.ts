@@ -48,7 +48,7 @@ async function bootstrap(): Promise<void> {
   app.use(globalMiddleware);
 
   const dbService = app.get<DbService>(DbService);
-  // await dbService.testConnection(); // Catch this
+  // Catch this to allow the application to start when the db is unreachable
   await dbService.migrateLatest();
 
   await app.listen(config.port, "0.0.0.0");

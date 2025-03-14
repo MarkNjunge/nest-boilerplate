@@ -18,6 +18,7 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Rate limiting](#rate-limiting)
 - [Request body validation](#request-body-validation)
 - [Exception Handling](#errors--exception-handling)
+- [Health Check](#health-check)
 - [OpenTelemetry](#opentelemetry)
 - [Docker](#docker)
 - [Testing](#testing)
@@ -334,6 +335,10 @@ Regular errors and unhandled exceptions are also caught and returned as a 500 re
   "traceId": "d3cb1b2b3388e3b1"
 }
 ```
+
+# Health Check
+
+Health check endpoints are set up at `/ready` and `/live`.
 
 ## OpenTelemetry
 
