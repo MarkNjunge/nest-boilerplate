@@ -1,6 +1,7 @@
 {
   "name": "load-test",
   "scripts": {
+    "build": "webpack",
     "pretest:html": "webpack",
     "test:html": "cross-env K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=report.html K6_WEB_DASHBOARD_PERIOD=1s k6 run dist/script.bundle.js",
     "pretest:prom": "webpack",
@@ -9,8 +10,10 @@
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
-    "@types/k6": "^0.54.2",
+    "@types/k6": "^1.0.2",
     "babel-loader": "^9.2.1",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.2",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
   },

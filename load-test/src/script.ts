@@ -25,7 +25,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function (): void {
   const host = __ENV.API_HOST || "http://localhost:3000";
   const apiKey = __ENV.API_KEY || "api-key";
 
@@ -36,23 +36,23 @@ export default function () {
     }
   };
 
-  function get(endpoint, tags) {
+  function get(endpoint: string, tags?: Record<string, string>) {
     return http.get(`${host}${endpoint}`, { ...params, tags });
   }
 
-  function post(endpoint, data, tags) {
+  function post(endpoint: string, data: Record<string, any>, tags?: Record<string, string>) {
     return http.post(`${host}${endpoint}`, JSON.stringify(data), { ...params, tags });
   }
 
-  function put(endpoint, data, tags) {
+  function put(endpoint: string, data: Record<string, any>, tags?: Record<string, string>) {
     return http.put(`${host}${endpoint}`, JSON.stringify(data), { ...params, tags });
   }
 
-  function del(endpoint, data, tags) {
+  function del(endpoint: string, data: Record<string, any>, tags?: Record<string, string>) {
     return http.del(`${host}${endpoint}`, JSON.stringify(data), { ...params, tags });
   }
 
-  const username = faker.internet.displayName();
+  const username: string = faker.internet.displayName();
 
   // Create a user
   const createUserRes = post("/users", {
@@ -66,13 +66,13 @@ export default function () {
   });
   sleep(1);
 
-  const userId = createUserRes.json().id;
+  const userId: string = (createUserRes.json()! as any).id;
 
   // Search for user
   const searchRes = get(`/users?filter=(username,=,${username})`, { name: "search" });
   check(searchRes, {
     "search status is 200": r => r.status === 200,
-    "search returns the user": r => r.json()[0].username === username,
+    "search returns the user": r => r.json()![0].username === username,
   });
   sleep(1);
 
