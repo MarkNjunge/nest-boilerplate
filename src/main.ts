@@ -74,10 +74,10 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
       const whitelist = config.cors.origins.split(",");
       if (config.cors.origins === "*") {
         callback(null, true);
-      } else if (whitelist.includes(origin)) {
+      } else if (origin && whitelist.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS"), false);
       }
     },
     methods: config.cors.methods,

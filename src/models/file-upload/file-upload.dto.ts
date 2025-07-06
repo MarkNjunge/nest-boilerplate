@@ -22,7 +22,7 @@ export class FileUploadDto {
   @Type(() => UploadedFileDto)
   file1: UploadedFileDto[];
 
-  @ApiProperty({ type: "file", format: "binary" })
+  @ApiProperty({ type: "string", format: "binary" })
   @IsNotEmpty()
   @IsObject({ message: "$property must be a single file" })
   @ValidateNested({ message: "$property must be a file" })
