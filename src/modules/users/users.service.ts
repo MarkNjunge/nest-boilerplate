@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Logger } from "@/logging/Logger";
 import { blankQuery, ErrorCodes, HttpException, Query } from "@/utils";
 import { CreateUserDto, UpdateUserDto, UserDto } from "@/models/user";

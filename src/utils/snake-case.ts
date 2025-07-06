@@ -2,7 +2,7 @@
 // https://github.com/Vincit/objection.js/blob/dbb20aebaac2059149ec18386283b3cce4a3d7f0/lib/utils/identifierMapping.js
 
 export function snakeCase(
-  str,
+  str: string,
   {
     upperCase = false,
     underscoreBeforeDigits = false,
@@ -13,8 +13,8 @@ export function snakeCase(
     return str;
   }
 
-  const upper = str.toUpperCase();
-  const lower = str.toLowerCase();
+  const upper: string = str.toUpperCase();
+  const lower: string = str.toLowerCase();
 
   let out = lower[0];
 

@@ -59,6 +59,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     this.logger.error(e.message, { tag }, e);
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);

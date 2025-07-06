@@ -34,7 +34,7 @@ export class AppService {
   }
 
   async live(): Promise<any> {
-    let response = {
+    const response = {
       ok: true,
       message: "OK",
       db: {

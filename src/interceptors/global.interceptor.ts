@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { map, Observable } from "rxjs";
+import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { Reflector } from "@nestjs/core";
 import { ClassConstructor } from "class-transformer";

@@ -13,12 +13,12 @@ export class ArrayValidationPipe implements PipeTransform {
     this.type = type;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async transform<T>(
     value: T[] | null,
     metadata: ArgumentMetadata,
   ): Promise<T[]> {
     // Account for an empty request body
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     if (value == null) {
       value = [];
     }

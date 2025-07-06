@@ -25,7 +25,7 @@ export class AppController {
 
   @Post("/upload")
   @ApiConsumes("multipart/form-data")
-  @ApiBody({type:FileUploadDto})
+  @ApiBody({ type: FileUploadDto })
   upload(@Body() body: FileUploadDto) {
     return body;
   }

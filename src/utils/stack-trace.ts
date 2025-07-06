@@ -13,7 +13,7 @@ export function parseStacktrace(stacktrace: string): ParseStacktraceLine[] {
   return stacktrace
     .split("\n")
     .map(s => parseStacktraceLine(s))
-    .filter(p => p !== null) as ParseStacktraceLine[];
+    .filter(p => p !== null);
 }
 
 export function parseStacktraceLine(line: string): ParseStacktraceLine | null {

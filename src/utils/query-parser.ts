@@ -21,7 +21,7 @@ export interface QueryOrder<T extends Record<string, any> = any> {
 }
 
 export function IsValidOrderBy(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: "isValidOrderBy",
       target: object.constructor,
@@ -49,7 +49,7 @@ export function validateOrderBy(s: string): boolean {
 }
 
 export function IsValidFilter(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: "isValidFilter",
       target: object.constructor,

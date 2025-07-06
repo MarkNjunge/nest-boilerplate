@@ -25,6 +25,7 @@ export function isCyclic(obj: any): boolean {
 
     stackSet.add(obj);
     for (const k in obj) {
+      // eslint-disable-next-line no-prototype-builtins
       if (obj.hasOwnProperty(k)) {
         detect(obj[k]);
       }

@@ -4,7 +4,5 @@ export class ContactModel extends BaseModel {
   email: string;
   userId: number;
 
-  static get tableName() {
-    return "contacts";
-  }
+  static readonly tableName = "contacts";
 }

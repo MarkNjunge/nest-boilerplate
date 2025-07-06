@@ -55,7 +55,7 @@ export class FileHandler {
       return;
     }
 
-    Object.keys(request.body || {}).forEach(key => {
+    Object.keys(request.body ?? {}).forEach(key => {
       if (Array.isArray(request.body?.[key])) {
         Object.keys(request.body[key]).forEach(subKey => {
           delete request.body?.[key][subKey].file;
@@ -72,7 +72,7 @@ export class FileHandler {
     return request.body;
   }
 
-  static deleteRequestFiles(request: FastifyRequest, hasFailed: boolean = false) {
+  static deleteRequestFiles(request: FastifyRequest, hasFailed = false) {
     if (!request.headers["content-type"]?.includes("multipart/form-data")) {
       return;
     }
@@ -87,7 +87,7 @@ export class FileHandler {
     }
 
     if (config.fileUpload.removeAfterUpload || hasFailed) {
-      Object.keys(request.body || {}).forEach(key => {
+      Object.keys(request.body ?? {}).forEach(key => {
         const dto = request.body?.[key] as UploadedFileDto;
         if (Array.isArray(dto)) {
           dto.forEach(d => handleDto(d));

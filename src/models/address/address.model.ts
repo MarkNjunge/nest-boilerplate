@@ -4,7 +4,5 @@ export class AddressModel extends BaseModel {
   city: string;
   country: string;
 
-  static get tableName() {
-    return "addresses";
-  }
+  static readonly tableName = "addresses";
 }

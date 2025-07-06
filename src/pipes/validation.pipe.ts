@@ -27,6 +27,7 @@ export class ValidationPipe implements PipeTransform {
     { metatype }: ArgumentMetadata,
   ): Promise<ValidationErrorDto[]> {
     // Account for an empty request body
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     if (value == null) {
       value = Object.assign({}, value);
     }

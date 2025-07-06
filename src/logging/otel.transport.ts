@@ -38,6 +38,7 @@ const cliLevels: Record<string, number> = {
 };
 
 function getSeverityNumber(level: string): SeverityNumber | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return npmLevels[level] ?? sysLoglevels[level] ?? cliLevels[level];
 }
 
@@ -57,6 +58,7 @@ export class OtelTransport extends Transport {
   log(info: any, callback: () => void): void {
     setImmediate(callback);
 
+    // message and level are excluded from the rest
     const { message, level, ...splat } = info;
 
     if (this.config.instrumentation.logs.logData.toString() !== "true") {

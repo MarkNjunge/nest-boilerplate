@@ -117,7 +117,6 @@ export class Logger {
 export function initializeWinston(): void {
   const { combine, timestamp, printf, colorize } = winston.format;
 
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   const myFormat = printf(({ level, message, timestamp, data }) => {
     const formattedTimestamp = dayjs(timestamp).format(
       config.logging.timestampFormat,
