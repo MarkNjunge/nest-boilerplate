@@ -3,7 +3,6 @@ import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
-import { Resource } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { BatchLogRecordProcessor, LoggerProvider } from "@opentelemetry/sdk-logs";
@@ -11,17 +10,24 @@ import * as logsAPI from "@opentelemetry/api-logs";
 import { config } from "@/config";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
 import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-node";
+import { resourceFromAttributes } from "@opentelemetry/resources";
 
 if (config.instrumentation.enabled.toString() === "true") {
-  init();
+  const signals = {
+    tracing: config.instrumentation.tracing.enabled.toString() === "true",
+    metrics: config.instrumentation.metrics.enabled.toString() === "true",
+    logs: config.instrumentation.logs.enabled.toString() === "true"
+  };
+
+  init(signals);
 }
 
-function init() {
+function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   if (config.instrumentation.debug) {
     diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
   }
 
-  const resource = new Resource({
+  const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: config.appName,
     [ATTR_SERVICE_VERSION]: config.appVersion,
   });
@@ -60,12 +66,12 @@ function init() {
   };
 
   // Tracing
-  if (config.instrumentation.tracing.enabled.toString() === "true") {
+  if (signals.tracing) {
     configuration.traceExporter = new OTLPTraceExporter({ url: config.instrumentation.tracing.url });
   }
 
   // Metrics
-  if (config.instrumentation.metrics.enabled.toString() === "true") {
+  if (signals.metrics) {
     configuration.metricReader = new PeriodicExportingMetricReader({
       exporter: new OTLPMetricExporter({ url: config.instrumentation.metrics.url }),
       exportIntervalMillis: 10000 // Default is 60_000
@@ -73,15 +79,19 @@ function init() {
   }
 
   // Logs
-  if (config.instrumentation.logs.enabled.toString() === "true") {
-    const loggerProvider = new LoggerProvider({ resource });
+  if (signals.logs) {
     const logExporter = new OTLPLogExporter({ url: config.instrumentation.logs.url });
-    loggerProvider.addLogRecordProcessor(new BatchLogRecordProcessor(logExporter));
+    const loggerProvider = new LoggerProvider({
+      resource,
+      processors: [
+        new BatchLogRecordProcessor(logExporter)
+      ]
+    });
     logsAPI.logs.setGlobalLoggerProvider(loggerProvider);
   }
 
   const sdk = new NodeSDK(configuration);
 
   sdk.start();
-  console.log("Initialized instrumentation");
+  console.log(`Initialized instrumentation: ${JSON.stringify(signals)}`);
 }

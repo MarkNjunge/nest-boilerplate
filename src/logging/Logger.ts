@@ -118,12 +118,12 @@ export function initializeWinston(): void {
   const { combine, timestamp, printf, colorize } = winston.format;
 
   const myFormat = printf(({ level, message, timestamp, data }) => {
-    const formattedTimestamp = dayjs(timestamp).format(
+    const formattedTimestamp = dayjs(timestamp as string).format(
       config.logging.timestampFormat,
     );
 
     let formatted = `${formattedTimestamp} | ${level}: ${message}`;
-    if (bool(config.logging.logDataConsole) && (data !== undefined && Object.keys(data).length !== 0)) {
+    if (bool(config.logging.logDataConsole) && (data !== undefined && Object.keys(data as any).length !== 0)) {
       formatted += `\n${JSON.stringify(data, null, 2)}`;
     }
 

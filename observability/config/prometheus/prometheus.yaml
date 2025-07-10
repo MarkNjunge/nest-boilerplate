@@ -2,4 +2,7 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-# Remote Write is used to push from the collector
+  # By default, remote Write is used instead of scraping
+  - job_name: "nest-boilerplate"
+    static_configs:
+      - targets: ["otel-collector:8889"]

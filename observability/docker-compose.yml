@@ -1,7 +1,7 @@
 version: "3"
 services:
   grafana:
-    image: grafana/grafana:11.0.0
+    image: grafana/grafana:12.0.2
     container_name: nb-grafana
     user: "0"
     ports:
@@ -16,10 +16,10 @@ services:
       - ./config/grafana/grafana.ini:/conf/grafana-custom.ini
       - nb_grafana:/var/lib/grafana
   prometheus:
-    image: prom/prometheus:v2.51.2
+    image: prom/prometheus:v3.4.2
     container_name: nb-prometheus
     ports:
-      - "9090:9090"
+      - "9091:9090"
     volumes:
       - ./config/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
       - nb_prometheus:/prometheus
@@ -27,17 +27,19 @@ services:
       [
         "--log.level=debug",
         "--config.file=/etc/prometheus/prometheus.yml",
-        "--enable-feature=remote-write-receiver",
+        "--web.enable-remote-write-receiver",
         "--query.lookback-delta=30s",
         "--enable-feature=otlp-write-receiver"
       ]
   tempo:
-    image: grafana/tempo:2.4.1
+    image: grafana/tempo:2.8.1
     container_name: nb-tempo
     command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./config/tempo/tempo.yaml:/etc/tempo.yaml
       - nb_tempo:/var/tempo
+    expose:
+      - 4317
   loki:
     image: grafana/loki:3.0.0
     container_name: nb-loki
@@ -49,7 +51,7 @@ services:
       - ./config/loki/loki-config.yaml:/etc/loki-config.yaml
       - nb_loki:/etc/loki
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.98.0
+    image: otel/opentelemetry-collector-contrib:0.129.1
     container_name: nb-otel-collector
     volumes:
       - ./config/otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
@@ -57,7 +59,7 @@ services:
       - "4317:4317" # GRPC
       - "4318:4318" # HTTP
       - "55679:55679" # zpages
-#      - "8889:8889" # If prometheus exporter is enabled metrics
+      - "8889:8889" # /metrics endpoint if the prometheus exporter is used
 volumes:
   nb_grafana:
   nb_prometheus:

@@ -33,3 +33,4 @@ storage_config:
 # https://grafana.com/docs/loki/latest/operations/storage/retention/#configuring-the-retention-period
 limits_config:
   retention_period: 48h
+  volume_enabled: true

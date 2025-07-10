@@ -14,16 +14,19 @@ exporters:
     endpoint: tempo:4317
     tls:
       insecure: true
-#  prometheus:
-#    endpoint: 0.0.0.0:8889
-#    namespace: nb
-#    send_timestamps: true
+  prometheus: # Alternative: scrape instead of remote write
+    endpoint: 0.0.0.0:8889
+    namespace: nb
+    send_timestamps: true
+    resource_to_telemetry_conversion:
+      enabled: true
   prometheusremotewrite:
-    # help and type are missing: https://github.com/prometheus/prometheus/issues/13163
     endpoint: http://prometheus:9090/api/v1/write
     namespace: nb
     tls:
       insecure: true
+    resource_to_telemetry_conversion:
+      enabled: true
   otlphttp:
     endpoint: http://loki:3100/otlp
     tls:
