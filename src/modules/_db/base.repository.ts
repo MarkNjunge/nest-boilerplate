@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { ModelClass, QueryBuilderType, TransactionOrKnex } from "objection";
 import { BaseModel } from "@/models/_base.model";
-import { applyQuery, Query } from "@/utils";
+import { applyQuery, blankQuery, Query } from "@/utils";
 
 /**
  * How to create a custom repository implementation
@@ -20,48 +20,51 @@ export class BaseRepository<Model extends BaseModel, CreateDto, UpdateDto> {
     return this.model.query(trxOrKnex);
   }
 
-  async get(id: number, fetches = ""): Promise<Model | null> {
+  async count(query: Query = blankQuery()): Promise<number> {
+    const r = (await applyQuery(query, this.model.query()).count()) as any as { count: string }[];
+    return parseInt(r[0].count) as any;
+  }
+
+  async get(id: number, joins = ""): Promise<Model | null> {
     return this.model
       .query()
       .findById(id)
-      .withGraphJoined(fetches) as unknown as Model;
+      .withGraphJoined(joins) as unknown as Model;
   }
 
-  async list(query: Query, fetches = ""): Promise<Model[]> {
+  async list(query: Query = blankQuery(), joins = ""): Promise<Model[]> {
     return applyQuery(query, this.model.query()).withGraphJoined(
-      fetches,
+      joins,
     ) as unknown as Model[];
   }
 
   async create(data: CreateDto, trxOrKnex?: TransactionOrKnex): Promise<Model> {
-    // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
     return this.model
       .query(trxOrKnex)
       .insertGraph(data as any)
-      .returning("*") as Model;
+      .returning("*") as any;
   }
 
   async createBulk(
     data: CreateDto[],
     trxOrKnex?: TransactionOrKnex,
   ): Promise<Model[]> {
-    // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
     return this.model
       .query(trxOrKnex)
       .insertGraph(data as any)
-      .returning("*") as Model;
+      .returning("*") as any;
   }
 
   async updateById(
     id: number,
     data: UpdateDto,
-    fetches = "",
+    joins = "",
     trxOrKnex?: TransactionOrKnex,
   ): Promise<Model> {
     return this.model
       .query(trxOrKnex)
       .patchAndFetchById(id, data as any)
-      .withGraphJoined(fetches) as unknown as Model;
+      .withGraphJoined(joins) as any;
   }
 
   async deleteById(id: number): Promise<number> {
