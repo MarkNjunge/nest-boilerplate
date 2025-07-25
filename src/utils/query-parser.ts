@@ -94,14 +94,13 @@ export class RawQuery {
 }
 
 export interface Query<T extends Record<string, any> = any> {
-  limit: number;
+  limit?: number;
   page?: number;
   filters?: QueryFilter<T>[];
   orders?: QueryOrder<T>[];
 }
 
-export const blankQuery = (limit = 10): Query => ({
-  limit,
+export const blankQuery = (): Query => ({
   filters: [],
   orders: [],
 });
@@ -156,7 +155,7 @@ export function applyQuery<M extends Model, R = M[]>(
   dbQuery: Objection.QueryBuilder<M, R>,
 ): Objection.QueryBuilder<M, R> {
   if (query.page) {
-    const offset = query.page == 1 ? 0 : (query.page - 1) * query.limit;
+    const offset = query.page == 1 ? 0 : (query.page - 1) * (query.limit ?? 10);
     dbQuery = dbQuery.offset(offset);
   }
 
@@ -176,7 +175,9 @@ export function applyQuery<M extends Model, R = M[]>(
     dbQuery = dbQuery.orderBy(order.key as string, order.direction);
   }
 
-  dbQuery = dbQuery.limit(query.limit);
+  if (query.limit) {
+    dbQuery = dbQuery.limit(query.limit);
+  }
 
   return dbQuery;
 }
