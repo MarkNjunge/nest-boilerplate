@@ -6,14 +6,15 @@ import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
 import { DBError } from "objection";
 import { FileHandler } from "@/utils/file-handler";
-import { AppClsService, CLS_REQ_IP } from "@/cls/app-cls";
+import { AppClsStore } from "@/cls/app-cls";
+import { ClsService } from "nestjs-cls";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   logger: Logger;
 
   constructor(
-    protected readonly clsService: AppClsService
+    protected readonly clsService: ClsService<AppClsStore>
   ) {
     this.logger = new Logger("HttpExceptionFilter");
   }
@@ -45,10 +46,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.statusCode = status;
 
     const traceId = this.clsService.getId();
-    const ip = this.clsService.get(CLS_REQ_IP);
 
     response.header("x-trace-id", traceId);
-    response.header("x-ip", ip);
 
     const apiError: ApiErrorDto = {
       status,

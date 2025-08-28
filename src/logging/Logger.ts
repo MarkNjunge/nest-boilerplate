@@ -1,13 +1,14 @@
 import * as winston from "winston";
 import { bool, config } from "../config";
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { SampleTransport } from "./Sample.transport";
 import * as dayjs from "dayjs";
-import { redact, clone } from "@/utils";
+import { clone, redact } from "@/utils";
 import * as Transport from "winston-transport";
 import { OtelTransport } from "@/logging/otel.transport";
-import { ClsServiceManager } from "nestjs-cls";
-import { AppClsService } from "@/cls/app-cls";
+import { AppClsStore, CLS_REQ_TIME } from "@/cls/app-cls";
+import { ClsService, ClsServiceManager } from "nestjs-cls";
+import opentelemetry from "@opentelemetry/api";
 
 export class ILogMeta {
   // A tag indicating what this error relates to. Usually based on the stack.
@@ -26,14 +27,17 @@ interface LogObject {
   data: any;
   stacktrace?: string;
 
-  trace_id?: string;
+  traceId?: string;
 }
 
 export class Logger {
+  private readonly clsService: ClsService<AppClsStore>;
+
   constructor(
     private readonly name: string,
-    private readonly clsService: AppClsService = ClsServiceManager.getClsService(),
-  ) {}
+  ) {
+    this.clsService = ClsServiceManager.getClsService();
+  }
 
   info(message: string, meta: ILogMeta = {}): void {
     winston.info(this.getLogObject(message, meta));
@@ -64,13 +68,12 @@ export class Logger {
     response: FastifyReply,
     responseBody?: any,
   ): void {
-    const { requestTime, ip } = this.clsService.get();
-
     const statusCode = response.statusCode;
     const method = request.method;
     const url = request.url;
     const tag = "ROUTE";
 
+    const requestTime = this.clsService.get()?.[CLS_REQ_TIME] ?? Date.now();
     const requestTimeISO = dayjs(requestTime).toISOString();
     const duration = dayjs().valueOf() - requestTime;
 
@@ -80,7 +83,6 @@ export class Logger {
         url,
         method,
         requestTime: requestTimeISO,
-        ip,
         headers: request.headers,
         query: Object.assign({}, request.query),
         body: Object.assign({}, request.body),
@@ -100,15 +102,16 @@ export class Logger {
 
   private getLogObject(message: string, meta: ILogMeta): LogObject {
     const tag = meta.tag ?? this.name;
+    const activeSpan = opentelemetry.trace.getActiveSpan();
+    const traceId = meta.traceId ?? this.clsService.getId() ?? activeSpan?.spanContext().traceId ?? "00000";
     const obj: LogObject = {
       tag,
+      traceId,
       message: `[${tag}] ${message}`,
-      data: clone(meta.data ?? {})
+      data: clone({
+        ...(meta.data ?? {})
+      }),
     };
-
-    if (meta.traceId) {
-      obj.trace_id = meta.traceId;
-    }
 
     return redact(obj);
   }
@@ -122,8 +125,8 @@ export function initializeWinston(): void {
       config.logging.timestampFormat,
     );
 
-    let formatted = `${formattedTimestamp} | ${level}: ${message}`;
-    if (bool(config.logging.logDataConsole) && (data !== undefined && Object.keys(data as any).length !== 0)) {
+    let formatted = `${formattedTimestamp} | ${level} | ${message}`;
+    if (bool(config.logging.logDataConsole) && data !== undefined) {
       formatted += `\n${JSON.stringify(data, null, 2)}`;
     }
 
@@ -137,8 +140,9 @@ export function initializeWinston(): void {
         colorize({ all: true, colors: { debug: "brightBlue" } }),
       ),
     }),
-    new SampleTransport({}, ClsServiceManager.getClsService()),
+    new SampleTransport(),
   ];
+
   if (config.instrumentation.enabled.toString() === "true" && config.instrumentation.logs.enabled.toString() === "true") {
     transports.push(new OtelTransport(config));
   }
@@ -148,5 +152,4 @@ export function initializeWinston(): void {
     format: combine(timestamp(), myFormat),
     transports,
   });
-
 }

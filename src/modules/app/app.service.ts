@@ -15,13 +15,13 @@ export class AppService {
     private readonly clsService: ClsService<AppClsStore>,
     private readonly dbService: DbService
   ) {
-    this.logger = new Logger("AppService", clsService);
+    this.logger = new Logger("AppService");
   }
 
   getHello(ctx: IReqCtx): string {
     // ctx.traceId and this.clsService.getId() will have the same value
     const traceId = ctx.traceId;
-    this.logger.debug(`Request from ${ctx.ip} with id ${traceId}`, {
+    this.logger.debug(`Request with id ${traceId}`, {
       tag: "AppService.getHello",
       data: { traceId: this.clsService.getId() }
     });
