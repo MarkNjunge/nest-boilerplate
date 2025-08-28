@@ -24,4 +24,4 @@ COPY --from=builder /app/config config
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/node_modules node_modules
 
-CMD [ "node", "main.js" ]
+CMD [ "npm", "run", "start:prod" ]
