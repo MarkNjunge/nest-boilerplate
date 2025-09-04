@@ -19,7 +19,7 @@ FROM node:20.8.1-alpine3.18
 
 WORKDIR /app
 
-COPY --from=builder /app/dist /app
+COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/config config
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/node_modules node_modules
