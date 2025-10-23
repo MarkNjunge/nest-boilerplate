@@ -4,7 +4,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "@/logging/Logger";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
-import { DBError } from "objection";
 import { FileHandler } from "@/utils/file-handler";
 import { AppClsStore } from "@/cls/app-cls";
 import { ClsService } from "nestjs-cls";
@@ -51,7 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const apiError: ApiErrorDto = {
       status,
-      message: e instanceof DBError ? "Database error" : e.message,
+      message: e.message,
       code,
       traceId,
       meta,

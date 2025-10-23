@@ -1,6 +1,4 @@
 import { snakeCase } from "./snake-case";
-import { Model } from "objection";
-import * as Objection from "objection";
 import {
   IsOptional,
   registerDecorator, ValidationArguments,
@@ -150,34 +148,34 @@ export function parseQuery<T extends Record<string, any> = any>(reqQuery: any): 
   };
 }
 
-export function applyQuery<M extends Model, R = M[]>(
-  query: Query,
-  dbQuery: Objection.QueryBuilder<M, R>,
-): Objection.QueryBuilder<M, R> {
-  if (query.page) {
-    const offset = query.page == 1 ? 0 : (query.page - 1) * (query.limit ?? 10);
-    dbQuery = dbQuery.offset(offset);
-  }
-
-  for (const filter of (query.filters ?? [])) {
-    if (filter.value === "null") {
-      if (filter.op === "=") {
-        dbQuery = dbQuery.whereNull(filter.key as string);
-      } else {
-        dbQuery = dbQuery.whereNotNull(filter.key as string);
-      }
-    } else {
-      dbQuery = dbQuery.where(filter.key as string, filter.op, filter.value);
-    }
-  }
-
-  for (const order of (query.orders ?? [])) {
-    dbQuery = dbQuery.orderBy(order.key as string, order.direction);
-  }
-
-  if (query.limit) {
-    dbQuery = dbQuery.limit(query.limit);
-  }
-
-  return dbQuery;
-}
+// export function applyQuery<M extends Model, R = M[]>(
+//   query: Query,
+//   dbQuery: Objection.QueryBuilder<M, R>,
+// ): Objection.QueryBuilder<M, R> {
+//   if (query.page) {
+//     const offset = query.page == 1 ? 0 : (query.page - 1) * (query.limit ?? 10);
+//     dbQuery = dbQuery.offset(offset);
+//   }
+//
+//   for (const filter of (query.filters ?? [])) {
+//     if (filter.value === "null") {
+//       if (filter.op === "=") {
+//         dbQuery = dbQuery.whereNull(filter.key as string);
+//       } else {
+//         dbQuery = dbQuery.whereNotNull(filter.key as string);
+//       }
+//     } else {
+//       dbQuery = dbQuery.where(filter.key as string, filter.op, filter.value);
+//     }
+//   }
+//
+//   for (const order of (query.orders ?? [])) {
+//     dbQuery = dbQuery.orderBy(order.key as string, order.direction);
+//   }
+//
+//   if (query.limit) {
+//     dbQuery = dbQuery.limit(query.limit);
+//   }
+//
+//   return dbQuery;
+// }

@@ -1,7 +1,6 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { UsersModule } from "../users/users.module";
 import { DbModule } from "@/modules/_db/db.module";
 import { bool, config } from "@/config";
 import { ThrottlerGuard, ThrottlerModule, seconds } from "@nestjs/throttler";
@@ -32,7 +31,6 @@ if (bool(config.rateLimit.enabled)) {
     ClsModule.forRoot(appClsOptions),
     ...modules,
     DbModule,
-    UsersModule
   ],
   controllers: [AppController],
   providers: [...providers, AppService],
