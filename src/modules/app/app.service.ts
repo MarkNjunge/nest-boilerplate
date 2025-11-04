@@ -43,7 +43,7 @@ export class AppService {
     };
 
     try {
-      // await this.dbService.testConnection();
+      await this.dbService.testConnection();
     } catch (e) {
       response.ok = false;
       response.db.message = e.message;

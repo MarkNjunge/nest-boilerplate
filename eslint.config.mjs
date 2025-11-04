@@ -14,7 +14,10 @@ export default defineConfig([
     rules: {
       "@stylistic/lines-between-class-members": "off",
       "@typescript-eslint/prefer-regexp-exec": "off",
-      "@typescript-eslint/no-unused-vars": "off"
+      "@typescript-eslint/no-unused-vars": "off",
+      "@stylistic/operator-linebreak": ["warn", "after", {
+        overrides: { "|": "before" }
+      }]
     }
   },
 ]);

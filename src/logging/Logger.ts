@@ -73,6 +73,7 @@ export class Logger {
     const url = request.url;
     const tag = "ROUTE";
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const requestTime = this.clsService.get()?.[CLS_REQ_TIME] ?? Date.now();
     const requestTimeISO = dayjs(requestTime).toISOString();
     const duration = dayjs().valueOf() - requestTime;
@@ -103,6 +104,7 @@ export class Logger {
   private getLogObject(message: string, meta: ILogMeta): LogObject {
     const tag = meta.tag ?? this.name;
     const activeSpan = opentelemetry.trace.getActiveSpan();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const traceId = meta.traceId ?? this.clsService.getId() ?? activeSpan?.spanContext().traceId ?? "00000";
     const obj: LogObject = {
       tag,

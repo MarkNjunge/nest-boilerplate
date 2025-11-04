@@ -32,7 +32,7 @@ services:
         "--enable-feature=otlp-write-receiver"
       ]
   tempo:
-    image: grafana/tempo:2.8.1
+    image: grafana/tempo:2.9.0
     container_name: nb-tempo
     command: ["-config.file=/etc/tempo.yaml"]
     volumes:
@@ -41,7 +41,7 @@ services:
     expose:
       - 4317
   loki:
-    image: grafana/loki:3.0.0
+    image: grafana/loki:3.5
     container_name: nb-loki
     user: "0"
     ports:

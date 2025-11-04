@@ -43,6 +43,10 @@ export interface Config {
       logData: boolean;
     };
   };
+  test: {
+    db: "sqlite" | "postgres";
+    logQueries: boolean;
+  };
 }
 
 interface Db {

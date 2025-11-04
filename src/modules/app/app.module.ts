@@ -7,6 +7,11 @@ import { ThrottlerGuard, ThrottlerModule, seconds } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { ClsModule } from "nestjs-cls";
 import { appClsOptions } from "@/cls/app-cls";
+import { UserModule } from "@/modules/user/user.module";
+import { UserProfileModule } from "@/modules/user-profile/user-profile.module";
+import { CategoryModule } from "@/modules/category/category.module";
+import { PostModule } from "@/modules/post/post.module";
+import { CommentModule } from "@/modules/comment/comment.module";
 
 const modules: DynamicModule[] = [];
 const providers: Provider[] = [];
@@ -31,6 +36,11 @@ if (bool(config.rateLimit.enabled)) {
     ClsModule.forRoot(appClsOptions),
     ...modules,
     DbModule,
+    UserModule,
+    UserProfileModule,
+    CategoryModule,
+    PostModule,
+    CommentModule
   ],
   controllers: [AppController],
   providers: [...providers, AppService],

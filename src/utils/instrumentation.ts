@@ -58,7 +58,7 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
           enabled: true, // Injects trace_id into logs
           disableLogSending: true, // Doesn't work even if enabled
         },
-        "@opentelemetry/instrumentation-pg": { enabled: false }, // Already covered by knex
+        "@opentelemetry/instrumentation-pg": { enabled: true },
         "@opentelemetry/instrumentation-dns": { enabled: false },
         "@opentelemetry/instrumentation-net": { enabled: false }
       })

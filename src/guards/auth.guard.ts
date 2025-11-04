@@ -23,7 +23,7 @@ function validateRequest(request: FastifyRequest): boolean {
   if (apiKey !== config.apiKey) {
     throw new HttpException(
       401,
-      "Invalid api key",
+      "Invalid authentication",
       ErrorCodes.INVALID_AUTHENTICATION,
     );
   }
