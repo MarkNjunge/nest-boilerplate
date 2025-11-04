@@ -49,92 +49,141 @@ The [node-config](https://www.npmjs.com/package/config) package to manage config
 
 Default config values are found in [default.json](./config/default.json).  
 These values can be overridden by:
-- Creating config files as described in [node-config docs](https://github.com/node-config/node-config/wiki/Configuration-Files)
+
+- Creating config files as described
+  in [node-config docs](https://github.com/node-config/node-config/wiki/Configuration-Files)
 - Creating a `local.json` file in _config/_
 - Creating a `.env` file in the project directory. (supported via dotenv)
 - Setting environment variables. See the environment variable mappings
   in [custom-environment-variables.json](./config/custom-environment-variables.json).
 
 ## CORS
+
 [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is configurable via the config.
 
-
 The following values are acceptable for `config.cors.origins`:
-- `*` - Will accept any origin. The `access-control-allow-origin` header will always respond with the exact origin of the request, not a `*`.   
+
+- `*` - Will accept any origin. The `access-control-allow-origin` header will always respond with
+  the exact origin of the request, not a `*`.
 - `https://example.com,https://example2.com` - Will accept all domains in the comma separated list.
 
 ## Database
 
-[Objection](https://vincit.github.io/objection.js/) (which uses [Knex.js](https://knexjs.org/)) 
-is used for database operations.
-
-It uses PostgreSQL by default, but that can be changed by changing the `client`
-in [knexfile.ts](./src/db/knexfile.ts).  
-See [Knex documentation](https://knexjs.org/guide/#node-js) for supported databases.
-
-Conversion of column names from camel case to snake case is automatically done in most cases.   
-It however does not work in all cases. See excerpt below from Objection docs
-([Snake case to camel case conversion](https://vincit.github.io/objection.js/recipes/snake-case-to-camel-case-conversion.html)):
-
-> When the conversion is done on objection level only database columns of the returned
-> rows (model instances) are convered to camel case. You still need to use snake case in
-> relationMappings and queries. Note that insert, patch, update and their variants still
-> take objects in camel case. The reasoning is that objects passed to those methods
-> usually come from the client that also uses camel case.
-
+[TypeORM](https://typeorm.io) is used for the database.
 
 ### Migrations
 
 Schema changes require migrations.
 
-Migrations can be created using:
+Migrations can be **generated** using:
+
 ```bash
-npm run migration:make
+npm run migration:generate src/db/migrations/migration_name
+```
+
+Alternatively, empty migration files can be created using:
+
+```bash
+npm run migration:create src/db/migrations/migration_name
 ```
 
 When the server starts, migrations will run automatically, or, you can run the migrations
-using `npm run migration:latest`
+using `npm run migration:up`
+
+### BaseEntity
+
+Classes should extend [BaseEntity](src/models/_base/_base.entity.ts) to automatically generate `id`,
+`createdAt` and `updatedAt`.
+
+### CRUD
+
+[CrudService](src/db/crud/crud.service.ts) and [CrudController](src/db/crud/crud.controller.ts)
+provide quick access to crud functions & endpoints.
+
+### Data Models
+
+BaseEntity, migration generation, CrudService and CrudController enable quickly adding data models
+
+1. Create a class that extends BaseEntity.
+2. Build the project (migrations require js files in dist).
+3. Generate the migration.
+4. Review the migration.
+5. Create the service, controller and module.
+
+## Query Parsing
+
+URL query to DB query parsing is available.
+
+Example:
+
+```
+select=title,comments.content,comments.user.username
+include=stock
+filter=(postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)
+sort=(averageRating,ASC):(price,DESC)
+limit=10
+offset=20
+```
+
+### Select & Include
+
+`select` will limit the fields returned, `include` will fetch relations.
+
+These two can be combined to significantly reduce the data that is read.
+
+For example,
+`select=title,content,comments.content,comments.user.username&include=comments,comments.user`
+
+```json
+[
+  {
+    "title": "Getting Started with Machine Learning",
+    "content": "ML is transforming tech. Here are the basics to get you started on your journey.",
+    "comments": [
+      {
+        "content": "Great introduction! Very helpful for beginners.",
+        "user": {
+          "username": "Sarah"
+        }
+      },
+      {
+        "content": "Thanks for sharing. Which ML library do you recommend?",
+        "user": {
+          "username": "Emma"
+        }
+      }
+    ]
+  }
+]
+```
+
+### Paging
+
+Paging can be done using `limit` and `offset`.
+
+### Filters
+
+Filters take the format of `(column,operand,value,secondValue)`.
+`value` and `secondValue` are optional, and only used where relevant e.g. `isnull` & `between`.
+
+Multiple filters can be specified using a colon `:` as the delimiter.
+
+Available operands are
+`eq, ne, like, ilike, gt, lt, gte, lte, in, notin, isnull, isnotnull, between, notbetween, any, none, contains, containedby, raw`.
+
+See [query.spec.ts](src/db/query/query.spec.ts)
+and [typeorm-query-mapper.spec.ts](src/db/query/typeorm-query-mapper.spec.ts) for examples.
+
+### Sort Order
+
+Sort order takes the format of `(column,direction)` where direction can be `ASC,DESC`.  
+Multiple orderings can be specified using a colon `:` as the delimiter.
 
 ## Swagger
 
 Swagger documentation is automatically generated from the routes.
 
 By default it is available at http://127.0.0.1:3000/docs
-
-## Query Parsing
-
-URL query to DB query parsing is available. See [query-parser.ts](./src/utils/query-parser.ts).
-
-**Note:** There is currently no limitation put on the complexity of the query, so this should be exposed with caution. 
-
-Example:
-```
-limit=10&page=1&orderBy=(averageRating,DESC)&filter=(authors,=,Bill Bryson):(yearPublished,>,2000)
-```
-
-```SQL
-SELECT "*"
-FROM   "..."
-WHERE  "authors" = 'Bill Bryson'
-  AND "year_published" > '2000'
-ORDER  BY "average_rating" DESC
-  LIMIT  10 
-```
-
-### Paging
-
-Paging can be done using `limit` and `page`.
-
-### Filters
-
-Filters take the format of `(column,operand,value)` where the operand can be `=,>,>=,<,<=`.  
-Column names are automatically converted to snake case.  
-Multiple filters can be specified using a colon `:` as the delimiter.
-
-### Ordering
-
-Ordering takes the format of `(column,direction)` where direction can be `desc,DESC,asc,ASC`.  
-Multiple orderings can be specified using a colon `:` as the delimiter.
 
 ## File Upload
 
@@ -222,14 +271,14 @@ class Service {
     // This needs to be ClsService<AppClsStore>. AppClsService will not work.
     private readonly clsService: ClsService<AppClsStore>
   ) {}
-  
+
   handler() {
     this.clsService.getId();
   }
 }
 ```
 
-Alternatively, the `@ReqCtx()` can be used.
+Alternatively, `@ReqCtx()` can be used.
 
 ```typescript
 class Controller {
@@ -243,7 +292,6 @@ class Controller {
 ## Authentication
 
 A simple authentication scheme is implemented in [auth.guard.ts](./src/guards/auth.guard.ts)
-
 
 ## Rate Limiting
 
@@ -302,8 +350,8 @@ setting `validator.forbidUnknown` to `false` in the config.
 
 ## Response Mapping
 
-Cleaning response objects using can be enabled using the `@Serialize(ClassName)` decorator. 
-It uses [class-transformer](https://www.npmjs.com/package/class-transformer). 
+Cleaning response objects using can be enabled using the `@Serialize(ClassName)` decorator.
+It uses [class-transformer](https://www.npmjs.com/package/class-transformer).
 
 ## Errors & Exception Handling
 
@@ -342,19 +390,23 @@ Health check endpoints are set up at `/ready` and `/live`.
 
 ## OpenTelemetry
 
-[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for traces, metrics and logs.
+[OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for
+traces, metrics and logs.
 
-[@opentelemetry/auto-instrumentations-node](https://www.npmjs.com/package/@opentelemetry/auto-instrumentations-node) is set up to automatically collect metrics and spans for various services
+[@opentelemetry/auto-instrumentations-node](https://www.npmjs.com/package/@opentelemetry/auto-instrumentations-node)
+is set up to automatically collect metrics and spans for various services
 
-See the [observability README](./observability/README.MD) for a compose file with various services for collecting and viewing signals.
+See the [observability README](./observability/README.MD) for a compose file with various services
+for collecting and viewing signals.
 
 **Note:** Global and per signal instrumentation needs to be enabled via [config](#config)
 
 ### Traces
 
-Automatic instrumentation is enabled and will suite most needs. 
+Automatic instrumentation is enabled and will suite most needs.
 
-Custom spans can be created as described in the [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#create-spans).
+Custom spans can be created as described in
+the [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#create-spans).
 
 ### Metrics
 
@@ -364,7 +416,8 @@ HTTP metrics are automatically collected by `@opentelemetry/instrumentation-http
 sum by(http_route) (rate(nb_http_server_duration_milliseconds_count[1m]))
 ```
 
-See [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#metrics) for how to create custom metrics.
+See [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#metrics) for
+how to create custom metrics.
 
 ```typescript
 const meter = opentelemetry.metrics.getMeter("UserService");
@@ -374,35 +427,16 @@ getUserCounter.add(1, { user_id: id });
 
 ### Logs
 
-Logs are sent to the OpenTelemetry Collector using the [OtelTransport](src/logging/otel.transport.ts).
+Logs are sent to the OpenTelemetry Collector using
+the [OtelTransport](src/logging/otel.transport.ts).
 
 See [logging](#logging) for how to log.
 
-## Docker
-
-The application can be run using docker.
-
-Build
-
-```bash
-docker build -t nest-boilerplate .
-
-docker run -p 3000:3000 nest-boilerplate
-```
-
-Docker Compose can be used to start the application and a database.
-
-```
-docker compose up -d
-```
-
 ## Testing
 
-### Unit test
+### Unit & Integration Tests
 
-There exist unit tests for controllers and services.
-
-Dependencies are mocked using `jest`.
+There exist unit tests for various functions, and integration tests for db operations.
 
 ```bash
 npm run test
@@ -427,6 +461,24 @@ npm run test:e2e:local
 Load tests are written using [Grafana k6](https://grafana.com/oss/k6/).
 
 See [load-test/](./load-test) directory.
+
+## Docker
+
+The application can be run using docker.
+
+Build
+
+```bash
+docker build -t nest-boilerplate .
+
+docker run -p 3000:3000 nest-boilerplate
+```
+
+Docker Compose can be used to start the application and a database.
+
+```
+docker compose up -d
+```
 
 # CI
 

@@ -1,8 +1,11 @@
 import { PipeTransform, Injectable, ArgumentMetadata } from "@nestjs/common";
 import { validate, ValidationError } from "class-validator";
-import { plainToClass } from "class-transformer";
+import { plainToInstance } from "class-transformer";
 import { config } from "@/config";
 import { ErrorCodes, HttpException } from "@/utils";
+
+// https://github.com/nestjs/nest/blob/d295f1c572f64aa8239d3fab4cfa59df220c3ebb/packages/common/interfaces/type.interface.ts
+export type Type<T = any> = new (...args: any[]) => T;
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
@@ -36,7 +39,21 @@ export class ValidationPipe implements PipeTransform {
       return [];
     }
 
-    const object = plainToClass(metatype, value);
+    if (Array.isArray(value)) {
+      const out: ValidationErrorDto[] = [];
+      for (let i = 0; i < value.length; i++) {
+        const errors = await this.validateSingle(value[i], metatype);
+        out.push(...errors.map(e => ({ property: `${i}.${e.property}`, constraints: e.constraints })));
+      }
+
+      return out;
+    } else {
+      return this.validateSingle(value, metatype);
+    }
+  }
+
+  private static async validateSingle(value: any, metatype: Type): Promise<ValidationErrorDto[]> {
+    const object = plainToInstance(metatype, value);
     const errors = await validate(object, {
       forbidUnknownValues: config.validator.forbidUnknown,
       whitelist: config.validator.forbidUnknown,

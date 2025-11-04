@@ -45,5 +45,8 @@
       "url": "INSTRUMENTATION_LOGS_URL",
       "logData": "INSTRUMENTATION_LOGS_LOG_DATA"
     }
+  },
+  "test": {
+    "db": "TEST_DB"
   }
 }

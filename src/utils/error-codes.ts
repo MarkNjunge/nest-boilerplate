@@ -8,6 +8,7 @@ export class ErrorCodes {
   static TOO_MANY_REQUESTS = "TooManyRequests";
   static FILE_TOO_LARGE = "FileTooLarge";
   static LIVE_ERROR = "LiveError";
+  static DB_ERROR = "DbError";
 }
 
 export function getErrorCode(status: number | string): string {

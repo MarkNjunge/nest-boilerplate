@@ -3,11 +3,11 @@ import { ExceptionFilter, Catch, ArgumentsHost } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "@/logging/Logger";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
-import { getErrorCode, HttpException, parseStacktrace } from "@/utils";
-import { DBError } from "objection";
+import { ErrorCodes, getErrorCode, HttpException, parseStacktrace } from "@/utils";
 import { FileHandler } from "@/utils/file-handler";
 import { AppClsStore } from "@/cls/app-cls";
 import { ClsService } from "nestjs-cls";
+import { QueryFailedError } from "typeorm";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -36,6 +36,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const tag =
       parsedStack.length > 0 ? parsedStack[0].methodName : "<unknown>";
 
+    if (e instanceof QueryFailedError) {
+      (e as any).code = ErrorCodes.DB_ERROR;
+      (e as any).meta = {
+        query: e.query,
+        parameters: e.parameters,
+      };
+    }
+
     // Get the correct http status
     const httpE = e as HttpException;
     const { status, code, meta } = {
@@ -51,7 +59,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const apiError: ApiErrorDto = {
       status,
-      message: e instanceof DBError ? "Database error" : e.message,
+      message: e.message,
       code,
       traceId,
       meta,
