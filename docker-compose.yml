@@ -13,7 +13,7 @@ services:
       - PORT=3000
       - DB_URL=postgres://postgres:postgres@nest-bp_pgsql:5432/nest-bp
   postgres:
-    image: postgres:15
+    image: postgres:18.0
     container_name: nest-bp_pgsql
     restart: always
     environment:
