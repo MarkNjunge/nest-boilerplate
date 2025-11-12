@@ -7,22 +7,27 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 
 ## Features
 
+- [Features](#features)
+- [Installation](#installation)
+- [Running](#running)
 - [Config](#config)
+- [CORS](#cors)
 - [Database](#database)
-- [Swagger (API docs)](#swagger)
 - [Query Parsing](#query-parsing)
+- [Swagger](#swagger)
 - [File Upload](#file-upload)
 - [Logging](#logging)
 - [Request Context](#request-context)
-- [Auth guard](#auth-guard)
-- [Rate limiting](#rate-limiting)
-- [Request body validation](#request-body-validation)
-- [Exception Handling](#errors--exception-handling)
+- [Authentication](#authentication)
+- [Rate Limiting](#rate-limiting)
+- [Request Body Validation](#request-body-validation)
+- [Response Mapping](#response-mapping)
+- [Errors \& Exception Handling](#errors--exception-handling)
 - [Health Check](#health-check)
 - [OpenTelemetry](#opentelemetry)
-- [Docker](#docker)
 - [Testing](#testing)
-- [Continuous Integration](#ci)
+- [Docker](#docker)
+- [CI](#ci)
 
 ## Installation
 
@@ -384,7 +389,7 @@ Regular errors and unhandled exceptions are also caught and returned as a 500 re
 }
 ```
 
-# Health Check
+## Health Check
 
 Health check endpoints are set up at `/ready` and `/live`.
 
@@ -480,7 +485,7 @@ Docker Compose can be used to start the application and a database.
 docker compose up -d
 ```
 
-# CI
+## CI
 
 [Github Actions config](./.github/workflows/main-workflow.yml)  
 ![](https://github.com/MarkNjunge/nest-boilerplate/workflows/Main%20Workflow/badge.svg)
