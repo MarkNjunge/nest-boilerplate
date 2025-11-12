@@ -1,12 +1,12 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { DbModule } from "@/modules/_db/db.module";
 import { bool, config } from "@/config";
 import { ThrottlerGuard, ThrottlerModule, seconds } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { ClsModule } from "nestjs-cls";
 import { appClsOptions } from "@/cls/app-cls";
+import { DbModule } from "@/modules/_db/db.module";
 import { UserModule } from "@/modules/user/user.module";
 import { UserProfileModule } from "@/modules/user-profile/user-profile.module";
 import { CategoryModule } from "@/modules/category/category.module";

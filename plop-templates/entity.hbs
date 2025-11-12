@@ -1,0 +1,18 @@
+import { BaseEntity } from "../_base/_base.entity";
+import { Entity } from "typeorm";
+
+@Entity({ name: "{{pluralize (snakeCase name)}}" })
+export class {{pascalCase name}} extends BaseEntity {
+
+  idPrefix(): string {
+    return "{{dbPrefix name}}";
+  }
+}
+
+export class {{pascalCase name}}CreateDto {
+
+}
+
+export class {{pascalCase name}}UpdateDto {
+
+}

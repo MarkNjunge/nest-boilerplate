@@ -1,0 +1,23 @@
+import { Injectable } from "@nestjs/common";
+import { CrudService } from "@/db/crud/crud.service";
+import {
+  {{pascalCase name}},
+  {{pascalCase name}}CreateDto,
+  {{pascalCase name}}UpdateDto,
+} from "@/models/{{lowerCase name}}/{{lowerCase name}}";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+
+@Injectable()
+export class {{pascalCase name}}Service extends CrudService<
+  {{pascalCase name}},
+  {{pascalCase name}}CreateDto,
+  {{pascalCase name}}UpdateDto
+> {
+  constructor(
+    @InjectRepository({{pascalCase name}})
+    protected readonly {{lowerCase name}}Repository: Repository<{{pascalCase name}}>
+  ) {
+    super("{{pascalCase name}}", {{lowerCase name}}Repository);
+  }
+}

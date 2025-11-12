@@ -1,0 +1,13 @@
+import { Module } from "@nestjs/common";
+import { DbModule } from "@/modules/_db/db.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { {{pascalCase name}}Service } from "@/modules/{{lowerCase name}}/{{lowerCase name}}.service";
+import { {{pascalCase name}} } from "@/models/{{lowerCase name}}/{{lowerCase name}}";
+
+@Module({
+  imports: [DbModule, TypeOrmModule.forFeature([{{pascalCase name}}])],
+  controllers: [],
+  providers: [{{pascalCase name}}Service],
+  exports: [{{pascalCase name}}Service],
+})
+export class {{pascalCase name}}Module {}
