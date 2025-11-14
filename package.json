@@ -16,7 +16,7 @@
     "start:e2e": "nest start -b swc",
     "codegen": "cross-env NODE_OPTIONS='--import tsx' plop --plopfile=plopfile.ts",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
-    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/modules/_db/data-source.ts",
+    "migration:generate": "npm run build && typeorm-ts-node-commonjs migration:generate -d src/modules/_db/data-source.ts",
     "migration:up": "typeorm-ts-node-commonjs migration:run -d src/modules/_db/data-source.ts",
     "migration:down": "typeorm-ts-node-commonjs migration:revert -d src/modules/_db/data-source.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.{ts,js}\"",

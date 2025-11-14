@@ -110,10 +110,9 @@ provide quick access to crud functions & endpoints.
 BaseEntity, migration generation, CrudService and CrudController enable quickly adding data models
 
 1. Create a class that extends BaseEntity.
-2. Build the project (migrations require js files in dist).
-3. Generate the migration.
-4. Review the migration.
-5. Create the service, controller and module.
+2. Generate the migration.
+3. Review the migration.
+4. Create the service, controller and module.
 
 ## Query Parsing
 
