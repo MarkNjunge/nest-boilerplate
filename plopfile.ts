@@ -38,6 +38,23 @@ export default function (plop: NodePlopAPI) {
         abortOnFail: true,
       }];
 
+      // Add the model to db.module.ts
+      actions.push({
+        type: "append",
+        path: "src/modules/_db/db.module.ts",
+        pattern: `import { TypeOrmModule } from "@nestjs/typeorm";`,
+        template: `import { {{pascalCase name}} } from "@/models/{{lowerCase name}}/{{lowerCase name}}";`,
+        abortOnFail: true,
+      });
+
+      actions.push({
+        type: "append",
+        path: "src/modules/_db/db.module.ts",
+        pattern: `TypeOrmModule.forFeature([`,
+        template: `      {{pascalCase name}},`,
+        abortOnFail: true,
+      });
+
       if (data.wantService) {
         actions.push({
           type: "add",
@@ -64,6 +81,23 @@ export default function (plop: NodePlopAPI) {
           abortOnFail: true,
         });
 
+        // Add the module to app.module.ts
+        actions.push({
+          type: "append",
+          path: "src/modules/app/app.module.ts",
+          pattern: `import { DbModule } from "@/modules/_db/db.module";`,
+          template: `import { {{pascalCase name}}Module } from "@/modules/{{lowerCase name}}/{{lowerCase name}}.module";`,
+          abortOnFail: true,
+        });
+
+        actions.push({
+          type: "append",
+          path: "src/modules/app/app.module.ts",
+          pattern: `    DbModule,`,
+          template: `    {{pascalCase name}}Module,`,
+          abortOnFail: true,
+        });
+
         if (data.wantController) {
           actions.push({
             type: "append",
@@ -82,40 +116,6 @@ export default function (plop: NodePlopAPI) {
           });
         }
       }
-
-      // app.module.ts
-      actions.push({
-        type: "append",
-        path: "src/modules/app/app.module.ts",
-        pattern: `import { DbModule } from "@/modules/_db/db.module";`,
-        template: `import { {{pascalCase name}}Module } from "@/modules/{{lowerCase name}}/{{lowerCase name}}.module";`,
-        abortOnFail: true,
-      });
-
-      actions.push({
-        type: "append",
-        path: "src/modules/app/app.module.ts",
-        pattern: `    DbModule,`,
-        template: `    {{pascalCase name}}Module,`,
-        abortOnFail: true,
-      });
-
-      // db.module.ts
-      actions.push({
-        type: "append",
-        path: "src/modules/_db/db.module.ts",
-        pattern: `import { TypeOrmModule } from "@nestjs/typeorm";`,
-        template: `import { {{pascalCase name}} } from "@/models/{{lowerCase name}}/{{lowerCase name}}";`,
-        abortOnFail: true,
-      });
-
-      actions.push({
-        type: "append",
-        path: "src/modules/_db/db.module.ts",
-        pattern: `TypeOrmModule.forFeature([`,
-        template: `      {{pascalCase name}},`,
-        abortOnFail: true,
-      });
 
       return actions;
     },

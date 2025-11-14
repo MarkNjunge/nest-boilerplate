@@ -105,14 +105,36 @@ Classes should extend [BaseEntity](src/models/_base/_base.entity.ts) to automati
 [CrudService](src/db/crud/crud.service.ts) and [CrudController](src/db/crud/crud.controller.ts)
 provide quick access to crud functions & endpoints.
 
-### Data Models
+## Data Models
+
+### Automatically using Plop
+
+This project uses [Plop](https://plopjs.com/) to scaffold data models.
+
+Run the generator with:
+```shell
+npm run codegen
+```
+
+The command will:
+1. Create a model
+2. Create a CrudService (optional)
+3. Create a CrudController (optional)
+4. Module (if a service or controller was created)
+
+After this you should:
+1. Add fields to the created model, create dto and update dto.
+2. Run `npm run migration:generate src/db/migrations/migration_name` to create the migration.
+3. Run the application
+
+### Manually
 
 BaseEntity, migration generation, CrudService and CrudController enable quickly adding data models
 
 1. Create a class that extends BaseEntity.
 2. Generate the migration.
 3. Review the migration.
-4. Create the service, controller and module.
+4. Create the dtos, service, controller and module.
 
 ## Query Parsing
 

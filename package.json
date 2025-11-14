@@ -14,7 +14,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "start:e2e": "nest start -b swc",
-    "codegen": "cross-env NODE_OPTIONS='--import tsx' plop --plopfile=plopfile.ts",
+    "codegen": "cross-env NODE_OPTIONS='--import tsx' node_modules/plop/bin/plop.js --plopfile=plopfile.ts",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:generate": "npm run build && typeorm-ts-node-commonjs migration:generate -d src/modules/_db/data-source.ts",
     "migration:up": "typeorm-ts-node-commonjs migration:run -d src/modules/_db/data-source.ts",

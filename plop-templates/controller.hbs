@@ -7,7 +7,7 @@ import {
 } from "@/models/{{lowerCase name}}/{{lowerCase name}}";
 import { {{pascalCase name}}Service } from "@/modules/{{lowerCase name}}/{{lowerCase name}}.service";
 
-@Controller("{{lowerCase name}}")
+@Controller("{{pluralize (lowerCase name)}}")
 export class {{pascalCase name}}Controller extends CrudController(
   {{pascalCase name}},
   {{pascalCase name}}CreateDto,
