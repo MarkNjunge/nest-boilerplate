@@ -1,3 +1,4 @@
+import "@/config/env-loader";
 import { config, bool } from "./config";
 import "./utils/instrumentation";
 import { NestFactory, Reflector } from "@nestjs/core";
