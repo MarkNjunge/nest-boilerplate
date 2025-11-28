@@ -34,7 +34,7 @@ export class CrudService<
   }
 
   async count(query: Query<Entity>) {
-    this.logger.debug("count", { data: { query } });
+    this.logger.debug(`${this.name}::count`, { data: { query } });
     const attr = { entity: this.name, operation: "count" };
     let status = "success";
     const start = Date.now();
@@ -50,7 +50,7 @@ export class CrudService<
   }
 
   async list(query: Query<Entity> = {}): Promise<Entity[]> {
-    this.logger.debug("list", { data: { query } });
+    this.logger.debug(`${this.name}::list`, { data: { query } });
     const attr = { entity: this.name, operation: "list" };
     let status = "success";
     const start = Date.now();
@@ -66,7 +66,7 @@ export class CrudService<
   }
 
   async get(query: Query<Entity> = {}): Promise<Entity | null> {
-    this.logger.debug("get", { data: { query } });
+    this.logger.debug(`${this.name}::get`, { data: { query } });
     const attr = { entity: this.name, operation: "get" };
     let status = "success";
     const start = Date.now();
@@ -82,7 +82,7 @@ export class CrudService<
   }
 
   async getById(id: string, query: Query<Entity> = {}): Promise<Entity | null> {
-    this.logger.debug("getById", { data: { query } });
+    this.logger.debug(`${this.name}::getById`, { data: { query } });
     const attr = { entity: this.name, operation: "get_by_id" };
     let status = "success";
     const start = Date.now();
@@ -103,7 +103,7 @@ export class CrudService<
   }
 
   async create(data: Create): Promise<Entity> {
-    this.logger.debug("create", { data: { data } });
+    this.logger.debug(`${this.name}::create`, { data: { data } });
     const attr = { entity: this.name, operation: "create" };
     let status = "success";
     const start = Date.now();
@@ -119,7 +119,7 @@ export class CrudService<
   }
 
   async createBulk(data: Create[]): Promise<Entity[]> {
-    this.logger.debug("createBulk", { data: { data } });
+    this.logger.debug(`${this.name}::createBulk`, { data: { data } });
     const attr = { entity: this.name, operation: "create_bulk" };
     let status = "success";
     const start = Date.now();
@@ -135,7 +135,7 @@ export class CrudService<
   }
 
   async upsert(data: Create): Promise<Entity> {
-    this.logger.debug("upsert", { data: { data } });
+    this.logger.debug(`${this.name}::upsert`, { data: { data } });
     const attr = { entity: this.name, operation: "upsert" };
     let status = "success";
     const start = Date.now();
@@ -152,7 +152,7 @@ export class CrudService<
   }
 
   async upsertBulk(data: Create[]): Promise<Entity[]> {
-    this.logger.debug("upsertBulk", { data: { data } });
+    this.logger.debug(`${this.name}::upsertBulk`, { data: { data } });
     const attr = { entity: this.name, operation: "upsert_bulk" };
     let status = "success";
     const start = Date.now();
@@ -169,7 +169,7 @@ export class CrudService<
   }
 
   async update(id: string, data: Update): Promise<Entity | null> {
-    this.logger.debug("update", { data: { id, data } });
+    this.logger.debug(`${this.name}::update`, { data: { id, data } });
     const attr = { entity: this.name, operation: "update" };
     let status = "success";
     const start = Date.now();
@@ -190,7 +190,7 @@ export class CrudService<
   }
 
   async updateIndexed(filter: Filter<Entity>, data: Update): Promise<Entity[]> {
-    this.logger.debug("updateIndexed", { data: { filter: data } });
+    this.logger.debug(`${this.name}::updateIndexed`, { data: { filter: data } });
     const attr = { entity: this.name, operation: "update_indexed" };
     let status = "success";
     const start = Date.now();
@@ -216,7 +216,7 @@ export class CrudService<
   }
 
   async deleteById(id: string): Promise<void> {
-    this.logger.debug("deleteById", { data: { id } });
+    this.logger.debug(`${this.name}::deleteById`, { data: { id } });
     const attr = { entity: this.name, operation: "delete_by_id" };
     let status = "success";
     const start = Date.now();
@@ -235,7 +235,7 @@ export class CrudService<
   }
 
   async deleteIndexed(filter: Filter<Entity>): Promise<void> {
-    this.logger.debug("deleteIndexed", { data: { filter } });
+    this.logger.debug(`${this.name}::deleteIndexed`, { data: { filter } });
     const attr = { entity: this.name, operation: "delete_indexed" };
     let status = "success";
     const start = Date.now();
