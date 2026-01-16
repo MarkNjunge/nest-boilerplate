@@ -83,17 +83,23 @@ Schema changes require migrations.
 Migrations can be **generated** using:
 
 ```bash
-npm run migration:generate src/db/migrations/migration_name
+npm run migration generate migration_name
 ```
 
 Alternatively, empty migration files can be created using:
 
 ```bash
-npm run migration:create src/db/migrations/migration_name
+npm run migration create migration_name
 ```
 
 When the server starts, migrations will run automatically, or, you can run the migrations
-using `npm run migration:up`
+using `npm run migration up`
+
+To revert the last migration:
+
+```bash
+npm run migration down
+```
 
 ### BaseEntity
 
@@ -124,7 +130,7 @@ The command will:
 
 After this you should:
 1. Add fields to the created model, create dto and update dto.
-2. Run `npm run migration:generate src/db/migrations/migration_name` to create the migration.
+2. Run `npm run migration generate migration_name` to create the migration.
 3. Run the application
 
 ### Manually

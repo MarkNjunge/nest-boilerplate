@@ -30,10 +30,10 @@ npm run codegen        # Generate new data model (interactive)
 ### Database Commands
 
 ```bash
-npm run migration:generate src/db/migrations/migration_name  # Generate migration from schema changes
-npm run migration:create src/db/migrations/migration_name    # Create empty migration
-npm run migration:up                                         # Run migrations
-npm run migration:down                                       # Revert last migration
+npm run migration generate migration_name  # Generate migration from schema changes
+npm run migration create migration_name    # Create empty migration
+npm run migration up                       # Run migrations
+npm run migration down                     # Revert last migration
 ```
 
 ## Project Structure
@@ -83,7 +83,7 @@ Run `npm run codegen` to scaffold a new data model with:
 After generation:
 1. Add fields to the entity in `src/models/{name}/{name}.entity.ts`
 2. Add validation decorators to the DTOs
-3. Generate migration: `npm run migration:generate src/db/migrations/add_{name}`
+3. Generate migration: `npm run migration generate add_{name}`
 4. Review and run the migration
 
 ### Manual Creation
@@ -262,9 +262,9 @@ npm run test:e2e        # Docker-based
 
 1. Add the column to the entity class
 2. Update CreateDto and UpdateDto if needed
-3. Generate migration: `npm run migration:generate src/db/migrations/add_field_to_table`
+3. Generate migration: `npm run migration generate add_field_to_table`
 4. Review the generated migration
-5. Run: `npm run migration:up` or restart the server
+5. Run: `npm run migration up` or restart the server
 
 ### Add a new endpoint to existing controller
 
