@@ -75,7 +75,11 @@ export class OtelTransport extends Transport {
       body: info.message,
       severityNumber: getSeverityNumber(info.level),
       severityText: info.level,
-      attributes,
+      attributes: {
+        ...attributes,
+        // trace_id is not reliable under load, whereas traceId is
+        trace_id: (attributes as any).traceId,
+      },
       timestamp: new Date(info.timestamp)
     });
   }
