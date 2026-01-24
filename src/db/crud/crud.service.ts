@@ -174,6 +174,7 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
+      // Find entity first so that TypeORM hooks (e.g. @BeforeUpdate, @AfterUpdate) are triggered
       const entity = await this.repository.findOne({ where: { id } as any });
       if (!entity) {
         return null;
@@ -195,6 +196,7 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
+      // Find entities first so that TypeORM hooks (e.g. @BeforeUpdate, @AfterUpdate) are triggered
       const typeormFindOptions = parseFilter(filter);
       const entities = await this.repository.find({ where: typeormFindOptions });
       if (entities.length === 0) {
@@ -221,6 +223,7 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
+      // Find entity first so that TypeORM hooks (e.g. @BeforeRemove, @AfterRemove) are triggered
       const entity = await this.repository.findOne({ where: { id } as any });
       if (entity) {
         await this.repository.remove(entity);
@@ -240,6 +243,7 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
+      // Find entities first so that TypeORM hooks (e.g. @BeforeRemove, @AfterRemove) are triggered
       const typeormFindOptions = parseFilter(filter);
       const entities = await this.repository.find({ where: typeormFindOptions });
       if (entities.length > 0) {
