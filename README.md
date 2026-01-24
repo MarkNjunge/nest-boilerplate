@@ -106,10 +106,19 @@ npm run migration down
 Classes should extend [BaseEntity](src/models/_base/_base.entity.ts) to automatically generate `id`,
 `createdAt` and `updatedAt`.
 
-### CRUD
+### Base & CRUD Classes
 
-[CrudService](src/db/crud/crud.service.ts) and [CrudController](src/db/crud/crud.controller.ts)
-provide quick access to crud functions & endpoints.
+The database layer uses inheritance to separate read and write operations:
+
+Services:
+- [BaseService](src/db/crud/base.service.ts) - Read-only operations (`count`, `list`, `get`, `getById`)
+- [CrudService](src/db/crud/crud.service.ts) - Extends BaseService with write operations (`create`, `update`, `delete`, etc.)
+
+Controllers:
+- [BaseController](src/db/crud/base.controller.ts) - Read-only endpoints (no auth required)
+- [CrudController](src/db/crud/crud.controller.ts) - Extends BaseController with write endpoints (auth required)
+
+Use `BaseService`/`BaseController` for read-only access, `CrudService`/`CrudController` for full CRUD.
 
 ## Data Models
 
@@ -124,8 +133,8 @@ npm run codegen
 
 The command will:
 1. Create a model
-2. Create a CrudService (optional)
-3. Create a CrudController (optional)
+2. Create a Service (optional)
+3. Create a Controller (optional)
 4. Module (if a service or controller was created)
 
 After this you should:
@@ -135,7 +144,7 @@ After this you should:
 
 ### Manually
 
-BaseEntity, migration generation, CrudService and CrudController enable quickly adding data models
+BaseEntity, migration generation, CrudService (Or BaseService) and CrudController (or BaseController) enable quickly adding data models
 
 1. Create a class that extends BaseEntity.
 2. Generate the migration.

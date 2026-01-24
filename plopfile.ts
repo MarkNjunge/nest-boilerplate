@@ -20,6 +20,17 @@ export default function (plop: NodePlopAPI) {
         default: true,
       },
       {
+        type: "list",
+        name: "serviceType",
+        message: "What type of service?",
+        choices: [
+          { name: "Full CRUD (read + write operations)", value: "crud" },
+          { name: "Read-only (list, get, count only)", value: "base" },
+        ],
+        default: "crud",
+        when: (answers) => answers.wantService,
+      },
+      {
         type: "confirm",
         name: "wantController",
         message: "Do you want to create a controller?",
@@ -56,19 +67,25 @@ export default function (plop: NodePlopAPI) {
       });
 
       if (data.wantService) {
+        const serviceTemplate = data.serviceType === "base"
+          ? "plop-templates/base-service.hbs"
+          : "plop-templates/crud-service.hbs";
         actions.push({
           type: "add",
           path: "src/modules/{{lowerCase name}}/{{lowerCase name}}.service.ts",
-          templateFile: "plop-templates/service.hbs",
+          templateFile: serviceTemplate,
           abortOnFail: true,
         });
       }
 
       if (data.wantController) {
+        const controllerTemplate = data.serviceType === "base"
+          ? "plop-templates/base-controller.hbs"
+          : "plop-templates/crud-controller.hbs";
         actions.push({
           type: "add",
           path: "src/modules/{{lowerCase name}}/{{lowerCase name}}.controller.ts",
-          templateFile: "plop-templates/controller.hbs",
+          templateFile: controllerTemplate,
           abortOnFail: true,
         });
       }

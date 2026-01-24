@@ -52,7 +52,7 @@ src/
 │   ├── _shared/               # Shared DTOs (ApiResponse, ApiError)
 │   └── {entity}/              # Entity + CreateDto + UpdateDto
 ├── db/
-│   ├── crud/                  # Generic CrudService & CrudController
+│   ├── crud/                  # Generic Base/Crud Service & Controller
 │   ├── migrations/            # TypeORM migrations
 │   └── query/                 # Query parsing utilities
 ├── guards/                    # Auth guard
@@ -132,27 +132,39 @@ export class User extends BaseEntity {
 }
 ```
 
-### CrudService
+### BaseService & CrudService
 
-Generic service with methods: `list`, `get`, `getById`, `create`, `createBulk`, `update`, `upsert`, `deleteById`, etc.
+The service layer uses inheritance to separate read and write operations:
+
+- **BaseService** - Read-only operations: `count`, `list`, `get`, `getById`
+- **CrudService extends BaseService** - Adds write operations: `create`, `createBulk`, `update`, `upsert`, `deleteById`, etc.
 
 ```typescript
 @Injectable()
 export class UserService extends CrudService<User, CreateUserDto, UpdateUserDto> {
   constructor(@InjectRepository(User) repo: Repository<User>) {
-    super(repo, new Logger("UserService"));
+    super("User", repo);
   }
 }
 ```
 
-### CrudController
+Use `BaseService` for read-only access, `CrudService` for full CRUD.
 
-Generic controller providing REST endpoints with authentication on write operations:
-- `GET /` - List with query support
-- `GET /:id` - Get by ID
-- `POST /` - Create (requires auth)
-- `PATCH /:id` - Update (requires auth)
-- `DELETE /:id` - Delete (requires auth)
+### BaseController & CrudController
+
+The controller layer mirrors the service inheritance:
+
+- **BaseController** - Read-only endpoints (no auth required):
+  - `GET /count` - Count entities
+  - `GET /` - List with query support
+  - `GET /first` - Get first match
+  - `GET /:id` - Get by ID
+- **CrudController extends BaseController** - Adds write endpoints (requires auth):
+  - `POST /` - Create
+  - `POST /bulk` - Create bulk
+  - `PUT /` - Upsert
+  - `PATCH /:id` - Update
+  - `DELETE /:id` - Delete
 
 ### Query System
 
@@ -265,8 +277,10 @@ npm run test:e2e        # Docker-based
 | `src/main.ts` | Bootstrap, middleware, Swagger setup |
 | `src/modules/app/app.module.ts` | Root module, import all feature modules here |
 | `src/modules/_db/db.module.ts` | TypeORM config, entity exports |
-| `src/db/crud/crud.service.ts` | Generic CRUD service base class |
-| `src/db/crud/crud.controller.ts` | Generic CRUD controller base class |
+| `src/db/crud/base.service.ts` | Read-only service base class |
+| `src/db/crud/crud.service.ts` | Full CRUD service (extends BaseService) |
+| `src/db/crud/base.controller.ts` | Read-only controller base class |
+| `src/db/crud/crud.controller.ts` | Full CRUD controller (extends BaseController) |
 | `src/models/_base/_base.entity.ts` | Base entity with id, timestamps |
 | `src/filters/all-exceptions.filter.ts` | Global exception handling |
 | `src/guards/auth.guard.ts` | Bearer token authentication |
