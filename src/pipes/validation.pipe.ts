@@ -39,6 +39,11 @@ export class ValidationPipe implements PipeTransform {
       return [];
     }
 
+    // Incorrect Content-Type header was set, resulting in the data not being parsed
+    if (typeof value != "object") {
+      throw new HttpException(400, "Invalid content type", ErrorCodes.CLIENT_ERROR);
+    }
+
     if (Array.isArray(value)) {
       const out: ValidationErrorDto[] = [];
       for (let i = 0; i < value.length; i++) {
