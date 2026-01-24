@@ -7,6 +7,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { ClsModule } from "nestjs-cls";
 import { appClsOptions } from "@/cls/app-cls";
 import { DbModule } from "@/modules/_db/db.module";
+import { AuthModule } from "@/modules/auth/auth.module";
 import { UserModule } from "@/modules/user/user.module";
 import { UserProfileModule } from "@/modules/user-profile/user-profile.module";
 import { CategoryModule } from "@/modules/category/category.module";
@@ -36,6 +37,7 @@ if (bool(config.rateLimit.enabled)) {
     ClsModule.forRoot(appClsOptions),
     ...modules,
     DbModule,
+    AuthModule,
     UserModule,
     UserProfileModule,
     CategoryModule,

@@ -2,8 +2,10 @@ import { ClsModuleOptions, ClsService, ClsStore } from "nestjs-cls";
 import * as crypto from "crypto";
 import opentelemetry from "@opentelemetry/api";
 import { FastifyRequest } from "fastify";
+import { AuthenticatedUser } from "@/models/auth/auth";
 
 export const CLS_REQ_TIME = "requestTime";
+export const CLS_AUTH_USER = "authUser";
 
 export const appClsOptions: ClsModuleOptions = {
   global: true,
@@ -26,4 +28,5 @@ export const appClsOptions: ClsModuleOptions = {
 
 export interface AppClsStore extends ClsStore {
   [CLS_REQ_TIME]: number;
+  [CLS_AUTH_USER]?: AuthenticatedUser;
 }

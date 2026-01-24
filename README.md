@@ -323,7 +323,30 @@ class Controller {
 
 ## Authentication
 
-A simple authentication scheme is implemented in [auth.guard.ts](./src/guards/auth.guard.ts)
+Authentication is implemented using a modular service-based approach:
+
+- **AuthModule** (`src/modules/auth/auth.module.ts`) - Global module providing auth services
+- **AuthService** (`src/modules/auth/auth.service.ts`) - Validates tokens against `config.apiKey`
+- **AuthGuard** (`src/guards/auth.guard.ts`) - Guards routes requiring authentication
+
+The `AuthGuard` extracts the Bearer token, validates it via `AuthService`, and stores the authenticated user in the request context (CLS).
+
+### Accessing the Authenticated User
+
+Use the `@ReqCtx()` decorator to access the authenticated user:
+
+```typescript
+@UseGuards(AuthGuard)
+@Get()
+handler(@ReqCtx() ctx: IReqCtx) {
+  console.log(ctx.traceId);  // Request trace ID
+  console.log(ctx.user);     // { userId: "sample-user-id" }
+}
+```
+
+The `IReqCtx` interface provides:
+- `traceId: string` - Request trace ID for logging/debugging
+- `user?: AuthenticatedUser` - Authenticated user info (when using AuthGuard)
 
 ## Rate Limiting
 

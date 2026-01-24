@@ -6,9 +6,10 @@ import * as dayjs from "dayjs";
 import { clone, redact } from "@/utils";
 import * as Transport from "winston-transport";
 import { OtelTransport } from "@/logging/otel.transport";
-import { AppClsStore, CLS_REQ_TIME } from "@/cls/app-cls";
+import { AppClsStore, CLS_REQ_TIME, CLS_AUTH_USER } from "@/cls/app-cls";
 import { ClsService, ClsServiceManager } from "nestjs-cls";
 import opentelemetry from "@opentelemetry/api";
+import { AuthenticatedUser } from "@/models/auth/auth";
 
 export class ILogMeta {
   // A tag indicating what this error relates to. Usually based on the stack.
@@ -28,6 +29,7 @@ interface LogObject {
   stacktrace?: string;
 
   traceId?: string;
+  user?: AuthenticatedUser;
 }
 
 export class Logger {
@@ -106,9 +108,11 @@ export class Logger {
     const activeSpan = opentelemetry.trace.getActiveSpan();
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const traceId = meta.traceId ?? this.clsService.getId() ?? activeSpan?.spanContext().traceId ?? "00000";
+    const user = this.clsService.get(CLS_AUTH_USER);
     const obj: LogObject = {
       tag,
       traceId,
+      user,
       message: `[${tag}] ${message}`,
       data: clone({
         ...(meta.data ?? {})

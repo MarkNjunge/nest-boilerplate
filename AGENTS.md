@@ -44,6 +44,7 @@ src/
 ├── modules/                   # Feature modules
 │   ├── app/                   # Root AppModule
 │   ├── _db/                   # Database configuration
+│   ├── auth/                  # Auth service (global)
 │   ├── user/                  # Example: User module
 │   └── {feature}/             # Other feature modules
 ├── models/                    # Entities and DTOs
@@ -166,13 +167,29 @@ Operators: `eq`, `ne`, `like`, `ilike`, `gt`, `lt`, `gte`, `lte`, `in`, `notin`,
 
 ### Authentication
 
-Simple Bearer token auth via `AuthGuard`. Token checked against `config.apiKey`.
+Bearer token auth via `AuthGuard` and `AuthService`. Token is checked against `config.apiKey`.
 
 ```typescript
 @UseGuards(AuthGuard)
 @Post()
 create(@Body() dto: CreateUserDto) {}
 ```
+
+Access authenticated user via `@ReqCtx()`:
+
+```typescript
+@UseGuards(AuthGuard)
+@Get()
+handler(@ReqCtx() ctx: IReqCtx) {
+  console.log(ctx.user);  // { userId: "sample-user-id" }
+}
+```
+
+The auth flow:
+1. `AuthGuard` extracts Bearer token from Authorization header
+2. `AuthService.validateToken()` validates the token
+3. Authenticated user is stored in CLS (request context)
+4. `@ReqCtx()` decorator retrieves user from CLS
 
 ### Error Handling
 
