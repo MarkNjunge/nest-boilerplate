@@ -81,6 +81,12 @@ export class BaseService<
 
   async getById(id: string, query: Query<Entity> = {}): Promise<Entity | null> {
     this.logger.debug(`${this.name}::getById`, { data: { query } });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (id == null) {
+      throw new Error("null id passed in update");
+    }
+
     const attr = { entity: this.name, operation: "get_by_id" };
     let status = "success";
     const start = Date.now();

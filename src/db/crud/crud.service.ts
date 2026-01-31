@@ -84,6 +84,12 @@ export class CrudService<
 
   async update(id: string, data: Update): Promise<Entity | null> {
     this.logger.debug(`${this.name}::update`, { data: { id, data } });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (id == null) {
+      throw new Error("null id passed in update");
+    }
+
     const attr = { entity: this.name, operation: "update" };
     let status = "success";
     const start = Date.now();
@@ -133,6 +139,12 @@ export class CrudService<
 
   async deleteById(id: string): Promise<void> {
     this.logger.debug(`${this.name}::deleteById`, { data: { id } });
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (id == null) {
+      throw new Error("null id passed in update");
+    }
+
     const attr = { entity: this.name, operation: "delete_by_id" };
     let status = "success";
     const start = Date.now();
