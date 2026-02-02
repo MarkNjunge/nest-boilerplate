@@ -1,6 +1,6 @@
 import "@/config/env-loader";
 import { config, bool } from "./config";
-import "./utils/instrumentation";
+import { initInstrumentation } from "@/utils/instrumentation";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
 import { AppModule } from "./modules/app/app.module";
@@ -28,6 +28,7 @@ bootstrap().catch((e: Error) => logger.error(`Startup error: ${e}`, {}, e));
 
 async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
+  initInstrumentation();
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,

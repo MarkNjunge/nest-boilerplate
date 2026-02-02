@@ -11,15 +11,20 @@ import { config } from "@/config";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
 import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-node";
 import { resourceFromAttributes } from "@opentelemetry/resources";
+import { Logger } from "@/logging/Logger";
 
-if (config.instrumentation.enabled.toString() === "true") {
-  const signals = {
-    tracing: config.instrumentation.tracing.enabled.toString() === "true",
-    metrics: config.instrumentation.metrics.enabled.toString() === "true",
-    logs: config.instrumentation.logs.enabled.toString() === "true"
-  };
+const logger = new Logger("Instrumentation");
 
-  init(signals);
+export function initInstrumentation() {
+  if (config.instrumentation.enabled.toString() === "true") {
+    const signals = {
+      tracing: config.instrumentation.tracing.enabled.toString() === "true",
+      metrics: config.instrumentation.metrics.enabled.toString() === "true",
+      logs: config.instrumentation.logs.enabled.toString() === "true"
+    };
+
+    init(signals);
+  }
 }
 
 function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
@@ -93,5 +98,5 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   const sdk = new NodeSDK(configuration);
 
   sdk.start();
-  console.log(`Initialized instrumentation: ${JSON.stringify(signals)}`);
+  logger.info(`Initialized instrumentation: ${JSON.stringify(signals)}`);
 }
