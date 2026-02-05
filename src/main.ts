@@ -73,14 +73,17 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
 
   app.enableCors({
     origin(origin, callback) {
-      const whitelist = config.cors.origins.split(",");
       if (config.cors.origins === "*") {
         callback(null, true);
-      } else if (origin && whitelist.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"), false);
       }
+
+      if (!origin) {
+        callback(null, false);
+        return;
+      }
+
+      const whitelist = config.cors.origins.split(",");
+      callback(null, whitelist.includes(origin));
     },
     methods: config.cors.methods,
     allowedHeaders: config.cors.allowedHeaders,
