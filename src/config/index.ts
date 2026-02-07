@@ -78,8 +78,6 @@ interface Logging {
 
 export const config: Config = configPackage as Config;
 
-const logger = new Logger("config");
-
 export function bool(value: boolean | string): boolean {
   if (typeof value === "boolean") {
     return value;
@@ -89,7 +87,6 @@ export function bool(value: boolean | string): boolean {
 }
 
 export async function initializeConfig(): Promise<{ config: Config; success: boolean; }> {
-  logger.info("Initializing async config");
   const baseConfig = configPackage as Config;
 
   // Get secrets

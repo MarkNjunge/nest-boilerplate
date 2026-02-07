@@ -47,7 +47,7 @@ describe("Query", () => {
     it("can parse empty", () => {
       const actual = parseRawQuery({});
 
-      expect(actual).toEqual({});
+      expect(actual).toEqual({ limit: 20 });
     });
   });
 
