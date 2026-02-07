@@ -86,7 +86,7 @@ export function bool(value: boolean | string): boolean {
   return value === "true";
 }
 
-export async function initializeConfig(): Promise<{ config: Config; success: boolean; }> {
+export async function initializeConfig(): Promise<{ config: Config; success: boolean }> {
   const baseConfig = configPackage as Config;
 
   // Get secrets
