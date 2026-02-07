@@ -1,8 +1,10 @@
-import { FindOneOptions, ObjectLiteral, Repository } from "typeorm";
+import { FindOneOptions, MoreThan, LessThan, ObjectLiteral, Repository } from "typeorm";
 import { mapQueryToTypeorm } from "@/db/query/typeorm-query-mapper";
 import { Query } from "@/db/query/query";
+import { CursorPaginationResult } from "@/db/query/cursor-pagination";
 import { Logger } from "@/logging/Logger";
 import opentelemetry, { Counter, Histogram } from "@opentelemetry/api";
+import { ErrorCodes, HttpException } from "@/utils";
 
 export class BaseService<
   Entity extends ObjectLiteral
@@ -97,6 +99,62 @@ export class BaseService<
         // eslint-disable-next-line @typescript-eslint/no-misused-spread
         where: { ...options.where, id } as any
       });
+    } catch (e) {
+      status = "failure";
+      throw e;
+    } finally {
+      this.metrics.operation.add(1, { ...attr, status });
+      this.metrics.duration.record((Date.now() - start) / 1000, attr);
+    }
+  }
+
+  async listCursor(query: Query<Entity> = {}): Promise<CursorPaginationResult<Entity>> {
+    this.logger.debug(`${this.name}::listCursor`, { data: { query } });
+    const attr = { entity: this.name, operation: "list_cursor" };
+    let status = "success";
+    const start = Date.now();
+
+    try {
+      const { after, before, limit = 20, ...restQuery } = query;
+
+      if (after && before) {
+        throw new HttpException(400, "Cannot use both 'after' and 'before' cursors", ErrorCodes.CLIENT_ERROR);
+      }
+
+      // Fetch limit + 1 to check for more pages
+      const typeormOptions = mapQueryToTypeorm({ ...restQuery, limit: limit + 1 });
+
+      // Apply cursor filter and force id sort (cursor pagination always sorts by id)
+      if (after) {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
+        typeormOptions.where = { ...typeormOptions.where, id: MoreThan(after) };
+        typeormOptions.order = { id: "ASC" };
+      } else if (before) {
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
+        typeormOptions.where = { ...typeormOptions.where, id: LessThan(before) };
+        typeormOptions.order = { id: "DESC" };
+      } else {
+        typeormOptions.order = { id: "ASC" };
+      }
+
+      let items = await this.repository.find(typeormOptions);
+      const hasMore = items.length > limit;
+      if (hasMore) {
+        items = items.slice(0, limit);
+      }
+      if (before) {
+        items = items.reverse();
+      }
+
+      return {
+        data: items,
+        pageInfo: {
+          hasNextPage: before ? true : hasMore,
+          hasPreviousPage: after ? true : Boolean(before && hasMore),
+          startCursor: items[0]?.id ?? null,
+          endCursor: items[items.length - 1]?.id ?? null
+        }
+      };
     } catch (e) {
       status = "failure";
       throw e;

@@ -169,6 +169,14 @@ export class RawQuery {
   @IsOptional()
   @IsValidSort()
   sort?: string;
+
+  @ApiProperty({ required: false, description: "Cursor for forward pagination (entity ID)" })
+  @IsOptional()
+  after?: string;
+
+  @ApiProperty({ required: false, description: "Cursor for backward pagination (entity ID)" })
+  @IsOptional()
+  before?: string;
 }
 
 export interface Query<T extends Record<string, any> = any> {
@@ -178,6 +186,8 @@ export interface Query<T extends Record<string, any> = any> {
   sort?: Sort<T>;
   limit?: number;
   offset?: number;
+  after?: string;
+  before?: string;
   rawOptions?: typeorm.FindManyOptions<T>;
 }
 
@@ -207,7 +217,7 @@ export function parseRawFilter(filterStr: string | undefined): Filter {
   return filter;
 }
 
-export function parseRawQuery(rawQuery: RawQuery): Query {
+export function parseRawQuery(rawQuery: RawQuery, cursor = false): Query {
   const query: Query = {};
 
   if (rawQuery.select) {
@@ -242,16 +252,23 @@ export function parseRawQuery(rawQuery: RawQuery): Query {
     query.filter = parseRawFilter(rawQuery.filter);
   }
 
-  if (rawQuery.sort) {
-    const sort: Sort = {};
-    const match = rawQuery.sort.match(/\([^)]+\)/g);
-    if (match) {
-      match.map(s => {
-        const { 0: key, 1: direction } = s.slice(1, -1).split(",");
-        sort[key] = direction as "ASC" | "DESC";
-      });
+  // Sort and offset are only used for offset-based pagination
+  if (!cursor) {
+    if (rawQuery.sort) {
+      const sort: Sort = {};
+      const match = rawQuery.sort.match(/\([^)]+\)/g);
+      if (match) {
+        match.map(s => {
+          const { 0: key, 1: direction } = s.slice(1, -1).split(",");
+          sort[key] = direction as "ASC" | "DESC";
+        });
+      }
+      query.sort = sort;
     }
-    query.sort = sort;
+
+    if (rawQuery.offset) {
+      query.offset = parseInt(rawQuery.offset);
+    }
   }
 
   if (rawQuery.limit) {
@@ -264,8 +281,10 @@ export function parseRawQuery(rawQuery: RawQuery): Query {
     throw new HttpException(400, `Max query limit exceeded: ${query.limit} vs ${maxQueryLimit}`, ErrorCodes.CLIENT_ERROR);
   }
 
-  if (rawQuery.offset) {
-    query.offset = parseInt(rawQuery.offset);
+  // Cursor fields are only used for cursor-based pagination
+  if (cursor) {
+    query.after = rawQuery.after;
+    query.before = rawQuery.before;
   }
 
   return query;

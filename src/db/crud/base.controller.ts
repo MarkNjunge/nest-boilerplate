@@ -6,11 +6,14 @@ import {
   Query
 } from "@nestjs/common";
 import {
+  ApiExtraModels,
   ApiOperation,
   ApiParam,
-  ApiResponse
+  ApiResponse,
+  getSchemaPath
 } from "@nestjs/swagger";
 import { parseRawQuery, RawQuery } from "@/db/query/query";
+import { CursorPaginationResult, PageInfo } from "@/db/query/cursor-pagination";
 import { HttpException } from "@/utils";
 
 export function BaseController<Entity extends ObjectLiteral>(
@@ -44,6 +47,23 @@ export function BaseController<Entity extends ObjectLiteral>(
         throw new HttpException(404, "Entity not found");
       }
       return result;
+    }
+
+    @Get("/cursor")
+    @ApiOperation({ summary: "List entities with cursor-based pagination" })
+    @ApiExtraModels(PageInfo)
+    @ApiResponse({
+      status: 200,
+      description: "Paginated list with cursor info",
+      schema: {
+        properties: {
+          data: { type: "array", items: { $ref: getSchemaPath(entityType) } },
+          pageInfo: { $ref: getSchemaPath(PageInfo) }
+        }
+      }
+    })
+    async listCursor(@Query() query: RawQuery): Promise<CursorPaginationResult<Entity>> {
+      return this.service.listCursor(parseRawQuery(query, true));
     }
 
     @Get("/:id")

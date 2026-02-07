@@ -277,4 +277,118 @@ describe("Base Service", () => {
       expect(result).toBeNull();
     });
   });
+
+  describe("listCursor", () => {
+    it("returns first page with correct pageInfo", async () => {
+      const users = [
+        userRepository.create({ username: "user1", email: "user1@example.com" }),
+        userRepository.create({ username: "user2", email: "user2@example.com" }),
+        userRepository.create({ username: "user3", email: "user3@example.com" })
+      ];
+      await userRepository.save(users);
+
+      const result = await service.listCursor({ limit: 2 });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.pageInfo.hasNextPage).toBe(true);
+      expect(result.pageInfo.hasPreviousPage).toBe(false);
+      expect(result.pageInfo.startCursor).toBe(result.data[0].id);
+      expect(result.pageInfo.endCursor).toBe(result.data[1].id);
+    });
+
+    it("paginates forward using after cursor", async () => {
+      const users = [
+        userRepository.create({ username: "user1", email: "user1@example.com" }),
+        userRepository.create({ username: "user2", email: "user2@example.com" }),
+        userRepository.create({ username: "user3", email: "user3@example.com" })
+      ];
+      await userRepository.save(users);
+
+      const firstPage = await service.listCursor({ limit: 1 });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const secondPage = await service.listCursor({ limit: 1, after: firstPage.pageInfo.endCursor! });
+
+      expect(secondPage.data).toHaveLength(1);
+      expect(secondPage.data[0].id).not.toBe(firstPage.data[0].id);
+      expect(secondPage.pageInfo.hasPreviousPage).toBe(true);
+      expect(secondPage.pageInfo.hasNextPage).toBe(true);
+    });
+
+    it("paginates backward using before cursor", async () => {
+      const users = [
+        userRepository.create({ username: "user1", email: "user1@example.com" }),
+        userRepository.create({ username: "user2", email: "user2@example.com" }),
+        userRepository.create({ username: "user3", email: "user3@example.com" })
+      ];
+      await userRepository.save(users);
+
+      const lastPage = await service.listCursor({ limit: 1 });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const nextPage = await service.listCursor({ limit: 1, after: lastPage.pageInfo.endCursor! });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const previousPage = await service.listCursor({ limit: 1, before: nextPage.pageInfo.startCursor! });
+
+      expect(previousPage.data).toHaveLength(1);
+      expect(previousPage.data[0].id).toBe(lastPage.data[0].id);
+      expect(previousPage.pageInfo.hasNextPage).toBe(true);
+    });
+
+    it("throws error when both after and before cursors provided", async () => {
+      await expect(
+        service.listCursor({ after: "cursor1", before: "cursor2" })
+      ).rejects.toThrow("Cannot use both 'after' and 'before' cursors");
+    });
+
+    it("works with filters", async () => {
+      const users = [
+        userRepository.create({ username: "alice", email: "alice@a.com" }),
+        userRepository.create({ username: "bob", email: "bob@b.com" }),
+        userRepository.create({ username: "charlie", email: "charlie@a.com" })
+      ];
+      await userRepository.save(users);
+
+      const result = await service.listCursor({
+        filter: { like: [{ key: "email", value: "%@a.com" }] },
+        limit: 10
+      });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.data.every(u => u.email.endsWith("@a.com"))).toBe(true);
+    });
+
+    it("handles empty results", async () => {
+      const result = await service.listCursor({ limit: 10 });
+
+      expect(result.data).toHaveLength(0);
+      expect(result.pageInfo.hasNextPage).toBe(false);
+      expect(result.pageInfo.hasPreviousPage).toBe(false);
+      expect(result.pageInfo.startCursor).toBeNull();
+      expect(result.pageInfo.endCursor).toBeNull();
+    });
+
+    it("respects limit parameter", async () => {
+      const users = Array.from({ length: 10 }, (_, i) =>
+        userRepository.create({ username: `user${i}`, email: `user${i}@example.com` })
+      );
+      await userRepository.save(users);
+
+      const result = await service.listCursor({ limit: 5 });
+
+      expect(result.data).toHaveLength(5);
+      expect(result.pageInfo.hasNextPage).toBe(true);
+    });
+
+    it("returns hasNextPage false on last page", async () => {
+      const users = [
+        userRepository.create({ username: "user1", email: "user1@example.com" }),
+        userRepository.create({ username: "user2", email: "user2@example.com" })
+      ];
+      await userRepository.save(users);
+
+      const result = await service.listCursor({ limit: 10 });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.pageInfo.hasNextPage).toBe(false);
+    });
+  });
 });
