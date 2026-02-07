@@ -11,6 +11,7 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [Installation](#installation)
 - [Running](#running)
 - [Config](#config)
+- [Secrets Manager](#secrets-manager)
 - [CORS](#cors)
 - [Database](#database)
 - [Query Parsing](#query-parsing)
@@ -61,6 +62,28 @@ These values can be overridden by:
 - Creating a `.env` file in the project directory. (supported via dotenv)
 - Setting environment variables. See the environment variable mappings
   in [custom-environment-variables.json](./config/custom-environment-variables.json).
+
+## Secrets Manager
+
+For loading secrets from external sources (e.g., AWS Secrets Manager, HashiCorp Vault), implement the `loadSecrets()` function in [secrets-manager.ts](./src/config/secrets-manager.ts).
+
+The function is called during application startup and its return value is deep-merged with the base config. This allows secrets to override any config values.
+
+```typescript
+// src/config/secrets-manager.ts
+export async function loadSecrets(): Promise<any> {
+  // Example: Load from AWS Secrets Manager
+  const secrets = await getSecretsFromAWS();
+  return {
+    db: {
+      url: secrets.DATABASE_URL,
+    },
+    apiKey: secrets.API_KEY,
+  };
+}
+```
+
+The secrets are loaded before the application modules are initialized, ensuring all services have access to the complete configuration.
 
 ## CORS
 

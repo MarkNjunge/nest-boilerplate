@@ -1,9 +1,8 @@
 import "@/config/env-loader";
-import { config, bool } from "./config";
+import { config, bool, initializeConfig } from "./config";
 import { initInstrumentation } from "@/utils/instrumentation";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
-import { AppModule } from "./modules/app/app.module";
 import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
 import { ValidationPipe } from "./pipes/validation.pipe";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
@@ -28,6 +27,12 @@ bootstrap().catch((e: Error) => logger.error(`Startup error: ${e}`, {}, e));
 
 async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
+
+  await initializeConfig();
+
+  // Import AppModule AFTER config is initialized so it has the loaded secrets
+  const { AppModule } = await import("./modules/app/app.module");
+
   initInstrumentation();
 
   const app = await NestFactory.create<NestFastifyApplication>(

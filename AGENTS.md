@@ -62,7 +62,7 @@ src/
 ├── pipes/                     # Validation pipe
 ├── logging/                   # Winston logger
 ├── cls/                       # Request context (trace IDs)
-├── config/                    # Config loading
+├── config/                    # Config loading and secrets manager
 └── utils/                     # HttpException, error codes, helpers
 
 config/
@@ -242,11 +242,23 @@ Configuration hierarchy (later overrides earlier):
 3. `config/local.json` - Local overrides (gitignored)
 4. `.env` file - Environment variables
 5. System environment variables
+6. Secrets from `loadSecrets()` - Async secrets (e.g., from AWS Secrets Manager)
 
 Access config via:
 ```typescript
 import { config } from "./config";
 config.port
+```
+
+### Secrets Manager
+
+For external secrets (e.g., AWS Secrets Manager, Vault), implement `loadSecrets()` in `src/config/secrets-manager.ts`. The returned object is deep-merged with the base config at startup.
+
+```typescript
+export async function loadSecrets(): Promise<any> {
+  const secrets = await fetchFromVault();
+  return { db: { url: secrets.DB_URL } };
+}
 ```
 
 ## Testing
@@ -286,6 +298,8 @@ npm run test:e2e        # Docker-based
 | `src/guards/auth.guard.ts` | Bearer token authentication |
 | `plopfile.ts` | Code generation configuration |
 | `config/default.json` | Default configuration values |
+| `src/config/secrets-manager.ts` | Async secrets loading (customize for your secrets backend) |
+| `src/config/index.ts` | Config initialization and secrets merging |
 
 ## Common Tasks
 
