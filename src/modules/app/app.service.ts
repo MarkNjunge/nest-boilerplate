@@ -33,27 +33,27 @@ export class AppService {
     return { message: "OK" };
   }
 
-  async live(): Promise<any> {
+  async live(): Promise<{ ok: boolean; [key: string]: any }> {
     const response = {
       ok: true,
       message: "OK",
-      db: {
-        message: "OK"
-      }
+      db: await this.checkDatabase()
     };
 
-    try {
-      await this.dbService.testConnection();
-    } catch (e) {
+    if (!response.db.ok) {
       response.ok = false;
-      response.db.message = e.message;
+      response.message = "App is not live";
     }
 
-    if (!response.ok) {
-      response.message = "App is not live";
-      throw new HttpException(500, response.message, ErrorCodes.LIVE_ERROR, response);
-    } else {
-      return response;
+    return response;
+  }
+
+  private async checkDatabase(): Promise<{ ok: boolean; message: string }> {
+    try {
+      await this.dbService.testConnection();
+      return { ok: true, message: "Database OK" };
+    } catch (e) {
+      return { ok: false, message: e.message };
     }
   }
 }

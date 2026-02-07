@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, Res } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
 import { FileUploadDto } from "@/models/file-upload/file-upload.dto";
@@ -19,8 +19,12 @@ export class AppController {
   }
 
   @Get("/live")
-  live(){
-    return this.appService.live();
+  async live(@Res({ passthrough: true }) res) {
+    const liveRes = await this.appService.live();
+    if (!liveRes.ok) {
+      res.status(500);
+    }
+    return liveRes;
   }
 
   @Post("/upload")

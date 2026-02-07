@@ -475,6 +475,30 @@ Regular errors and unhandled exceptions are also caught and returned as a 500 re
 
 Health check endpoints are set up at `/ready` and `/live`.
 
+`/live: ok`
+```json
+{
+  "ok": true,
+  "message": "OK",
+  "db": {
+    "ok": true,
+    "message": "Database OK"
+  }
+}
+```
+
+`/live: not ok`
+```json
+{
+  "ok": false,
+  "message": "App is not live",
+  "db": {
+    "ok": false,
+    "message": "connect ECONNREFUSED 127.0.0.1:5432"
+  }
+}
+```
+
 ## OpenTelemetry
 
 [OpenTelemetry](https://opentelemetry.io/docs/languages/js/) support in included with support for
