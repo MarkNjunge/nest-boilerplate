@@ -6,6 +6,7 @@ import {
   ValidationOptions
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { ErrorCodes, HttpException } from "@/utils";
 
 export type FilterOp = "eq"
   | "ne"
@@ -255,6 +256,12 @@ export function parseRawQuery(rawQuery: RawQuery): Query {
 
   if (rawQuery.limit) {
     query.limit = parseInt(rawQuery.limit);
+  } else {
+    query.limit = 20;
+  }
+  const maxQueryLimit = 99;
+  if (query.limit > maxQueryLimit) {
+    throw new HttpException(400, `Max query limit exceeded: ${query.limit} vs ${maxQueryLimit}`, ErrorCodes.CLIENT_ERROR);
   }
 
   if (rawQuery.offset) {
