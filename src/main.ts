@@ -80,6 +80,7 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
     origin(origin, callback) {
       if (config.cors.origins === "*") {
         callback(null, true);
+        return;
       }
 
       if (!origin) {
