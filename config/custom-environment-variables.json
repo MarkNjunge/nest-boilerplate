@@ -5,7 +5,8 @@
   "port": "PORT",
   "apiKey": "API_KEY",
   "db": {
-    "url": "DB_URL"
+    "url": "DB_URL",
+    "poolSize": "DB_POOL_SIZE"
   },
   "swagger": {
     "enabled": "SWAGGER_ENABLED",

@@ -43,6 +43,7 @@ export interface Config {
 
 interface Db {
   url: string;
+  poolSize: number;
   logQueries: boolean;
 }
 

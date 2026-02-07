@@ -18,6 +18,7 @@ export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
   migrationsRun: true,
   migrations: ["dist/db/migrations/*.js"],
   migrationsTableName: "migrations",
+  poolSize: config.db.poolSize,
 };
 
 export default new DataSource(dbOptions as DataSourceOptions);

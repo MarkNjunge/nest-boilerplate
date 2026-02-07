@@ -6,6 +6,7 @@
   "apiKey": "api-key",
   "db": {
     "url": "postgres://username:password@host:port/database",
+    "poolSize": 50,
     "logQueries": false
   },
   "swagger": {
