@@ -1,4 +1,4 @@
-import { FindOneOptions, MoreThan, LessThan, ObjectLiteral, Repository } from "typeorm";
+import { EntityManager, FindOneOptions, MoreThan, LessThan, ObjectLiteral, Repository } from "typeorm";
 import { mapQueryToTypeorm } from "@/db/query/typeorm-query-mapper";
 import { Query } from "@/db/query/query";
 import { CursorPaginationResult } from "@/db/query/cursor-pagination";
@@ -31,6 +31,17 @@ export class BaseService<
         description: "CRUD operation duration"
       })
     };
+  }
+
+  withTransaction(manager: EntityManager): this {
+    const txRepo = manager.getRepository(this.repository.target);
+    const clone = Object.create(this) as this;
+    Object.defineProperty(clone, "repository", { value: txRepo, writable: false });
+    Object.defineProperty(clone, "logger", {
+      value: new Logger(`CRUD:${this.name}:TX`),
+      writable: false,
+    });
+    return clone;
   }
 
   async count(query: Query<Entity>) {

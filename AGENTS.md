@@ -150,6 +150,41 @@ export class UserService extends CrudService<User, CreateUserDto, UpdateUserDto>
 
 Use `BaseService` for read-only access, `CrudService` for full CRUD.
 
+### Transactions
+
+`TransactionService` wraps `DataSource.transaction()` for atomic multi-entity operations. Combined with `withTransaction(manager)` on `BaseService`, existing service methods can be reused inside transactions without duplicating logic.
+
+```typescript
+@Injectable()
+export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
+  constructor(
+    @InjectRepository(Post) repo: Repository<Post>,
+    private readonly transactionService: TransactionService,
+    private readonly commentService: CommentService,
+  ) {
+    super("Post", repo);
+  }
+
+  async createPostWithComment(dto: CreatePostWithCommentDto): Promise<Post> {
+    return this.transactionService.run(async manager => {
+      const txPostService = this.withTransaction(manager);
+      const txCommentService = this.commentService.withTransaction(manager);
+
+      const post = await txPostService.create({ title: dto.title, content: dto.content, userId: dto.userId });
+      const comment = await txCommentService.create({ content: dto.comment.content, userId: dto.userId, postId: post.id });
+
+      return Object.assign(post, { comments: [comment] });
+    });
+  }
+}
+```
+
+Key points:
+- `withTransaction(manager)` returns a lightweight clone of the service that uses a transaction-scoped repository
+- All existing service methods (`create`, `update`, `list`, etc.) work on the clone without modification
+- `TransactionService.run()` accepts an optional `isolationLevel` (`READ COMMITTED`, `SERIALIZABLE`, etc.)
+- On error, TypeORM automatically rolls back the transaction
+
 ### BaseController & CrudController
 
 The controller layer mirrors the service inheritance:
@@ -300,6 +335,7 @@ npm run test:e2e        # Docker-based
 | `config/default.json` | Default configuration values |
 | `src/config/secrets-manager.ts` | Async secrets loading (customize for your secrets backend) |
 | `src/config/index.ts` | Config initialization and secrets merging |
+| `src/db/transaction/transaction.service.ts` | Reusable transaction wrapper |
 
 ## Common Tasks
 
@@ -343,4 +379,4 @@ export class CreateUserDto {
 5. **Add entities to DbModule** - New entities must be added to `src/modules/_db/db.module.ts`
 6. **Implement `idPrefix()`** - Required for all entities extending BaseEntity
 7. **Don't skip validation** - Always add class-validator decorators to DTOs
-7. **Don't skip Swagger** - Always add swagger decorators to DTOs
+8. **Don't skip Swagger** - Always add swagger decorators to DTOs

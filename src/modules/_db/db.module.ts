@@ -8,6 +8,7 @@ import { UserProfile } from "@/models/user-profile/user-profile";
 import { Category } from "@/models/category/category";
 import { Post } from "@/models/post/post";
 import { Comment } from "@/models/comment/comment";
+import { TransactionService } from "@/db/transaction/transaction.service";
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { Comment } from "@/models/comment/comment";
       logger: new DbLogger(true),
     }),
   ],
-  providers: [DbService],
+  providers: [DbService, TransactionService],
   exports: [
     TypeOrmModule.forRoot(),
     TypeOrmModule.forFeature([
@@ -28,6 +29,7 @@ import { Comment } from "@/models/comment/comment";
       Comment
     ]),
     DbService,
+    TransactionService,
   ],
 })
 export class DbModule {}

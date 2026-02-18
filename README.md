@@ -15,6 +15,7 @@ A boilerplate for [NestJS](https://nestjs.com/), using Fastify.
 - [CORS](#cors)
 - [Database](#database)
 - [Query Parsing](#query-parsing)
+- [Transactions](#transactions)
 - [Swagger](#swagger)
 - [File Upload](#file-upload)
 - [Logging](#logging)
@@ -173,6 +174,42 @@ BaseEntity, migration generation, CrudService (Or BaseService) and CrudControlle
 2. Generate the migration.
 3. Review the migration.
 4. Create the dtos, service, controller and module.
+
+## Transactions
+
+[TransactionService](src/db/transaction/transaction.service.ts) provides a reusable wrapper around TypeORM's
+`DataSource.transaction()` for atomic multi-entity operations.
+
+### Usage
+
+Use `TransactionService.run()` combined with `withTransaction(manager)` on any `BaseService`/`CrudService` subclass:
+
+```typescript
+async createPostWithComment(dto: CreatePostWithCommentDto): Promise<Post> {
+  return this.transactionService.run(async manager => {
+    const txPostService = this.withTransaction(manager);
+    const txCommentService = this.commentService.withTransaction(manager);
+
+    const post = await txPostService.create({ ... });
+    const comment = await txCommentService.create({ ..., postId: post.id });
+
+    return Object.assign(post, { comments: [comment] });
+  });
+}
+```
+
+`withTransaction(manager)` returns a lightweight clone of the service that uses a transaction-scoped repository. All
+existing service methods work on the clone without modification. On error, the transaction is automatically rolled back.
+
+### Isolation Levels
+
+An optional isolation level can be specified:
+
+```typescript
+this.transactionService.run(callback, { isolationLevel: "SERIALIZABLE" });
+```
+
+Available levels: `READ UNCOMMITTED`, `READ COMMITTED`, `REPEATABLE READ`, `SERIALIZABLE`.
 
 ## Query Parsing
 
