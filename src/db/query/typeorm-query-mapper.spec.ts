@@ -1,7 +1,7 @@
 import * as typeorm from "typeorm";
 import { mapFilterOp, mapQueryToTypeorm, parseFilter } from "@/db/query/typeorm-query-mapper";
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import { Column, DataSource, Entity, Repository } from "typeorm";
+import { Column, DataSource, Entity, JoinColumn, ManyToOne, OneToMany, Repository } from "typeorm";
 import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
 import { config } from "@/config";
 import { BaseEntity } from "@/models/_base/_base.entity";
@@ -19,6 +19,7 @@ interface Profile {
 }
 
 interface User {
+  id: string;
   username: string;
   status: "A" | "B" | "C";
   createdAt: Date;
@@ -42,11 +43,43 @@ export class FilterEntity extends BaseEntity {
   }
 }
 
+@Entity({ name: "select_parents" })
+class SelectParent extends BaseEntity {
+  @Column({ type: "text" })
+  name: string;
+
+  @OneToMany(() => SelectChild, child => child.parent)
+  children?: SelectChild[];
+
+  idPrefix(): string {
+    return "sp_";
+  }
+}
+
+@Entity({ name: "select_children" })
+class SelectChild extends BaseEntity {
+  @Column({ type: "text" })
+  title: string;
+
+  @Column({ name: "parent_id" })
+  parentId: string;
+
+  @ManyToOne(() => SelectParent)
+  @JoinColumn({ name: "parent_id" })
+  parent?: SelectParent;
+
+  idPrefix(): string {
+    return "sc_";
+  }
+}
+
 describe("TypeORM Query Mapper", () => {
   let isPg = false;
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let repository: Repository<FilterEntity>;
+  let parentRepo: Repository<SelectParent>;
+  let childRepo: Repository<SelectChild>;
 
   beforeAll(async () => {
     let opts: DataSourceOptions;
@@ -71,13 +104,15 @@ describe("TypeORM Query Mapper", () => {
 
     dataSource = new DataSource({
       ...opts,
-      entities: [FilterEntity],
+      entities: [FilterEntity, SelectParent, SelectChild],
       synchronize: true,
       logging: config.test.logQueries
     });
 
     await dataSource.initialize();
     repository = dataSource.getRepository(FilterEntity);
+    parentRepo = dataSource.getRepository(SelectParent);
+    childRepo = dataSource.getRepository(SelectChild);
   });
 
   afterAll(async () => {
@@ -91,7 +126,7 @@ describe("TypeORM Query Mapper", () => {
   describe("mapQueryToTypeorm", () => {
     it("can map", () => {
       const expected: typeorm.FindManyOptions<User> = {
-        select: ["username"],
+        select: { id: true, username: true },
         relations: {
           profile: true,
           address: {
@@ -110,7 +145,7 @@ describe("TypeORM Query Mapper", () => {
       };
 
       const actual = mapQueryToTypeorm<User>({
-        select: ["username"],
+        select: { username: true },
         include: ["profile", "address.building"],
         sort: {
           createdAt: "DESC"
@@ -520,6 +555,46 @@ describe("TypeORM Query Mapper", () => {
 
     it("throws error for notbetween without secondValue", () => {
       expect(() => mapFilterOp("notbetween", 5)).toThrow("secondValue is required for 'notbetween' operator");
+    });
+  });
+
+  describe("nested select", () => {
+    it("injects id into select when relations are present", () => {
+      const options = mapQueryToTypeorm<SelectChild>({
+        select: { title: true },
+        include: ["parent"],
+      });
+      expect(options.select).toEqual({ id: true, title: true });
+    });
+
+    it("does not inject id into select when no relations", () => {
+      const options = mapQueryToTypeorm<SelectChild>({
+        select: { title: true },
+      });
+      expect(options.select).toEqual({ title: true });
+    });
+
+    it("can select nested relation fields", async () => {
+      const parent = parentRepo.create({ name: "Author1" });
+      await parentRepo.save(parent);
+
+      const child = childRepo.create({ title: "Book1", parentId: parent.id });
+      await childRepo.save(child);
+
+      const options = mapQueryToTypeorm<SelectChild>({
+        select: { title: true, parent: { name: true } },
+        include: ["parent"],
+      });
+      const results = await childRepo.find(options);
+
+      expect(results).toHaveLength(1);
+      expect(results[0].title).toBe("Book1");
+      expect(results[0].parent).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      expect(results[0].parent!.name).toBe("Author1");
+      // Non-selected fields should be undefined
+      expect(results[0].createdAt).toBeUndefined();
+      expect(results[0].parent?.createdAt).toBeUndefined();
     });
   });
 });

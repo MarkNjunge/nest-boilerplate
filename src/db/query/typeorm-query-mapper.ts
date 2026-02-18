@@ -118,8 +118,14 @@ export function mapQueryToTypeorm<T extends Record<string, any> = any>(options: 
     });
   });
 
+  // Inject id if relations are loaded
+  let select = options.select;
+  if (select && Object.keys(relations).length > 0) {
+    select = { id: true, ...select };
+  }
+
   return {
-    select: options.select,
+    select,
     relations,
     where,
     order: options.sort,

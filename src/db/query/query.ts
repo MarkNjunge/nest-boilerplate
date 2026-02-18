@@ -180,7 +180,7 @@ export class RawQuery {
 }
 
 export interface Query<T extends Record<string, any> = any> {
-  select?: any; // string[] | (keyof T)[]; // TODO Correct type
+  select?: typeorm.FindOptionsSelect<T>;
   include?: string[] | (keyof T)[];
   filter?: Filter<T>;
   sort?: Sort<T>;
