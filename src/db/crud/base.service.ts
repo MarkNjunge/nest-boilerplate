@@ -28,7 +28,10 @@ export class BaseService<
         description: "CRUD operation"
       }),
       duration: meter.createHistogram("crud_operation_duration_seconds", {
-        description: "CRUD operation duration"
+        description: "CRUD operation duration",
+        advice: {
+          explicitBucketBoundaries: [0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
+        }
       })
     };
   }
