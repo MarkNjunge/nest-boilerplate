@@ -40,7 +40,6 @@ export class UserCreateDto {
   @ApiProperty()
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => UserProfileCreateDto)
   profile: UserProfileCreateDto;
 }
 

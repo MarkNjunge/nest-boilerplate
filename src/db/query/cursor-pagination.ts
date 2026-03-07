@@ -20,6 +20,5 @@ export class CursorPaginationResult<T> {
   data: T[];
 
   @ApiProperty({ type: PageInfo })
-  @Type(() => PageInfo)
   pageInfo: PageInfo;
 }
