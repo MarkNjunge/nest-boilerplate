@@ -144,6 +144,24 @@ Controllers:
 
 Use `BaseService`/`BaseController` for read-only access, `CrudService`/`CrudController` for full CRUD.
 
+#### Route Exclusion
+
+Both controller factory functions accept an optional `options` parameter with an `exclude` array to skip specific routes:
+
+```typescript
+// BaseController — skip specific read-only routes
+BaseController(entityType, { exclude: ["listCursor"] })
+
+// CrudController — skip any base or crud route
+CrudController(entityType, CreateDto, UpdateDto, { exclude: ["deleteById", "createBulk"] })
+```
+
+Available route names:
+- **Base**: `count`, `list`, `get`, `listCursor`, `getById`
+- **Crud**: `create`, `createBulk`, `upsert`, `upsertBulk`, `updateIndexed`, `update`, `deleteIndexed`, `deleteById`
+
+Excluded methods are removed from the controller prototype, so NestJS never registers them as routes.
+
 ## Data Models
 
 ### Automatically using Plop

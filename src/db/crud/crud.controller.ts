@@ -22,14 +22,23 @@ import {
 import { parseRawFilter } from "@/db/query/query";
 import { AuthGuard } from "@/guards/auth.guard";
 import { ErrorCodes, HttpException } from "@/utils";
-import { BaseController } from "@/db/crud/base.controller";
+import { BaseController, BaseRouteNames, ControllerOptions } from "@/db/crud/base.controller";
+
+export type CrudRouteNames = "create" | "createBulk" | "upsert" | "upsertBulk" | "updateIndexed" | "update" | "deleteIndexed" | "deleteById";
 
 export function CrudController<Entity extends ObjectLiteral>(
   entityType: new () => Entity,
   createDtoType?: new () => any,
-  updateDtoType?: new () => any
+  updateDtoType?: new () => any,
+  options?: ControllerOptions<BaseRouteNames | CrudRouteNames>
 ) {
-  const BaseControllerClass = BaseController<Entity>(entityType);
+  const baseExclude = options?.exclude?.filter(
+    (m): m is BaseRouteNames => ["count", "list", "get", "listCursor", "getById"].includes(m)
+  );
+  const BaseControllerClass = BaseController<Entity>(
+    entityType,
+    baseExclude?.length ? { exclude: baseExclude } : undefined
+  );
 
   class CrudControllerHost<
     Create extends DeepPartial<Entity> = DeepPartial<Entity>,
@@ -146,17 +155,32 @@ export function CrudController<Entity extends ObjectLiteral>(
     }
   }
 
+  const excluded = new Set(options?.exclude);
+
   // Override metadata after class creation
   if (createDtoType) {
-    Reflect.defineMetadata("design:paramtypes", [createDtoType], CrudControllerHost.prototype, "create");
-    Reflect.defineMetadata("design:paramtypes", [createDtoType], CrudControllerHost.prototype, "createBulk");
-    Reflect.defineMetadata("design:paramtypes", [createDtoType], CrudControllerHost.prototype, "upsert");
-    Reflect.defineMetadata("design:paramtypes", [createDtoType], CrudControllerHost.prototype, "upsertBulk");
+    for (const method of ["create", "createBulk", "upsert", "upsertBulk"] as const) {
+      if (!excluded.has(method)) {
+        Reflect.defineMetadata("design:paramtypes", [createDtoType], CrudControllerHost.prototype, method);
+      }
+    }
   }
 
   if (updateDtoType) {
-    Reflect.defineMetadata("design:paramtypes", [String, updateDtoType], CrudControllerHost.prototype, "update");
-    Reflect.defineMetadata("design:paramtypes", [String, updateDtoType], CrudControllerHost.prototype, "updateIndexed");
+    if (!excluded.has("update")) {
+      Reflect.defineMetadata("design:paramtypes", [String, updateDtoType], CrudControllerHost.prototype, "update");
+    }
+    if (!excluded.has("updateIndexed")) {
+      Reflect.defineMetadata("design:paramtypes", [String, updateDtoType], CrudControllerHost.prototype, "updateIndexed");
+    }
+  }
+
+  // Delete excluded crud methods from prototype
+  for (const method of excluded) {
+    if (method in CrudControllerHost.prototype) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (CrudControllerHost.prototype as any)[method];
+    }
   }
 
   return CrudControllerHost;

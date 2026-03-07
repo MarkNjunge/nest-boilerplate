@@ -201,6 +201,22 @@ The controller layer mirrors the service inheritance:
   - `PATCH /:id` - Update
   - `DELETE /:id` - Delete
 
+#### Route Exclusion
+
+Both factory functions accept an optional `options` parameter with an `exclude` array to skip specific routes:
+
+```typescript
+// BaseController — skip specific read-only routes
+BaseController(entityType, { exclude: ["listCursor"] })
+
+// CrudController — skip any base or crud route
+CrudController(entityType, CreateDto, UpdateDto, { exclude: ["deleteById", "createBulk"] })
+```
+
+Available route names:
+- **Base**: `count`, `list`, `get`, `listCursor`, `getById`
+- **Crud**: `create`, `createBulk`, `upsert`, `upsertBulk`, `updateIndexed`, `update`, `deleteIndexed`, `deleteById`
+
 ### Query System
 
 The API supports advanced queries via URL parameters:

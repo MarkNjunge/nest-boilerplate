@@ -16,8 +16,15 @@ import { parseRawQuery, RawQuery } from "@/db/query/query";
 import { CursorPaginationResult, PageInfo } from "@/db/query/cursor-pagination";
 import { HttpException } from "@/utils";
 
+export type BaseRouteNames = "count" | "list" | "get" | "listCursor" | "getById";
+
+export interface ControllerOptions<T extends string> {
+  exclude?: T[];
+}
+
 export function BaseController<Entity extends ObjectLiteral>(
-  entityType: new () => Entity
+  entityType: new () => Entity,
+  options?: ControllerOptions<BaseRouteNames>
 ) {
   class BaseControllerHost {
     constructor(
@@ -79,6 +86,13 @@ export function BaseController<Entity extends ObjectLiteral>(
         throw new HttpException(404, `Entity ${id} not found`);
       }
       return result;
+    }
+  }
+
+  if (options?.exclude) {
+    for (const method of options.exclude) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (BaseControllerHost.prototype as any)[method];
     }
   }
 
