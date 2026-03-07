@@ -15,6 +15,7 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiSecurity
 } from "@nestjs/swagger";
@@ -59,7 +60,7 @@ export function CrudController<Entity extends ObjectLiteral>(
     @Put("/")
     @UseGuards(AuthGuard)
     @ApiSecurity("api-key")
-    @ApiOperation({ summary: "Create or update entity" })
+    @ApiOperation({ summary: "Create or update entity (upsert)" })
     @ApiBody({ type: createDtoType })
     @ApiResponse({ status: 200, type: entityType })
     async upsert(@Body() dto: Create): Promise<Entity> {
@@ -69,7 +70,7 @@ export function CrudController<Entity extends ObjectLiteral>(
     @Put("/bulk")
     @UseGuards(AuthGuard)
     @ApiSecurity("api-key")
-    @ApiOperation({ summary: "Create or update multiple entities" })
+    @ApiOperation({ summary: "Create or update multiple entities (upsert)" })
     @ApiBody({ type: createDtoType, isArray: true })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
     async upsertBulk(@Body() dto: Create[]): Promise<Entity[]> {
@@ -80,6 +81,10 @@ export function CrudController<Entity extends ObjectLiteral>(
     @UseGuards(AuthGuard)
     @ApiSecurity("api-key")
     @ApiOperation({ summary: "Update multiple entities by filter" })
+    @ApiQuery({
+      name: "filter",
+      description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)"
+    })
     @ApiBody({ type: updateDtoType })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
     async updateIndexed(
@@ -115,6 +120,10 @@ export function CrudController<Entity extends ObjectLiteral>(
     @UseGuards(AuthGuard)
     @ApiSecurity("api-key")
     @ApiOperation({ summary: "Delete multiple entities by filter" })
+    @ApiQuery({
+      name: "filter",
+      description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)"
+    })
     @HttpCode(204)
     @ApiResponse({ status: 204 })
     async deleteIndexed(@Query("filter") filter: string): Promise<void> {
