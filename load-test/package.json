@@ -1,25 +1,25 @@
 {
-  "name": "load-test",
+  "name": "load-test-2",
+  "private": true,
   "scripts": {
-    "build": "webpack",
-    "pretest:html": "webpack",
-    "test:html": "cross-env K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=report.html K6_WEB_DASHBOARD_PERIOD=1s k6 run dist/script.bundle.js",
-    "pretest:prom": "webpack",
-    "test:prom": "env-cmd -f .env.prom k6 run -o experimental-prometheus-rw dist/script.bundle.js"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "@types/k6": "^1.0.2",
-    "babel-loader": "^9.2.1",
-    "ts-loader": "^9.5.1",
-    "typescript": "^5.4.2",
-    "webpack": "^5.97.1",
-    "webpack-cli": "^6.0.1"
+    "test": "API_KEY=${API_KEY:-api-key} artillery run --environment ${LOAD_TYPE:-validation} --output report.json --target ${API_HOST:-http://localhost:3000} test.yml && npm run report",
+    "report": "npx tsx generate-report.ts",
+    "test:validation": "LOAD_TYPE=validation npm test",
+    "test:spike": "LOAD_TYPE=spike npm test",
+    "test:soak": "LOAD_TYPE=soak npm test",
+    "test:scenario": "API_KEY=${API_KEY:-api-key} artillery run --scenario-name \"${SCENARIO}\" --environment ${LOAD_TYPE:-validation} --output report.json --target ${API_HOST:-http://localhost:3000} test.yml && npm run report",
+    "test:crud-only": "SCENARIO='User CRUD lifecycle' npm run test:scenario",
+    "test:browse-only": "SCENARIO='Browse users' npm run test:scenario",
+    "test:search-only": "SCENARIO='User search' npm run test:scenario",
+    "template:dev": "../load-test-2/node_modules/.bin/live-server --open=/template"
   },
   "dependencies": {
     "@faker-js/faker": "^9.3.0",
-    "cross-env": "^7.0.3",
-    "env-cmd": "^10.1.0"
+    "artillery": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "live-server": "^1.2.2",
+    "typescript": "^5.4.2"
   }
 }

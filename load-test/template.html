@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Artillery Load Test Report</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'DM Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --color-surface: #0f1117;
+            --color-surface-raised: #171a23;
+            --color-surface-overlay: #1e2230;
+            --color-border-subtle: #262a38;
+            --color-text-primary: #e8eaf0;
+            --color-text-secondary: #8a90a5;
+            --color-text-muted: #5c6178;
+            --color-accent-amber: #e5a84b;
+            --color-accent-amber-dim: rgba(229, 168, 75, 0.12);
+            --color-accent-teal: #4bc8b4;
+            --color-accent-teal-dim: rgba(75, 200, 180, 0.12);
+            --color-accent-red: #e55b5b;
+            --color-accent-red-dim: rgba(229, 91, 91, 0.12);
+            --color-accent-blue: #5b8fe5;
+            --color-accent-blue-dim: rgba(91, 143, 229, 0.12);
+            --color-accent-purple: #a97ee5;
+            --color-accent-purple-dim: rgba(169, 126, 229, 0.12);
+        }
+    </style>
+</head>
+<body class="bg-surface text-text-primary min-h-screen">
+<div id="app">
+
+    <!-- Header -->
+    <header class="border-b border-border-subtle">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-accent-amber-dim flex items-center justify-center">
+                    <span class="material-symbols-rounded text-accent-amber text-xl">bolt</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-semibold tracking-tight">Load Test Report</h1>
+                    <p class="text-xs text-text-muted font-mono">Artillery</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6 text-sm text-text-secondary">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-base">calendar_today</span>
+                    <span class="font-mono">{{ meta.date }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-base">schedule</span>
+                    <span class="font-mono">{{ meta.duration }}</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" :class="overallStatus.bg">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="overallStatus.dot"></span>
+                    <span class="text-xs font-medium" :class="overallStatus.text">{{ overallStatus.label }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+        <!-- Summary Cards -->
+        <section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div v-for="card in summaryCards" :key="card.label"
+                 class="bg-surface-raised border border-border-subtle rounded-xl p-4 space-y-2">
+                <div class="flex items-center gap-2 text-text-muted text-xs font-medium uppercase tracking-wider">
+                    <span class="material-symbols-rounded text-sm" :class="card.iconColor">{{ card.icon }}</span>
+                    {{ card.label }}
+                </div>
+                <div class="font-mono text-xl font-semibold" :class="card.valueColor || 'text-text-primary'">
+                    {{ card.value }}
+                </div>
+                <div v-if="card.sub" class="text-xs text-text-muted font-mono">{{ card.sub }}</div>
+            </div>
+        </section>
+
+        <!-- Response Time + Request Rate Charts -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Response Time Over Time -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold flex items-center gap-2">
+                        <span class="material-symbols-rounded text-accent-teal text-base">speed</span>
+                        Response Time
+                    </h2>
+                    <span class="text-xs text-text-muted font-mono">ms over time</span>
+                </div>
+                <div class="h-64">
+                    <canvas ref="responseTimeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Request Rate Over Time -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold flex items-center gap-2">
+                        <span class="material-symbols-rounded text-accent-blue text-base">swap_vert</span>
+                        Throughput
+                    </h2>
+                    <span class="text-xs text-text-muted font-mono">req/s over time</span>
+                </div>
+                <div class="h-64">
+                    <canvas ref="requestRateChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Virtual Users + Endpoint Response Times -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Virtual Users -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold flex items-center gap-2">
+                        <span class="material-symbols-rounded text-accent-purple text-base">group</span>
+                        Virtual Users
+                    </h2>
+                    <span class="text-xs text-text-muted font-mono">per 10s interval</span>
+                </div>
+                <div class="h-64">
+                    <canvas ref="vusersChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Endpoint Response Times -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold flex items-center gap-2">
+                        <span class="material-symbols-rounded text-accent-amber text-base">api</span>
+                        Endpoint Latency
+                    </h2>
+                    <span class="text-xs text-text-muted font-mono">mean ms over time</span>
+                </div>
+                <div class="h-64">
+                    <canvas ref="endpointChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Response Time Percentiles + Endpoint Breakdown -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Percentile Breakdown -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <h2 class="text-sm font-semibold flex items-center gap-2 mb-5">
+                    <span class="material-symbols-rounded text-accent-teal text-base">analytics</span>
+                    Response Time Distribution
+                </h2>
+                <div class="space-y-3">
+                    <div v-for="pct in percentiles" :key="pct.label" class="flex items-center gap-3">
+                        <span class="text-xs text-text-muted font-mono w-10 text-right shrink-0">{{ pct.label }}</span>
+                        <div class="flex-1 h-6 bg-surface-overlay rounded-md overflow-hidden relative">
+                            <div class="h-full rounded-md transition-all duration-500"
+                                 :class="pct.barColor"
+                                 :style="{ width: pct.widthPct + '%' }">
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono font-medium w-20 text-right shrink-0" :class="pct.textColor">
+                            {{ pct.value }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoint Breakdown Table -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <h2 class="text-sm font-semibold flex items-center gap-2 mb-5">
+                    <span class="material-symbols-rounded text-accent-amber text-base">dns</span>
+                    Endpoint Breakdown
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead>
+                        <tr class="text-text-muted uppercase tracking-wider border-b border-border-subtle">
+                            <th class="text-left py-2.5 px-2 font-medium">Endpoint</th>
+                            <th class="text-right py-2.5 px-2 font-medium">Requests</th>
+                            <th class="text-right py-2.5 px-2 font-medium">Mean</th>
+                            <th class="text-right py-2.5 px-2 font-medium">p50</th>
+                            <th class="text-right py-2.5 px-2 font-medium">p95</th>
+                            <th class="text-right py-2.5 px-2 font-medium">p99</th>
+                            <th class="text-right py-2.5 px-2 font-medium">Max</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="ep in endpoints" :key="ep.path"
+                            class="border-b border-border-subtle last:border-0 hover:bg-surface-overlay/50 transition-colors">
+                            <td class="py-3 px-2">
+                                <code class="text-accent-teal bg-accent-teal-dim px-1.5 py-0.5 rounded font-mono text-xs">{{ ep.path }}</code>
+                            </td>
+                            <td class="py-3 px-2 text-right font-mono text-text-secondary">{{ ep.count.toLocaleString() }}</td>
+                            <td class="py-3 px-2 text-right font-mono">{{ ep.mean }} ms</td>
+                            <td class="py-3 px-2 text-right font-mono text-text-secondary">{{ ep.p50 }} ms</td>
+                            <td class="py-3 px-2 text-right font-mono" :class="ep.p95 > 200 ? 'text-accent-amber' : 'text-text-secondary'">{{ ep.p95 }} ms</td>
+                            <td class="py-3 px-2 text-right font-mono" :class="ep.p99 > 1000 ? 'text-accent-red' : 'text-text-secondary'">{{ ep.p99 }} ms</td>
+                            <td class="py-3 px-2 text-right font-mono text-text-muted">{{ ep.max.toLocaleString() }} ms</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scenarios + HTTP Codes + Errors -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Scenarios -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <h2 class="text-sm font-semibold flex items-center gap-2 mb-5">
+                    <span class="material-symbols-rounded text-accent-purple text-base">description</span>
+                    Scenarios
+                </h2>
+                <div class="space-y-3">
+                    <div v-for="sc in scenarios" :key="sc.name"
+                         class="flex items-center justify-between py-2 border-b border-border-subtle last:border-0">
+                        <span class="text-sm text-text-secondary">{{ sc.name }}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-sm font-medium">{{ sc.count.toLocaleString() }}</span>
+                            <span class="text-xs text-text-muted font-mono w-12 text-right">{{ sc.pct }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HTTP Status Codes -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <h2 class="text-sm font-semibold flex items-center gap-2 mb-5">
+                    <span class="material-symbols-rounded text-accent-blue text-base">http</span>
+                    Status Codes
+                </h2>
+                <div class="space-y-3">
+                    <div v-for="code in httpCodes" :key="code.code"
+                         class="flex items-center justify-between py-2 border-b border-border-subtle last:border-0">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full" :class="code.dotColor"></span>
+                            <code class="font-mono text-sm">{{ code.code }}</code>
+                            <span class="text-xs text-text-muted">{{ code.label }}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-sm font-medium">{{ code.count.toLocaleString() }}</span>
+                            <span class="text-xs text-text-muted font-mono w-12 text-right">{{ code.pct }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Errors -->
+            <div class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+                <h2 class="text-sm font-semibold flex items-center gap-2 mb-5">
+                    <span class="material-symbols-rounded text-accent-red text-base">error</span>
+                    Errors
+                </h2>
+                <template v-if="errors.length > 0">
+                    <div class="space-y-4">
+                        <div v-for="err in errors" :key="err.type"
+                             class="bg-accent-red-dim border border-accent-red/20 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <code class="font-mono text-sm text-accent-red font-medium">{{ err.type }}</code>
+                                <span class="font-mono text-sm font-semibold text-accent-red">{{ err.count }}</span>
+                            </div>
+                            <div class="text-xs text-text-muted space-y-1">
+                                <div v-for="detail in err.details" :key="detail.endpoint" class="flex justify-between">
+                                    <code class="font-mono">{{ detail.endpoint }}</code>
+                                    <span class="font-mono">{{ detail.count }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="flex flex-col items-center justify-center py-8 text-text-muted">
+                        <span class="material-symbols-rounded text-3xl mb-2">check_circle</span>
+                        <span class="text-sm">No errors recorded</span>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- Session Length -->
+        <section class="bg-surface-raised border border-border-subtle rounded-xl p-5">
+            <h2 class="text-sm font-semibold flex items-center gap-2 mb-5">
+                <span class="material-symbols-rounded text-accent-amber text-base">timer</span>
+                Session Length
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+                <div v-for="stat in sessionStats" :key="stat.label" class="text-center">
+                    <div class="text-xs text-text-muted uppercase tracking-wider mb-1">{{ stat.label }}</div>
+                    <div class="font-mono text-lg font-semibold" :class="stat.color || 'text-text-primary'">{{ stat.value }}</div>
+                    <div class="text-xs text-text-muted">ms</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-border-subtle mt-8">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-text-muted">
+            <span>Generated from Artillery load test results</span>
+            <span class="font-mono">{{ footerSummary }}</span>
+        </div>
+    </footer>
+
+</div>
+
+<script>
+  window.__ARTILLERY_REPORT__ = null;
+</script>
+
+<script>
+  const { createApp, ref, computed, onMounted } = Vue;
+
+  async function init() {
+    if (!window.__ARTILLERY_REPORT__) {
+      console.log("No __ARTILLERY_REPORT__ set. Falling back to report.json")
+      const res = await fetch('report.json');
+      window.__ARTILLERY_REPORT__ = await res.json();
+    }
+
+    createApp({
+    setup() {
+      const report = window.__ARTILLERY_REPORT__;
+      const agg = report.aggregate;
+      const counters = agg.counters;
+      const summaries = agg.summaries;
+      const intermediate = report.intermediate;
+
+      /* ---- Helpers ---- */
+      const fmt = (n) => n != null ? Number(n).toLocaleString() : '—';
+      const fmtMs = (n) => n != null ? fmt(Math.round(n * 10) / 10) + ' ms' : '—';
+
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      function formatDate(ts) {
+        const d = new Date(ts);
+        return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+      }
+
+      function formatDuration(ms) {
+        const totalSec = Math.round(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return m > 0 ? `${m}m ${s}s` : `${s}s`;
+      }
+
+      /* ---- Extract endpoint keys ---- */
+      const endpointPrefix = 'plugins.metrics-by-endpoint.response_time.';
+      const endpointPaths = Object.keys(summaries)
+        .filter(k => k.startsWith(endpointPrefix))
+        .map(k => k.slice(endpointPrefix.length));
+
+      /* ---- Metadata ---- */
+      const meta = ref({
+        date: formatDate(agg.firstCounterAt),
+        duration: formatDuration(agg.lastCounterAt - agg.firstCounterAt),
+      });
+
+      /* ---- Overall Status ---- */
+      const totalErrors = Object.keys(counters)
+        .filter(k => k.startsWith('errors.'))
+        .reduce((sum, k) => sum + counters[k], 0);
+      const totalVusers = counters['vusers.created'] || 1;
+
+      const overallStatus = computed(() => {
+        const failRate = totalErrors / totalVusers;
+        if (failRate < 0.001) return { label: 'Healthy', bg: 'bg-accent-teal-dim', dot: 'bg-accent-teal', text: 'text-accent-teal' };
+        if (failRate < 0.01) return { label: 'Degraded', bg: 'bg-accent-amber-dim', dot: 'bg-accent-amber', text: 'text-accent-amber' };
+        return { label: 'Unhealthy', bg: 'bg-accent-red-dim', dot: 'bg-accent-red', text: 'text-accent-red' };
+      });
+
+      /* ---- Summary Cards ---- */
+      const rt = summaries['http.response_time'] || {};
+      const totalRequests = counters['http.requests'] || 0;
+      const totalResponses = counters['http.responses'] || 0;
+      const durationSec = (agg.lastCounterAt - agg.firstCounterAt) / 1000;
+      const avgRps = durationSec > 0 ? Math.round(totalRequests / durationSec) : 0;
+      const responsePct = totalRequests > 0 ? ((totalResponses / totalRequests) * 100).toFixed(1) : '0';
+      const topError = Object.keys(counters)
+        .filter(k => k.startsWith('errors.'))
+        .sort((a, b) => counters[b] - counters[a])[0];
+      const topErrorName = topError ? topError.replace('errors.', '') : 'None';
+
+      const summaryCards = ref([
+        { label: 'Requests', icon: 'send', iconColor: 'text-accent-blue', value: fmt(totalRequests), sub: `~${avgRps} req/s avg` },
+        { label: 'Responses', icon: 'inbox', iconColor: 'text-accent-teal', value: fmt(totalResponses), sub: `${responsePct}% received` },
+        { label: 'Avg Latency', icon: 'speed', iconColor: 'text-accent-amber', value: fmtMs(rt.mean), sub: `p50: ${fmtMs(rt.p50)}` },
+        { label: 'p95 Latency', icon: 'trending_up', iconColor: 'text-accent-amber', value: fmtMs(rt.p95), sub: `p99: ${fmtMs(rt.p99)}`, valueColor: 'text-accent-amber' },
+        { label: 'VUsers', icon: 'group', iconColor: 'text-accent-purple', value: fmt(totalVusers), sub: `${fmt(counters['vusers.completed'] || 0)} completed` },
+        { label: 'Errors', icon: 'error', iconColor: 'text-accent-red', value: fmt(totalErrors), sub: topErrorName, valueColor: totalErrors > 0 ? 'text-accent-red' : undefined },
+      ]);
+
+      /* ---- Percentile Distribution ---- */
+      const maxVal = rt.max || 1;
+      function pctBar(label, val, tier) {
+        const colors = {
+          good: { bar: 'bg-accent-teal', text: 'text-accent-teal' },
+          warn: { bar: 'bg-accent-blue', text: 'text-accent-blue' },
+          high: { bar: 'bg-accent-amber', text: 'text-accent-amber' },
+          crit: { bar: 'bg-accent-red', text: 'text-accent-red' },
+        };
+        const c = colors[tier];
+        const raw = val != null ? val : 0;
+        return { label, value: fmtMs(raw), widthPct: Math.max(0.5, (raw / maxVal) * 100), barColor: c.bar, textColor: c.text };
+      }
+
+      const percentiles = ref([
+        pctBar('min', rt.min, 'good'),
+        pctBar('p50', rt.p50, 'good'),
+        pctBar('p75', rt.p75, 'good'),
+        pctBar('p90', rt.p90, 'warn'),
+        pctBar('p95', rt.p95, 'high'),
+        pctBar('p99', rt.p99, 'crit'),
+        pctBar('max', rt.max, 'crit'),
+      ]);
+
+      /* ---- Endpoint Breakdown ---- */
+      const endpoints = ref(endpointPaths.map(path => {
+        const s = summaries[endpointPrefix + path];
+        return { path, count: s.count, mean: s.mean, p50: s.p50, p95: s.p95, p99: s.p99, max: s.max };
+      }));
+
+      /* ---- Scenarios ---- */
+      const scenarioPrefix = 'vusers.created_by_name.';
+      const scenarioEntries = Object.keys(counters)
+        .filter(k => k.startsWith(scenarioPrefix))
+        .map(k => ({ name: k.slice(scenarioPrefix.length), count: counters[k] }))
+        .sort((a, b) => b.count - a.count);
+
+      const scenarios = ref(scenarioEntries.map(s => ({
+        ...s,
+        pct: ((s.count / totalVusers) * 100).toFixed(1),
+      })));
+
+      /* ---- HTTP Codes ---- */
+      const httpCodeLabels = { '200': 'OK', '201': 'Created', '204': 'No Content', '301': 'Moved', '302': 'Found', '304': 'Not Modified', '400': 'Bad Request', '401': 'Unauthorized', '403': 'Forbidden', '404': 'Not Found', '429': 'Too Many Requests', '500': 'Server Error', '502': 'Bad Gateway', '503': 'Service Unavailable' };
+
+      function codeDotColor(code) {
+        const n = parseInt(code);
+        if (n < 300) return 'bg-accent-teal';
+        if (n < 400) return 'bg-accent-blue';
+        if (n < 500) return 'bg-accent-amber';
+        return 'bg-accent-red';
+      }
+
+      const codeEntries = Object.keys(counters)
+        .filter(k => /^http\.codes\.\d+$/.test(k))
+        .map(k => {
+          const code = k.replace('http.codes.', '');
+          return { code, count: counters[k] };
+        })
+        .sort((a, b) => b.count - a.count);
+
+      const httpCodes = ref(codeEntries.map(c => ({
+        ...c,
+        label: httpCodeLabels[c.code] || '',
+        pct: totalResponses > 0 ? ((c.count / totalResponses) * 100).toFixed(1) : '0',
+        dotColor: codeDotColor(c.code),
+      })));
+
+      /* ---- Errors ---- */
+      const errorTypes = Object.keys(counters)
+        .filter(k => k.startsWith('errors.'))
+        .map(k => k.replace('errors.', ''));
+
+      const errors = ref(errorTypes.map(type => {
+        const detailPrefix = `plugins.metrics-by-endpoint.`;
+        const details = Object.keys(counters)
+          .filter(k => k.includes(`.errors.${type}`) && k.startsWith(detailPrefix))
+          .map(k => {
+            const match = k.match(/^plugins\.metrics-by-endpoint\.(.+?)\.errors\./);
+            return { endpoint: match ? match[1] : k, count: counters[k] };
+          })
+          .sort((a, b) => b.count - a.count);
+        return { type, count: counters['errors.' + type], details };
+      }));
+
+      /* ---- Session Length ---- */
+      const sl = summaries['vusers.session_length'] || {};
+      const sessionStats = ref([
+        { label: 'Min', value: fmt(Math.round(sl.min || 0)) },
+        { label: 'Mean', value: fmt(Math.round(sl.mean || 0)) },
+        { label: 'p50', value: fmt(Math.round(sl.p50 || 0)) },
+        { label: 'p75', value: fmt(Math.round(sl.p75 || 0)) },
+        { label: 'p95', value: fmt(Math.round(sl.p95 || 0)) },
+        { label: 'p99', value: fmt(Math.round(sl.p99 || 0)), color: 'text-accent-amber' },
+        { label: 'Max', value: fmt(Math.round(sl.max || 0)), color: 'text-accent-red' },
+      ]);
+
+      /* ---- Footer ---- */
+      const footerSummary = `${fmt(totalRequests)} requests across ${scenarioEntries.length} scenario${scenarioEntries.length !== 1 ? 's' : ''}`;
+
+      /* ---- Timeline Data ---- */
+      const timestamps = intermediate.map(b => b.period);
+      const timeLabels = timestamps.map((ts) => {
+        const secs = (ts - timestamps[0]) / 1000;
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m}:${String(s).padStart(2, '0')}`;
+      });
+
+      const meanRts = intermediate.map(b => (b.summaries['http.response_time'] || {}).mean ?? null);
+      const p95Rts = intermediate.map(b => (b.summaries['http.response_time'] || {}).p95 ?? null);
+      const p99Rts = intermediate.map(b => (b.summaries['http.response_time'] || {}).p99 ?? null);
+
+      const reqRates = intermediate.map(b => (b.rates || {})['http.request_rate'] ?? null);
+
+      const vusersCreated = intermediate.map(b => (b.counters || {})['vusers.created'] ?? 0);
+      const vusersCompleted = intermediate.map(b => (b.counters || {})['vusers.completed'] ?? 0);
+      const vusersFailed = intermediate.map(b => (b.counters || {})['vusers.failed'] ?? 0);
+
+      /* Per-endpoint time series */
+      const endpointTimeSeries = {};
+      endpointPaths.forEach(path => {
+        endpointTimeSeries[path] = intermediate.map(b =>
+          (b.summaries[endpointPrefix + path] || {}).mean ?? null
+        );
+      });
+
+      /* ---- Chart Config ---- */
+      const chartDefaults = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              color: '#8a90a5',
+              font: { family: "'JetBrains Mono'", size: 10 },
+              boxWidth: 12,
+              boxHeight: 2,
+              padding: 16,
+              usePointStyle: false,
+            }
+          },
+          tooltip: {
+            backgroundColor: '#1e2230',
+            titleColor: '#e8eaf0',
+            bodyColor: '#8a90a5',
+            borderColor: '#262a38',
+            borderWidth: 1,
+            titleFont: { family: "'JetBrains Mono'", size: 11 },
+            bodyFont: { family: "'JetBrains Mono'", size: 11 },
+            padding: 10,
+            cornerRadius: 8,
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#5c6178', font: { family: "'JetBrains Mono'", size: 9 }, maxTicksLimit: 12, maxRotation: 0 },
+            grid: { color: 'rgba(38, 42, 56, 0.6)', drawBorder: false },
+            border: { display: false },
+          },
+          y: {
+            ticks: { color: '#5c6178', font: { family: "'JetBrains Mono'", size: 9 } },
+            grid: { color: 'rgba(38, 42, 56, 0.6)', drawBorder: false },
+            border: { display: false },
+          }
+        }
+      };
+
+      const responseTimeChartRef = ref(null);
+      const requestRateChartRef = ref(null);
+      const vusersChartRef = ref(null);
+      const endpointChartRef = ref(null);
+
+      /* ---- Endpoint chart colors ---- */
+      const palette = ['#e5a84b', '#4bc8b4', '#a97ee5', '#5b8fe5', '#e55b5b'];
+
+      onMounted(() => {
+        /* Response Time Chart */
+        new Chart(responseTimeChartRef.value, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: [
+              {
+                label: 'Mean',
+                data: meanRts,
+                borderColor: '#4bc8b4',
+                backgroundColor: 'rgba(75, 200, 180, 0.08)',
+                borderWidth: 1.5,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                fill: true,
+                tension: 0.3,
+              },
+              {
+                label: 'p95',
+                data: p95Rts,
+                borderColor: '#e5a84b',
+                borderWidth: 1.5,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                borderDash: [4, 2],
+                tension: 0.3,
+              },
+              {
+                label: 'p99',
+                data: p99Rts,
+                borderColor: '#e55b5b',
+                borderWidth: 1,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                borderDash: [2, 2],
+                tension: 0.3,
+              },
+            ]
+          },
+          options: {
+            ...chartDefaults,
+            scales: {
+              ...chartDefaults.scales,
+              y: {
+                ...chartDefaults.scales.y,
+                ticks: {
+                  ...chartDefaults.scales.y.ticks,
+                  callback: v => v >= 1000 ? (v/1000).toFixed(1) + 's' : v + 'ms',
+                }
+              }
+            }
+          }
+        });
+
+        /* Request Rate Chart */
+        new Chart(requestRateChartRef.value, {
+          type: 'bar',
+          data: {
+            labels: timeLabels,
+            datasets: [{
+              label: 'req/s',
+              data: reqRates,
+              backgroundColor: reqRates.map((_, i) => vusersFailed[i] > 0 ? 'rgba(229, 91, 91, 0.6)' : 'rgba(91, 143, 229, 0.4)'),
+              borderColor: reqRates.map((_, i) => vusersFailed[i] > 0 ? '#e55b5b' : '#5b8fe5'),
+              borderWidth: 1,
+              borderRadius: 2,
+            }]
+          },
+          options: {
+            ...chartDefaults,
+            scales: {
+              ...chartDefaults.scales,
+              y: {
+                ...chartDefaults.scales.y,
+                beginAtZero: true,
+              }
+            }
+          }
+        });
+
+        /* Virtual Users Chart */
+        new Chart(vusersChartRef.value, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: [
+              {
+                label: 'Created',
+                data: vusersCreated,
+                borderColor: '#a97ee5',
+                backgroundColor: 'rgba(169, 126, 229, 0.08)',
+                borderWidth: 1.5,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                fill: true,
+                tension: 0.3,
+              },
+              {
+                label: 'Completed',
+                data: vusersCompleted,
+                borderColor: '#4bc8b4',
+                borderWidth: 1.5,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                tension: 0.3,
+              },
+              {
+                label: 'Failed',
+                data: vusersFailed,
+                borderColor: '#e55b5b',
+                backgroundColor: 'rgba(229, 91, 91, 0.15)',
+                borderWidth: 1.5,
+                pointRadius: vusersFailed.map(v => v > 0 ? 4 : 0),
+                pointBackgroundColor: '#e55b5b',
+                fill: true,
+                tension: 0.3,
+              },
+            ]
+          },
+          options: {
+            ...chartDefaults,
+            scales: {
+              ...chartDefaults.scales,
+              y: {
+                ...chartDefaults.scales.y,
+                beginAtZero: true,
+              }
+            }
+          }
+        });
+
+        /* Endpoint Latency Chart */
+        new Chart(endpointChartRef.value, {
+          type: 'line',
+          data: {
+            labels: timeLabels,
+            datasets: endpointPaths.map((path, i) => ({
+              label: path,
+              data: endpointTimeSeries[path],
+              borderColor: palette[i % palette.length],
+              borderWidth: 1.5,
+              pointRadius: 0,
+              pointHoverRadius: 3,
+              tension: 0.3,
+              spanGaps: true,
+            })),
+          },
+          options: {
+            ...chartDefaults,
+            scales: {
+              ...chartDefaults.scales,
+              y: {
+                ...chartDefaults.scales.y,
+                ticks: {
+                  ...chartDefaults.scales.y.ticks,
+                  callback: v => v >= 1000 ? (v/1000).toFixed(1) + 's' : v + 'ms',
+                }
+              }
+            }
+          }
+        });
+      });
+
+      return {
+        meta,
+        overallStatus,
+        summaryCards,
+        percentiles,
+        endpoints,
+        scenarios,
+        httpCodes,
+        errors,
+        sessionStats,
+        footerSummary,
+        responseTimeChart: responseTimeChartRef,
+        requestRateChart: requestRateChartRef,
+        vusersChart: vusersChartRef,
+        endpointChart: endpointChartRef,
+      };
+    }
+  }).mount('#app');
+  }
+
+  init();
+</script>
+</body>
+</html>

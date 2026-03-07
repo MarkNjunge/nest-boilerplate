@@ -1,0 +1,148 @@
+config:
+  plugins:
+    expect: {}
+  processor: ./processor.ts
+  phases:
+    - duration: 30
+      arrivalRate: 1
+      maxVusers: 2
+  defaults:
+    headers:
+      Authorization: "Bearer {{ $processEnvironment.API_KEY }}"
+
+  environments:
+    validation:
+      phases:
+        - duration: 10
+          arrivalRate: 2
+          maxVusers: 5
+    spike:
+      phases:
+        - name: Warm up
+          duration: 30
+          arrivalRate: 5
+        - name: Ramp to 100
+          duration: 45
+          arrivalRate: 5
+          rampTo: 100
+        - name: Spike to 150
+          duration: 20
+          arrivalRate: 100
+          rampTo: 150
+        - name: Sustain
+          duration: 60
+          arrivalRate: 150
+        - name: Cool down
+          duration: 30
+          arrivalRate: 150
+          rampTo: 5
+    soak:
+      phases:
+        - name: Ramp up
+          duration: 60
+          arrivalRate: 1
+          rampTo: 50
+        - name: Steady
+          duration: 600
+          arrivalRate: 50
+        - name: Cool down
+          duration: 60
+          arrivalRate: 50
+          rampTo: 1
+
+scenarios:
+  # 60% of VUs — full write path
+  - name: User CRUD lifecycle
+    weight: 6
+    beforeScenario: generateUserData
+    flow:
+      # Create user
+      - post:
+          url: /users
+          json:
+            username: "{{ username }}"
+            email: "{{ email }}"
+            profile:
+              bio: "lorem"
+          capture:
+            - json: $.id
+              as: userId
+          expect:
+            - statusCode: 201
+
+      - think: 1
+
+      # Search for user
+      - get:
+          url: "/users?filter=(username,eq,{{ username }})"
+          capture:
+            - json: "$[0].username"
+              as: searchUsername
+          afterResponse: checkSearchResult
+          expect:
+            - statusCode: 200
+
+      - think: 1
+
+      # Update user
+      - patch:
+          url: "/users/{{ userId }}"
+          json:
+            username: "{{ updatedUsername }}"
+          expect:
+            - statusCode: 200
+
+      - think: 1
+
+      # Delete user
+      - delete:
+          url: "/users/{{ userId }}"
+          expect:
+            - statusCode: 204
+
+  # 30% of VUs — read-heavy browsing with pagination
+  - name: Browse users
+    weight: 3
+    flow:
+      - get:
+          url: "/users?limit=10&sort=(createdAt,DESC)"
+          expect:
+            - statusCode: 200
+
+      - think: 2
+
+      - get:
+          url: "/users?limit=10&offset=10&sort=(createdAt,DESC)"
+          expect:
+            - statusCode: 200
+
+      - think: 2
+
+      - get:
+          url: "/users?select=username,email&limit=5"
+          expect:
+            - statusCode: 200
+
+  # 10% of VUs — count and filtered reads
+  - name: User search
+    weight: 1
+    beforeScenario: generateSearchData
+    flow:
+      - get:
+          url: "/users/count"
+          expect:
+            - statusCode: 200
+
+      - think: 1
+
+      - get:
+          url: "/users?filter=(username,ilike,%25{{ searchTerm }}%25)&limit=5"
+          expect:
+            - statusCode: 200
+
+      - think: 1
+
+      - get:
+          url: "/users?filter=(createdAt,gte,{{ searchDate }})&sort=(createdAt,ASC)&limit=10"
+          expect:
+            - statusCode: 200

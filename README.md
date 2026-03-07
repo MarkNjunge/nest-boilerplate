@@ -606,7 +606,7 @@ npm run test:e2e:local
 
 ### Load test
 
-Load tests are written using [Grafana k6](https://grafana.com/oss/k6/).
+Load tests are written using [Artillery](https://www.artillery.io/).
 
 See [load-test/](./load-test) directory.
 
