@@ -27,5 +27,6 @@ export class CreatePostWithCommentDto {
 
   @ApiProperty({ type: CommentContentDto })
   @ValidateNested()
+  @Type(() => CommentContentDto)
   comment: CommentContentDto;
 }
