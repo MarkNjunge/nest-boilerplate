@@ -5,6 +5,7 @@ import { Column, DataSource, Entity, JoinColumn, ManyToOne, OneToMany, Repositor
 import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
 import { config } from "@/config";
 import { BaseEntity } from "@/models/_base/_base.entity";
+import { createTestContainer } from "@/db/test.utils";
 
 interface Building {
   suite: string;
@@ -82,31 +83,14 @@ describe("TypeORM Query Mapper", () => {
   let childRepo: Repository<SelectChild>;
 
   beforeAll(async () => {
-    let opts: DataSourceOptions;
-
-    if (config.test.db === "postgres") {
-      isPg = true;
-      container = await new PostgreSqlContainer("postgres:18.0").start();
-      opts = {
-        type: "postgres",
-        host: container.getHost(),
-        port: container.getPort(),
-        username: container.getUsername(),
-        password: container.getPassword(),
-        database: container.getDatabase()
-      };
-    } else {
-      opts = {
-        type: "sqlite",
-        database: ":memory:"
-      };
-    }
+    const { opts, ...rest } = await createTestContainer();
+    container = rest.container;
 
     dataSource = new DataSource({
       ...opts,
       entities: [FilterEntity, SelectParent, SelectChild],
       synchronize: true,
-      logging: config.test.logQueries
+      logging: config.integrationTest.logQueries
     });
 
     await dataSource.initialize();

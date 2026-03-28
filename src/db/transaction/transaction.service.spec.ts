@@ -8,6 +8,7 @@ import { BuildingTestEntity } from "@/db/crud/test-entities/building-test.entity
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
 import { config } from "@/config";
+import { createTestContainer } from "@/db/test.utils";
 
 describe("TransactionService", () => {
   let container: StartedPostgreSqlContainer;
@@ -17,30 +18,14 @@ describe("TransactionService", () => {
   let userService: CrudService<UserTestEntity, UserTestCreateDto>;
 
   beforeAll(async () => {
-    let opts: DataSourceOptions;
-
-    if (config.test.db === "postgres") {
-      container = await new PostgreSqlContainer("postgres:18.0").start();
-      opts = {
-        type: "postgres",
-        host: container.getHost(),
-        port: container.getPort(),
-        username: container.getUsername(),
-        password: container.getPassword(),
-        database: container.getDatabase()
-      };
-    } else {
-      opts = {
-        type: "sqlite",
-        database: ":memory:"
-      };
-    }
+    const { opts, ...rest } = await createTestContainer();
+    container = rest.container;
 
     dataSource = new DataSource({
       ...opts,
       entities: [UserTestEntity, UserProfileTestEntity, AddressTestEntity, BuildingTestEntity],
       synchronize: true,
-      logging: config.test.logQueries
+      logging: config.integrationTest.logQueries
     });
 
     await dataSource.initialize();

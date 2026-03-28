@@ -53,9 +53,8 @@
       "logData": true
     }
   },
-  "test": {
-    "_db": "postgres or sqlite",
-    "db": "postgres",
+  "integrationTest": {
+    "pgImage": "postgres:18.0",
     "logQueries": false
   }
 }

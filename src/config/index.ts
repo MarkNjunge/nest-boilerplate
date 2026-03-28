@@ -38,8 +38,8 @@ export interface Config {
       logData: boolean;
     };
   };
-  test: {
-    db: "sqlite" | "postgres";
+  integrationTest: {
+    pgImage: string;
     logQueries: boolean;
   };
 }
