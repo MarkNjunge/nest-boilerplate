@@ -1,7 +1,8 @@
 version: "3"
 services:
   postgres:
-    image: postgres:18.0
+    # 18.3
+    image: postgres@sha256:a9abf4275f9e99bff8e6aed712b3b7dfec9cac1341bba01c1ffdfce9ff9fc34a
     container_name: nest-bp-e2e_pgsql
     logging:
       driver: none

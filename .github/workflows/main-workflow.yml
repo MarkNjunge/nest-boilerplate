@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      # Immutable releases
+      # https://github.com/actions/setup-node/issues/1504
       - uses: actions/setup-node@v3
         with:
           node-version: "24.11.0"

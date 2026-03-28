@@ -13,7 +13,8 @@ services:
       - PORT=3000
       - DB_URL=postgres://postgres:postgres@nest-bp_pgsql:5432/nest-bp
   postgres:
-    image: postgres:18.0
+    # 18.3
+    image: postgres@sha256:a9abf4275f9e99bff8e6aed712b3b7dfec9cac1341bba01c1ffdfce9ff9fc34a
     container_name: nest-bp_pgsql
     restart: always
     environment:
@@ -21,6 +22,6 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=nest-bp
     volumes:
-      - nest-bp-data:/var/lib/postgresql/data
+      - nest-bp-data:/var/lib/postgresql
 volumes:
   nest-bp-data:

@@ -1,5 +1,9 @@
+# 24.14.1-alpine3.23
+ARG DIGEST="sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b"
+ARG NODE_IMAGE=node@${DIGEST}
+
 # Builder image
-FROM node:24.11.0-alpine3.22 as builder
+FROM ${NODE_IMAGE} AS builder
 
 WORKDIR /app
 
@@ -15,7 +19,7 @@ RUN npm run build
 RUN npm prune --production
 
 # Final image
-FROM node:24.11.0-alpine3.22
+FROM ${NODE_IMAGE}
 
 WORKDIR /app
 
