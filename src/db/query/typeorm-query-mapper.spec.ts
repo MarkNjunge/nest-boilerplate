@@ -75,7 +75,6 @@ class SelectChild extends BaseEntity {
 }
 
 describe("TypeORM Query Mapper", () => {
-  let isPg = false;
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let repository: Repository<FilterEntity>;
@@ -457,66 +456,58 @@ describe("TypeORM Query Mapper", () => {
     });
 
     it("can map any", async () => {
-      if (isPg) {
-        await repository.save(repository.create({ number: 10 }));
-        await repository.save(repository.create({ number: 5 }));
-        await repository.save(repository.create({ number: 15 }));
+      await repository.save(repository.create({ number: 10 }));
+      await repository.save(repository.create({ number: 5 }));
+      await repository.save(repository.create({ number: 15 }));
 
-        const where = parseFilter<FilterEntity>({
-          any: [{ key: "number", value: [5, 10] as any }]
-        });
-        const res = await repository.find({ where });
+      const where = parseFilter<FilterEntity>({
+        any: [{ key: "number", value: [5, 10] as any }]
+      });
+      const res = await repository.find({ where });
 
-        expect(res.length).toBe(2);
-        expect(res.map(r => r.number)).toContain(5);
-        expect(res.map(r => r.number)).toContain(10);
-      }
+      expect(res.length).toBe(2);
+      expect(res.map(r => r.number)).toContain(5);
+      expect(res.map(r => r.number)).toContain(10);
     });
 
     it("can map none", async () => {
-      if (isPg) {
-        await repository.save(repository.create({ number: 10 }));
-        await repository.save(repository.create({ number: 5 }));
-        await repository.save(repository.create({ number: 15 }));
+      await repository.save(repository.create({ number: 10 }));
+      await repository.save(repository.create({ number: 5 }));
+      await repository.save(repository.create({ number: 15 }));
 
-        const where = parseFilter<FilterEntity>({
-          none: [{ key: "number", value: [5, 10] as any }]
-        });
-        const res = await repository.find({ where });
+      const where = parseFilter<FilterEntity>({
+        none: [{ key: "number", value: [5, 10] as any }]
+      });
+      const res = await repository.find({ where });
 
-        expect(res.length).toBe(1);
-        expect(res[0].number).toBe(15);
-      }
+      expect(res.length).toBe(1);
+      expect(res[0].number).toBe(15);
     });
 
     it("can map contains", async () => {
-      if (isPg) {
-        await repository.save(repository.create({ arrayField: ["a", "b", "c"] }));
-        await repository.save(repository.create({ arrayField: ["d", "e"] }));
+      await repository.save(repository.create({ arrayField: ["a", "b", "c"] }));
+      await repository.save(repository.create({ arrayField: ["d", "e"] }));
 
-        const where = parseFilter<FilterEntity>({
-          contains: [{ key: "arrayField", value: ["b"] }]
-        });
-        const res = await repository.find({ where });
+      const where = parseFilter<FilterEntity>({
+        contains: [{ key: "arrayField", value: ["b"] }]
+      });
+      const res = await repository.find({ where });
 
-        expect(res.length).toBe(1);
-        expect(res[0].arrayField).toEqual(["a", "b", "c"]);
-      }
+      expect(res.length).toBe(1);
+      expect(res[0].arrayField).toEqual(["a", "b", "c"]);
     });
 
     it("can map containedby", async () => {
-      if (isPg) {
-        await repository.save(repository.create({ arrayField: ["a", "b"] }));
-        await repository.save(repository.create({ arrayField: ["a", "b", "x"] }));
+      await repository.save(repository.create({ arrayField: ["a", "b"] }));
+      await repository.save(repository.create({ arrayField: ["a", "b", "x"] }));
 
-        const where = parseFilter<FilterEntity>({
-          containedby: [{ key: "arrayField", value: ["a", "b", "c"] }]
-        });
-        const res = await repository.find({ where });
+      const where = parseFilter<FilterEntity>({
+        containedby: [{ key: "arrayField", value: ["a", "b", "c"] }]
+      });
+      const res = await repository.find({ where });
 
-        expect(res.length).toBe(1);
-        expect(res[0].arrayField).toEqual(["a", "b"]);
-      }
+      expect(res.length).toBe(1);
+      expect(res[0].arrayField).toEqual(["a", "b"]);
     });
 
     it("can map raw", async () => {
