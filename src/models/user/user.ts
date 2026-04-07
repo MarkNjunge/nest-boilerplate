@@ -1,4 +1,4 @@
-import { BaseEntity } from "@/models/_base/_base.entity";
+import { BaseEntity } from "@/lib/crud";
 import { Column, Entity, OneToOne } from "typeorm";
 import { IsNotEmpty, IsOptional, ValidateNested } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";

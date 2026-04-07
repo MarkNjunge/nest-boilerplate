@@ -1,14 +1,13 @@
 import { DataSource, Repository } from "typeorm";
-import { TransactionService } from "@/db/transaction/transaction.service";
-import { CrudService } from "@/db/crud/crud.service";
-import { UserTestEntity, UserTestCreateDto } from "@/db/crud/test-entities/user-test.entity";
-import { UserProfileTestEntity } from "@/db/crud/test-entities/user-profile-test.entity";
-import { AddressTestEntity } from "@/db/crud/test-entities/address-test.entity";
-import { BuildingTestEntity } from "@/db/crud/test-entities/building-test.entity";
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
+import { TransactionService } from "@/lib/crud/transaction/transaction.service";
+import { CrudService } from "@/lib/crud/service/crud.service";
+import { UserTestEntity, UserTestCreateDto } from "@/lib/crud/testing/test-entities/user-test.entity";
+import { UserProfileTestEntity } from "@/lib/crud/testing/test-entities/user-profile-test.entity";
+import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
+import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-test.entity";
+import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { config } from "@/config";
-import { createTestContainer } from "@/db/test.utils";
+import { createTestContainer } from "@/lib/crud/testing/test.utils";
 
 describe("TransactionService", () => {
   let container: StartedPostgreSqlContainer;

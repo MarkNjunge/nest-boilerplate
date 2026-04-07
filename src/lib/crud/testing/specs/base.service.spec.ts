@@ -1,13 +1,12 @@
 import { DataSource, Repository } from "typeorm";
-import { BaseService } from "@/db/crud/base.service";
-import { UserTestEntity } from "@/db/crud/test-entities/user-test.entity";
-import { UserProfileTestEntity } from "@/db/crud/test-entities/user-profile-test.entity";
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
+import { BaseService } from "@/lib/crud/service/base.service";
+import { UserTestEntity } from "@/lib/crud/testing/test-entities/user-test.entity";
+import { UserProfileTestEntity } from "@/lib/crud/testing/test-entities/user-profile-test.entity";
+import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { config } from "@/config";
-import { AddressTestEntity } from "@/db/crud/test-entities/address-test.entity";
-import { BuildingTestEntity } from "@/db/crud/test-entities/building-test.entity";
-import { createTestContainer } from "@/db/test.utils";
+import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
+import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-test.entity";
+import { createTestContainer } from "@/lib/crud/testing/test.utils";
 
 describe("Base Service", () => {
   let container: StartedPostgreSqlContainer;

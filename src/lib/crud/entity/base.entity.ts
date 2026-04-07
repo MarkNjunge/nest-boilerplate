@@ -1,6 +1,5 @@
 import { BeforeInsert, BeforeUpdate, Column, PrimaryColumn } from "typeorm";
-import { genId } from "@/utils/id";
-import { config } from "@/config";
+import { genId } from "@/lib/crud/entity/id";
 
 export abstract class BaseEntity {
   abstract idPrefix(): string;

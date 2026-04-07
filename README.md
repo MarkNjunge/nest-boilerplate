@@ -127,7 +127,7 @@ npm run migration down
 
 ### BaseEntity
 
-Classes should extend [BaseEntity](src/models/_base/_base.entity.ts) to automatically generate `id`,
+Classes should extend [BaseEntity](src/lib/crud/entity/base.entity.ts) to automatically generate `id`,
 `createdAt` and `updatedAt`.
 
 ### Base & CRUD Classes
@@ -135,12 +135,12 @@ Classes should extend [BaseEntity](src/models/_base/_base.entity.ts) to automati
 The database layer uses inheritance to separate read and write operations:
 
 Services:
-- [BaseService](src/db/crud/base.service.ts) - Read-only operations (`count`, `list`, `get`, `getById`)
-- [CrudService](src/db/crud/crud.service.ts) - Extends BaseService with write operations (`create`, `update`, `delete`, etc.)
+- [BaseService](src/lib/crud/service/base.service.ts) - Read-only operations (`count`, `list`, `get`, `getById`)
+- [CrudService](src/lib/crud/service/crud.service.ts) - Extends BaseService with write operations (`create`, `update`, `delete`, etc.)
 
 Controllers:
-- [BaseController](src/db/crud/base.controller.ts) - Read-only endpoints (no auth required)
-- [CrudController](src/db/crud/crud.controller.ts) - Extends BaseController with write endpoints (auth required)
+- [BaseController](src/lib/crud/controller/base.controller.ts) - Read-only endpoints (no auth required)
+- [CrudController](src/lib/crud/controller/crud.controller.ts) - Extends BaseController with write endpoints (auth required)
 
 Use `BaseService`/`BaseController` for read-only access, `CrudService`/`CrudController` for full CRUD.
 
@@ -195,7 +195,7 @@ BaseEntity, migration generation, CrudService (Or BaseService) and CrudControlle
 
 ## Transactions
 
-[TransactionService](src/db/transaction/transaction.service.ts) provides a reusable wrapper around TypeORM's
+[TransactionService](src/lib/crud/transaction/transaction.service.ts) provides a reusable wrapper around TypeORM's
 `DataSource.transaction()` for atomic multi-entity operations.
 
 ### Usage
@@ -290,8 +290,8 @@ Multiple filters can be specified using a colon `:` as the delimiter.
 Available operands are
 `eq, ne, like, ilike, gt, lt, gte, lte, in, notin, isnull, isnotnull, between, notbetween, any, none, contains, containedby, raw`.
 
-See [query.spec.ts](src/db/query/query.spec.ts)
-and [typeorm-query-mapper.spec.ts](src/db/query/typeorm-query-mapper.spec.ts) for examples.
+See [query.spec.ts](src/lib/crud/testing/specs/query.spec.ts)
+and [typeorm-query-mapper.spec.ts](src/lib/crud/testing/specs/typeorm-query-mapper.spec.ts) for examples.
 
 ### Sort Order
 

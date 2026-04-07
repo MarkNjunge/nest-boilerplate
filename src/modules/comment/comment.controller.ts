@@ -1,5 +1,5 @@
 import { Controller } from "@nestjs/common";
-import { CrudController } from "@/db/crud/crud.controller";
+import { CrudController } from "@/lib/crud";
 import {
   Comment,
   CommentCreateDto,

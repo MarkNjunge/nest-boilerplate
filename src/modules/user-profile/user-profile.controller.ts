@@ -1,5 +1,5 @@
 import { Controller, UsePipes } from "@nestjs/common";
-import { CrudController } from "@/db/crud/crud.controller";
+import { CrudController } from "@/lib/crud";
 import {
   UserProfile,
   UserProfileCreateDto,

@@ -1,10 +1,10 @@
-import { Column, DeepPartial, Entity, OneToOne } from "typeorm";
-import { BaseEntity } from "@/models/_base/_base.entity";
-import { UserProfileTestEntity, UserProfileTestCreateDto } from "@/db/crud/test-entities/user-profile-test.entity";
+import { Column, Entity, OneToOne } from "typeorm";
+import { BaseEntity } from "@/lib/crud/entity/base.entity";
+import { UserProfileTestEntity, UserProfileTestCreateDto } from "@/lib/crud/testing/test-entities/user-profile-test.entity";
 import {
   AddressTestCreateDto,
   AddressTestEntity
-} from "@/db/crud/test-entities/address-test.entity";
+} from "@/lib/crud/testing/test-entities/address-test.entity";
 
 @Entity({ name: "users" })
 export class UserTestEntity extends BaseEntity {

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
-import { CrudService } from "@/db/crud/crud.service";
+import { CrudService } from "@/lib/crud";
 import {
   UserProfile,
   UserProfileCreateDto,

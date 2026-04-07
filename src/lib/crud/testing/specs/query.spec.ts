@@ -4,7 +4,7 @@ import {
   RawQuery,
   validateFilter,
   validateSort
-} from "@/db/query/query";
+} from "@/lib/crud/query/query";
 
 describe("Query", () => {
   describe("parseRawQuery", () => {

@@ -90,7 +90,7 @@ After generation:
 ### Manual Creation
 
 1. **Entity** (`src/models/{name}/{name}.entity.ts`):
-   - Extend `BaseEntity` from `@/models/_base/_base.entity.ts`
+   - Extend `BaseEntity` from `@/lib/crud`
    - Implement `idPrefix()` returning a 3-4 char prefix (e.g., `"usr_"`)
    - Add `@Entity("table_name")` decorator
 
@@ -340,18 +340,18 @@ npm run test:e2e        # Docker-based
 | `src/main.ts` | Bootstrap, middleware, Swagger setup |
 | `src/modules/app/app.module.ts` | Root module, import all feature modules here |
 | `src/modules/_db/db.module.ts` | TypeORM config, entity exports |
-| `src/db/crud/base.service.ts` | Read-only service base class |
-| `src/db/crud/crud.service.ts` | Full CRUD service (extends BaseService) |
-| `src/db/crud/base.controller.ts` | Read-only controller base class |
-| `src/db/crud/crud.controller.ts` | Full CRUD controller (extends BaseController) |
-| `src/models/_base/_base.entity.ts` | Base entity with id, timestamps |
+| `src/lib/crud/service/base.service.ts` | Read-only service base class |
+| `src/lib/crud/service/crud.service.ts` | Full CRUD service (extends BaseService) |
+| `src/lib/crud/controller/base.controller.ts` | Read-only controller base class |
+| `src/lib/crud/controller/crud.controller.ts` | Full CRUD controller (extends BaseController) |
+| `src/lib/crud/entity/base.entity.ts` | Base entity with id, timestamps |
 | `src/filters/all-exceptions.filter.ts` | Global exception handling |
 | `src/guards/auth.guard.ts` | Bearer token authentication |
 | `plopfile.ts` | Code generation configuration |
 | `config/default.json` | Default configuration values |
 | `src/config/secrets-manager.ts` | Async secrets loading (customize for your secrets backend) |
 | `src/config/index.ts` | Config initialization and secrets merging |
-| `src/db/transaction/transaction.service.ts` | Reusable transaction wrapper |
+| `src/lib/crud/transaction/transaction.service.ts` | Reusable transaction wrapper |
 
 ## Common Tasks
 

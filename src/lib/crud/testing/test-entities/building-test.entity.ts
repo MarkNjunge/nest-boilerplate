@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
-import { BaseEntity } from "@/models/_base/_base.entity";
-import { AddressTestEntity } from "@/db/crud/test-entities/address-test.entity";
+import { BaseEntity } from "@/lib/crud/entity/base.entity";
+import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
 
 @Entity({ name: "buildings" })
 export class BuildingTestEntity extends BaseEntity {

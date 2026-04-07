@@ -1,6 +1,6 @@
 import { Body, Controller, Post as HttpPost, UseGuards } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiResponse, ApiSecurity } from "@nestjs/swagger";
-import { CrudController } from "@/db/crud/crud.controller";
+import { CrudController } from "@/lib/crud";
 import { Post, PostCreateDto, PostUpdateDto } from "@/models/post/post";
 import { PostService } from "@/modules/post/post.service";
 import { CreatePostWithCommentDto } from "@/models/post/post-with-comment.dto";

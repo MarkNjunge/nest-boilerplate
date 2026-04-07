@@ -1,4 +1,4 @@
-import { CrudService } from "@/db/crud/crud.service";
+import { CrudService } from "@/lib/crud/service/crud.service";
 import { DeepPartial, ObjectLiteral } from "typeorm";
 import {
   Body,
@@ -19,10 +19,10 @@ import {
   ApiResponse,
   ApiSecurity
 } from "@nestjs/swagger";
-import { parseRawFilter } from "@/db/query/query";
+import { parseRawFilter } from "@/lib/crud/query/query";
 import { AuthGuard } from "@/guards/auth.guard";
 import { ErrorCodes, HttpException } from "@/utils";
-import { BaseController, BaseRouteNames, ControllerOptions } from "@/db/crud/base.controller";
+import { BaseController, BaseRouteNames, ControllerOptions } from "@/lib/crud/controller/base.controller";
 
 export type CrudRouteNames = "create" | "createBulk" | "upsert" | "upsertBulk" | "updateIndexed" | "update" | "deleteIndexed" | "deleteById";
 

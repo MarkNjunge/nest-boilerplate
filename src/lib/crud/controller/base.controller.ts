@@ -1,4 +1,4 @@
-import { BaseService } from "@/db/crud/base.service";
+import { BaseService } from "@/lib/crud/service/base.service";
 import { ObjectLiteral } from "typeorm";
 import {
   Get,
@@ -12,8 +12,8 @@ import {
   ApiResponse,
   getSchemaPath
 } from "@nestjs/swagger";
-import { parseRawQuery, RawQuery } from "@/db/query/query";
-import { CursorPaginationResult, PageInfo } from "@/db/query/cursor-pagination";
+import { parseRawQuery, RawQuery } from "@/lib/crud/query/query";
+import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagination";
 import { HttpException } from "@/utils";
 
 export type BaseRouteNames = "count" | "list" | "get" | "listCursor" | "getById";

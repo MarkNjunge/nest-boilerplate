@@ -8,7 +8,7 @@ import { UserProfile } from "@/models/user-profile/user-profile";
 import { Category } from "@/models/category/category";
 import { Post } from "@/models/post/post";
 import { Comment } from "@/models/comment/comment";
-import { TransactionService } from "@/db/transaction/transaction.service";
+import { TransactionService } from "@/lib/crud";
 
 @Module({
   imports: [

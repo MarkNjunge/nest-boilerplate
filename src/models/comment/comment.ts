@@ -1,4 +1,4 @@
-import { BaseEntity } from "../_base/_base.entity";
+import { BaseEntity } from "@/lib/crud";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional } from "class-validator";

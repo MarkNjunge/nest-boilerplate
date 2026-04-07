@@ -1,7 +1,7 @@
 import { DeepPartial, ObjectLiteral, Repository } from "typeorm";
-import { parseFilter } from "@/db/query/typeorm-query-mapper";
-import { Filter } from "@/db/query/query";
-import { BaseService } from "@/db/crud/base.service";
+import { parseFilter } from "@/lib/crud/query/typeorm-query-mapper";
+import { Filter } from "@/lib/crud/query/query";
+import { BaseService } from "@/lib/crud/service/base.service";
 
 export class CrudService<
   Entity extends ObjectLiteral,

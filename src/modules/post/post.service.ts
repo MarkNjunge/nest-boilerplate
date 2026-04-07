@@ -1,9 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { CrudService } from "@/db/crud/crud.service";
+import { CrudService, TransactionService } from "@/lib/crud";
 import { Post, PostCreateDto, PostUpdateDto } from "@/models/post/post";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
-import { TransactionService } from "@/db/transaction/transaction.service";
 import { CommentService } from "@/modules/comment/comment.service";
 import { CreatePostWithCommentDto } from "@/models/post/post-with-comment.dto";
 

@@ -1,7 +1,7 @@
 import { EntityManager, FindOneOptions, MoreThan, LessThan, ObjectLiteral, Repository } from "typeorm";
-import { mapQueryToTypeorm } from "@/db/query/typeorm-query-mapper";
-import { Query } from "@/db/query/query";
-import { CursorPaginationResult } from "@/db/query/cursor-pagination";
+import { mapQueryToTypeorm } from "@/lib/crud/query/typeorm-query-mapper";
+import { Query } from "@/lib/crud/query/query";
+import { CursorPaginationResult } from "@/lib/crud/query/cursor-pagination";
 import { Logger } from "@/logging/Logger";
 import opentelemetry, { Counter, Histogram } from "@opentelemetry/api";
 import { ErrorCodes, HttpException } from "@/utils";

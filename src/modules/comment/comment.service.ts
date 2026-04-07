@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { CrudService } from "@/db/crud/crud.service";
+import { CrudService } from "@/lib/crud";
 import {
   Comment,
   CommentCreateDto,

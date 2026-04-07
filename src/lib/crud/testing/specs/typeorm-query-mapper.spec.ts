@@ -1,11 +1,10 @@
 import * as typeorm from "typeorm";
-import { mapFilterOp, mapQueryToTypeorm, parseFilter } from "@/db/query/typeorm-query-mapper";
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import { mapFilterOp, mapQueryToTypeorm, parseFilter } from "@/lib/crud/query/typeorm-query-mapper";
+import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { Column, DataSource, Entity, JoinColumn, ManyToOne, OneToMany, Repository } from "typeorm";
-import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
 import { config } from "@/config";
-import { BaseEntity } from "@/models/_base/_base.entity";
-import { createTestContainer } from "@/db/test.utils";
+import { BaseEntity } from "@/lib/crud/entity/base.entity";
+import { createTestContainer } from "@/lib/crud/testing/test.utils";
 
 interface Building {
   suite: string;

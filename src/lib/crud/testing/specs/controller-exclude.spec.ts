@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 import "reflect-metadata";
-import { BaseController, BaseRouteNames } from "@/db/crud/base.controller";
-import { CrudController, CrudRouteNames } from "@/db/crud/crud.controller";
+import { BaseController, BaseRouteNames } from "@/lib/crud/controller/base.controller";
+import { CrudController, CrudRouteNames } from "@/lib/crud/controller/crud.controller";
 
 class FakeEntity {
   id: string;

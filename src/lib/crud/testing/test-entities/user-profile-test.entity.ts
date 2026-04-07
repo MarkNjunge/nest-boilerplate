@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
-import { BaseEntity } from "@/models/_base/_base.entity";
-import { UserTestEntity } from "@/db/crud/test-entities/user-test.entity";
+import { BaseEntity } from "@/lib/crud/entity/base.entity";
+import { UserTestEntity } from "@/lib/crud/testing/test-entities/user-test.entity";
 
 @Entity({ name: "user_profiles" })
 export class UserProfileTestEntity extends BaseEntity {

@@ -1,7 +1,7 @@
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
-import { BaseEntity } from "@/models/_base/_base.entity";
+import { Entity, JoinColumn, OneToOne } from "typeorm";
+import { BaseEntity } from "@/lib/crud/entity/base.entity";
 import { BuildingTestCreateDto, BuildingTestEntity } from "./building-test.entity";
-import { UserTestEntity } from "@/db/crud/test-entities/user-test.entity";
+import { UserTestEntity } from "@/lib/crud/testing/test-entities/user-test.entity";
 
 @Entity({ name: "addresses" })
 export class AddressTestEntity extends BaseEntity {
