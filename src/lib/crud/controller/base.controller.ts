@@ -22,13 +22,16 @@ export interface ControllerOptions<T extends string> {
   exclude?: T[];
 }
 
-export function BaseController<Entity extends ObjectLiteral>(
+export function BaseController<
+  Entity extends ObjectLiteral,
+  TService extends BaseService<Entity> = BaseService<Entity>
+>(
   entityType: new () => Entity,
   options?: ControllerOptions<BaseRouteNames>
 ) {
   class BaseControllerHost {
     constructor(
-      readonly service: BaseService<Entity>
+      readonly service: TService
     ) {}
 
     @Get("/count")
