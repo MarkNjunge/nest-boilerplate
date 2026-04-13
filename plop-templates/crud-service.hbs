@@ -4,7 +4,7 @@ import {
   {{pascalCase name}},
   {{pascalCase name}}CreateDto,
   {{pascalCase name}}UpdateDto,
-} from "@/models/{{lowerCase name}}/{{lowerCase name}}";
+} from "@/models/{{kebabCase name}}/{{kebabCase name}}";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 
@@ -16,8 +16,8 @@ export class {{pascalCase name}}Service extends CrudService<
 > {
   constructor(
     @InjectRepository({{pascalCase name}})
-    protected readonly {{lowerCase name}}Repository: Repository<{{pascalCase name}}>
+    protected readonly {{camelCase name}}Repository: Repository<{{pascalCase name}}>
   ) {
-    super("{{pascalCase name}}", {{lowerCase name}}Repository);
+    super("{{pascalCase name}}", {{camelCase name}}Repository);
   }
 }

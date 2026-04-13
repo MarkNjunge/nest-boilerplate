@@ -4,6 +4,12 @@ import { plural } from "pluralize";
 export default function (plop: NodePlopAPI) {
   plop.setHelper("dbPrefix", (txt: string) => txt.toLowerCase().substring(0, 3) + "_");
   plop.setHelper("pluralize", (txt: string) => plural(txt));
+  plop.setHelper("kebabCase", (txt: string) =>
+    txt
+      .replace(/([a-z])([A-Z])/g, "$1-$2")
+      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
+      .toLowerCase()
+  );
 
   plop.setGenerator("Data Model", {
     description: "Data model logic",
@@ -11,7 +17,7 @@ export default function (plop: NodePlopAPI) {
       {
         type: "input",
         name: "name",
-        message: "What is the name (e.g., User, Product)?",
+        message: "What is the name (e.g., User, Product, UserAccount)?",
       },
       {
         type: "confirm",
@@ -44,7 +50,7 @@ export default function (plop: NodePlopAPI) {
 
       const actions: Actions = [{
         type: "add",
-        path: "src/models/{{lowerCase name}}/{{lowerCase name}}.ts",
+        path: "src/models/{{kebabCase name}}/{{kebabCase name}}.ts",
         templateFile: "plop-templates/entity.hbs",
         abortOnFail: true,
       }];
@@ -54,7 +60,7 @@ export default function (plop: NodePlopAPI) {
         type: "append",
         path: "src/modules/_db/db.module.ts",
         pattern: `import { TypeOrmModule } from "@nestjs/typeorm";`,
-        template: `import { {{pascalCase name}} } from "@/models/{{lowerCase name}}/{{lowerCase name}}";`,
+        template: `import { {{pascalCase name}} } from "@/models/{{kebabCase name}}/{{kebabCase name}}";`,
         abortOnFail: true,
       });
 
@@ -72,7 +78,7 @@ export default function (plop: NodePlopAPI) {
           : "plop-templates/crud-service.hbs";
         actions.push({
           type: "add",
-          path: "src/modules/{{lowerCase name}}/{{lowerCase name}}.service.ts",
+          path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.service.ts",
           templateFile: serviceTemplate,
           abortOnFail: true,
         });
@@ -84,7 +90,7 @@ export default function (plop: NodePlopAPI) {
           : "plop-templates/crud-controller.hbs";
         actions.push({
           type: "add",
-          path: "src/modules/{{lowerCase name}}/{{lowerCase name}}.controller.ts",
+          path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.controller.ts",
           templateFile: controllerTemplate,
           abortOnFail: true,
         });
@@ -93,7 +99,7 @@ export default function (plop: NodePlopAPI) {
       if (data.wantService || data.wantController) {
         actions.push({
           type: "add",
-          path: "src/modules/{{lowerCase name}}/{{lowerCase name}}.module.ts",
+          path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts",
           templateFile: "plop-templates/module.hbs",
           abortOnFail: true,
         });
@@ -103,7 +109,7 @@ export default function (plop: NodePlopAPI) {
           type: "append",
           path: "src/modules/app/app.module.ts",
           pattern: `import { DbModule } from "@/modules/_db/db.module";`,
-          template: `import { {{pascalCase name}}Module } from "@/modules/{{lowerCase name}}/{{lowerCase name}}.module";`,
+          template: `import { {{pascalCase name}}Module } from "@/modules/{{kebabCase name}}/{{kebabCase name}}.module";`,
           abortOnFail: true,
         });
 
@@ -118,15 +124,15 @@ export default function (plop: NodePlopAPI) {
         if (data.wantController) {
           actions.push({
             type: "append",
-            path: "src/modules/{{lowerCase name}}/{{lowerCase name}}.module.ts",
+            path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts",
             pattern: `import { TypeOrmModule } from "@nestjs/typeorm";`,
-            template: `import { {{pascalCase name}}Controller } from "@/modules/{{lowerCase name}}/{{lowerCase name}}.controller";`,
+            template: `import { {{pascalCase name}}Controller } from "@/modules/{{kebabCase name}}/{{kebabCase name}}.controller";`,
             abortOnFail: true,
           });
 
           actions.push({
             type: "modify",
-            path: "src/modules/{{lowerCase name}}/{{lowerCase name}}.module.ts",
+            path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts",
             pattern: /(controllers:\s*\[\s*\])/g,
             template: `controllers: [{{pascalCase name}}Controller]`,
             abortOnFail: true,

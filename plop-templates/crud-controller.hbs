@@ -4,18 +4,18 @@ import {
   {{pascalCase name}},
   {{pascalCase name}}CreateDto,
   {{pascalCase name}}UpdateDto,
-} from "@/models/{{lowerCase name}}/{{lowerCase name}}";
-import { {{pascalCase name}}Service } from "@/modules/{{lowerCase name}}/{{lowerCase name}}.service";
+} from "@/models/{{kebabCase name}}/{{kebabCase name}}";
+import { {{pascalCase name}}Service } from "@/modules/{{kebabCase name}}/{{kebabCase name}}.service";
 import { ApiTags } from "@nestjs/swagger";
 
-@Controller("{{pluralize (lowerCase name)}}")
+@Controller("{{pluralize (kebabCase name)}}")
 @ApiTags("{{pascalCase name}}")
 export class {{pascalCase name}}Controller extends CrudController(
   {{pascalCase name}},
   {{pascalCase name}}CreateDto,
   {{pascalCase name}}UpdateDto
 )<{{pascalCase name}}CreateDto, {{pascalCase name}}UpdateDto> {
-  constructor(protected readonly {{lowerCase name}}Service: {{pascalCase name}}Service) {
-    super({{lowerCase name}}Service);
+  constructor(protected readonly {{camelCase name}}Service: {{pascalCase name}}Service) {
+    super({{camelCase name}}Service);
   }
 }
