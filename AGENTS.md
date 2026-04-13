@@ -2,16 +2,7 @@
 
 This file provides guidance for AI agents working with this NestJS boilerplate codebase.
 
-## Project Overview
-
-A production-ready NestJS boilerplate using Fastify, TypeORM (PostgreSQL), and comprehensive tooling for building REST APIs.
-
-**Tech Stack:**
-- NestJS 11 with Fastify (not Express)
-- TypeORM with PostgreSQL
-- SWC compiler for fast builds
-- Winston logging with OpenTelemetry support
-- Jest for testing
+@README.md
 
 ## Quick Reference
 
@@ -48,13 +39,12 @@ src/
 │   ├── user/                  # Example: User module
 │   └── {feature}/             # Other feature modules
 ├── models/                    # Entities and DTOs
-│   ├── _base/                 # BaseEntity class
 │   ├── _shared/               # Shared DTOs (ApiResponse, ApiError)
 │   └── {entity}/              # Entity + CreateDto + UpdateDto
+├── lib/
+│   └── crud/                  # Generic Base/Crud Service & Controller
 ├── db/
-│   ├── crud/                  # Generic Base/Crud Service & Controller
-│   ├── migrations/            # TypeORM migrations
-│   └── query/                 # Query parsing utilities
+│   └── migrations/            # TypeORM migrations
 ├── guards/                    # Auth guard
 ├── interceptors/              # Global response interceptor
 ├── filters/                   # Exception filter
@@ -70,6 +60,20 @@ config/
 ├── custom-environment-variables.json # Env var mappings
 └── local.json                        # Local overrides (gitignored)
 ```
+
+## Important Files
+
+| File | Purpose |
+|------|---------|
+| `src/main.ts` | Bootstrap, middleware, Swagger setup |
+| `src/modules/app/app.module.ts` | Root module, import all feature modules here |
+| `src/modules/_db/db.module.ts` | TypeORM config, entity exports |
+| `src/filters/all-exceptions.filter.ts` | Global exception handling |
+| `src/guards/auth.guard.ts` | Bearer token authentication |
+| `plopfile.ts` | Code generation configuration |
+| `config/default.json` | Default configuration values |
+| `src/config/secrets-manager.ts` | Async secrets loading (customize for your secrets backend) |
+| `src/config/index.ts` | Config initialization and secrets merging |
 
 ## Adding New Features
 
@@ -90,268 +94,27 @@ After generation:
 ### Manual Creation
 
 1. **Entity** (`src/models/{name}/{name}.entity.ts`):
-   - Extend `BaseEntity` from `@/lib/crud`
-   - Implement `idPrefix()` returning a 3-4 char prefix (e.g., `"usr_"`)
-   - Add `@Entity("table_name")` decorator
+    - Extend `BaseEntity` from `@/lib/crud`
+    - Implement `idPrefix()` returning a 3-4 char prefix (e.g., `"usr_"`)
+    - Add `@Entity("table_name")` decorator
 
 2. **DTOs** (same file or separate):
-   - Create `Create{Name}Dto` with `class-validator` decorators
-   - Create `Update{Name}Dto` with optional fields
+    - Create `Create{Name}Dto` with `class-validator` decorators
+    - Create `Update{Name}Dto` with optional fields
 
 3. **Service** (`src/modules/{name}/{name}.service.ts`):
-   - Extend `CrudService<Entity, CreateDto, UpdateDto>`
-   - Inject repository via `@InjectRepository(Entity)`
+    - Extend `CrudService<Entity, CreateDto, UpdateDto>`
+    - Inject repository via `@InjectRepository(Entity)`
 
 4. **Controller** (`src/modules/{name}/{name}.controller.ts`):
-   - Extend `CrudController<Entity, CreateDto, UpdateDto>`
-   - Add `@Controller("{route}")` and `@ApiTags("{Tag}")`
+    - Extend `CrudController<Entity, CreateDto, UpdateDto>`
+    - Add `@Controller("{route}")` and `@ApiTags("{Tag}")`
 
 5. **Module** (`src/modules/{name}/{name}.module.ts`):
-   - Import in `AppModule` at `src/modules/app/app.module.ts`
-   - Add entity to `DbModule` exports at `src/modules/_db/db.module.ts`
+    - Import in `AppModule` at `src/modules/app/app.module.ts`
+    - Add entity to `DbModule` exports at `src/modules/_db/db.module.ts`
 
 6. **Migration**: Generate after entity changes
-
-## Key Patterns
-
-### BaseEntity
-
-All entities extend `BaseEntity` which provides:
-- `id`: ULID-based string with entity prefix
-- `createdAt`, `updatedAt`: Auto-managed timestamps
-
-```typescript
-@Entity("users")
-export class User extends BaseEntity {
-  idPrefix(): string {
-    return "usr_";
-  }
-
-  @Column()
-  username: string;
-}
-```
-
-### BaseService & CrudService
-
-The service layer uses inheritance to separate read and write operations:
-
-- **BaseService** - Read-only operations: `count`, `list`, `get`, `getById`
-- **CrudService extends BaseService** - Adds write operations: `create`, `createBulk`, `update`, `upsert`, `deleteById`, etc.
-
-```typescript
-@Injectable()
-export class UserService extends CrudService<User, CreateUserDto, UpdateUserDto> {
-  constructor(@InjectRepository(User) repo: Repository<User>) {
-    super("User", repo);
-  }
-}
-```
-
-Use `BaseService` for read-only access, `CrudService` for full CRUD.
-
-### Transactions
-
-`TransactionService` wraps `DataSource.transaction()` for atomic multi-entity operations. Combined with `withTransaction(manager)` on `BaseService`, existing service methods can be reused inside transactions without duplicating logic.
-
-```typescript
-@Injectable()
-export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
-  constructor(
-    @InjectRepository(Post) repo: Repository<Post>,
-    private readonly transactionService: TransactionService,
-    private readonly commentService: CommentService,
-  ) {
-    super("Post", repo);
-  }
-
-  async createPostWithComment(dto: CreatePostWithCommentDto): Promise<Post> {
-    return this.transactionService.run(async manager => {
-      const txPostService = this.withTransaction(manager);
-      const txCommentService = this.commentService.withTransaction(manager);
-
-      const post = await txPostService.create({ title: dto.title, content: dto.content, userId: dto.userId });
-      const comment = await txCommentService.create({ content: dto.comment.content, userId: dto.userId, postId: post.id });
-
-      return Object.assign(post, { comments: [comment] });
-    });
-  }
-}
-```
-
-Key points:
-- `withTransaction(manager)` returns a lightweight clone of the service that uses a transaction-scoped repository
-- All existing service methods (`create`, `update`, `list`, etc.) work on the clone without modification
-- `TransactionService.run()` accepts an optional `isolationLevel` (`READ COMMITTED`, `SERIALIZABLE`, etc.)
-- On error, TypeORM automatically rolls back the transaction
-
-### BaseController & CrudController
-
-The controller layer mirrors the service inheritance:
-
-- **BaseController** - Read-only endpoints (no auth required):
-  - `GET /count` - Count entities
-  - `GET /` - List with query support
-  - `GET /first` - Get first match
-  - `GET /:id` - Get by ID
-- **CrudController extends BaseController** - Adds write endpoints (requires auth):
-  - `POST /` - Create
-  - `POST /bulk` - Create bulk
-  - `PUT /` - Upsert
-  - `PATCH /:id` - Update
-  - `DELETE /:id` - Delete
-
-#### Route Exclusion
-
-Both factory functions accept an optional `options` parameter with an `exclude` array to skip specific routes:
-
-```typescript
-// BaseController — skip specific read-only routes
-BaseController(entityType, { exclude: ["listCursor"] })
-
-// CrudController — skip any base or crud route
-CrudController(entityType, CreateDto, UpdateDto, { exclude: ["deleteById", "createBulk"] })
-```
-
-Available route names:
-- **Base**: `count`, `list`, `get`, `listCursor`, `getById`
-- **Crud**: `create`, `createBulk`, `upsert`, `upsertBulk`, `updateIndexed`, `update`, `deleteIndexed`, `deleteById`
-
-### Query System
-
-The API supports advanced queries via URL parameters:
-- `select=field1,field2` - Field selection
-- `include=relation` - Eager load relations
-- `filter=(field,operator,value)` - Filtering
-- `sort=(field,ASC)` - Sorting
-- `limit=10&offset=0` - Pagination
-
-Operators: `eq`, `ne`, `like`, `ilike`, `gt`, `lt`, `gte`, `lte`, `in`, `notin`, `isnull`, `isnotnull`, `between`, `notbetween`
-
-### Authentication
-
-Bearer token auth via `AuthGuard` and `AuthService`. Token is checked against `config.apiKey`.
-
-```typescript
-@UseGuards(AuthGuard)
-@Post()
-create(@Body() dto: CreateUserDto) {}
-```
-
-Access authenticated user via `@ReqCtx()`:
-
-```typescript
-@UseGuards(AuthGuard)
-@Get()
-handler(@ReqCtx() ctx: IReqCtx) {
-  console.log(ctx.user);  // { userId: "sample-user-id" }
-}
-```
-
-The auth flow:
-1. `AuthGuard` extracts Bearer token from Authorization header
-2. `AuthService.validateToken()` validates the token
-3. Authenticated user is stored in CLS (request context)
-4. `@ReqCtx()` decorator retrieves user from CLS
-
-### Error Handling
-
-Use the custom `HttpException` for consistent error responses:
-
-```typescript
-import { HttpException } from "@/utils/HttpException";
-import { ErrorCodes } from "@/utils/error-codes";
-
-throw new HttpException(404, "User not found", ErrorCodes.INVALID_USER, { id });
-```
-
-### Logging
-
-```typescript
-import { Logger } from "@/logging/Logger";
-
-const logger = new Logger("ServiceName");
-logger.info("Message", { data: { key: "value" } });
-```
-
-### Request Context
-
-Access trace ID and request info:
-
-```typescript
-@Get()
-handler(@ReqCtx() ctx: IReqCtx) {
-  console.log(ctx.traceId);
-}
-```
-
-## Configuration
-
-Configuration hierarchy (later overrides earlier):
-1. `config/default.json` - Base defaults
-2. `config/{NODE_ENV}.json` - Environment-specific
-3. `config/local.json` - Local overrides (gitignored)
-4. `.env` file - Environment variables
-5. System environment variables
-6. Secrets from `loadSecrets()` - Async secrets (e.g., from AWS Secrets Manager)
-
-Access config via:
-```typescript
-import { config } from "./config";
-config.port
-```
-
-### Secrets Manager
-
-For external secrets (e.g., AWS Secrets Manager, Vault), implement `loadSecrets()` in `src/config/secrets-manager.ts`. The returned object is deep-merged with the base config at startup.
-
-```typescript
-export async function loadSecrets(): Promise<any> {
-  const secrets = await fetchFromVault();
-  return { db: { url: secrets.DB_URL } };
-}
-```
-
-## Testing
-
-### Unit Tests
-
-Located alongside source files as `*.spec.ts`. Run with `npm run test`.
-
-### E2E Tests
-
-Located in `test/app.e2e-spec.ts`. Tests all CRUD operations, auth, validation, and queries.
-
-```bash
-npm run test:e2e:local  # Local execution
-npm run test:e2e        # Docker-based
-```
-
-### Writing Tests
-
-- Use `@testcontainers/postgresql` for integration tests requiring a database
-- Mock dependencies using Jest's `jest.mock()`
-- Test files use the pattern `{name}.spec.ts`
-
-## Important Files
-
-| File | Purpose |
-|------|---------|
-| `src/main.ts` | Bootstrap, middleware, Swagger setup |
-| `src/modules/app/app.module.ts` | Root module, import all feature modules here |
-| `src/modules/_db/db.module.ts` | TypeORM config, entity exports |
-| `src/lib/crud/service/base.service.ts` | Read-only service base class |
-| `src/lib/crud/service/crud.service.ts` | Full CRUD service (extends BaseService) |
-| `src/lib/crud/controller/base.controller.ts` | Read-only controller base class |
-| `src/lib/crud/controller/crud.controller.ts` | Full CRUD controller (extends BaseController) |
-| `src/lib/crud/entity/base.entity.ts` | Base entity with id, timestamps |
-| `src/filters/all-exceptions.filter.ts` | Global exception handling |
-| `src/guards/auth.guard.ts` | Bearer token authentication |
-| `plopfile.ts` | Code generation configuration |
-| `config/default.json` | Default configuration values |
-| `src/config/secrets-manager.ts` | Async secrets loading (customize for your secrets backend) |
-| `src/config/index.ts` | Config initialization and secrets merging |
-| `src/lib/crud/transaction/transaction.service.ts` | Reusable transaction wrapper |
 
 ## Common Tasks
 
@@ -363,9 +126,9 @@ npm run test:e2e        # Docker-based
 4. Review the generated migration
 5. Run: `npm run migration up` or restart the server
 
-### Add a new endpoint to existing controller
+### Add a new endpoint to an existing controller
 
-1. Add method to the service if custom logic needed
+1. Add method to the service if custom logic is needed
 2. Add route handler to the controller with appropriate decorators
 3. Add Swagger decorators (`@ApiOperation`, `@ApiResponse`)
 
@@ -386,13 +149,84 @@ export class CreateUserDto {
 }
 ```
 
+## Code Patterns
+
+### Entity
+
+```typescript
+@Entity("users")
+export class User extends BaseEntity {
+  idPrefix(): string { return "usr_"; }
+
+  @Column()
+  username: string;
+}
+```
+
+### Service
+
+```typescript
+@Injectable()
+export class UserService extends CrudService<User, CreateUserDto, UpdateUserDto> {
+  constructor(@InjectRepository(User) repo: Repository<User>) {
+    super("User", repo);
+  }
+}
+```
+
+### Controller
+
+```typescript
+@Controller("users")
+export class UserController extends CrudController(User, CreateUserDto, UpdateUserDto) {
+  constructor(private readonly userService: UserService) {
+    super(userService);
+  }
+}
+```
+
+### Error Handling
+
+```typescript
+import { HttpException } from "@/utils/HttpException";
+import { ErrorCodes } from "@/utils/error-codes";
+
+throw new HttpException(404, "User not found", ErrorCodes.INVALID_USER, { id });
+```
+
+### Logging
+
+```typescript
+import { Logger } from "@/logging/Logger";
+
+const logger = new Logger("ServiceName");
+logger.info("Message", { data: { key: "value" } });
+```
+
+### Accessing Request Context
+
+```typescript
+@Get()
+handler(@ReqCtx() ctx: IReqCtx) {
+  console.log(ctx.traceId);
+  console.log(ctx.user);
+}
+```
+
+## Writing Tests
+
+- Unit tests live alongside source files as `*.spec.ts`
+- Use `@testcontainers/postgresql` for integration tests requiring a database
+- Mock dependencies using Jest's `jest.mock()`
+- E2E tests live in `test/app.e2e-spec.ts`
+
 ## Pitfalls to Avoid
 
-1. **Don't use Express-specific code** - This uses Fastify, not Express
-2. **Always generate migrations** - Don't rely on `synchronize: true`
-3. **Use the custom HttpException** - Not the NestJS one, for consistent error format
-4. **Import from `@/`** - Use path aliases, not relative paths like `../../`
-5. **Add entities to DbModule** - New entities must be added to `src/modules/_db/db.module.ts`
-6. **Implement `idPrefix()`** - Required for all entities extending BaseEntity
-7. **Don't skip validation** - Always add class-validator decorators to DTOs
-8. **Don't skip Swagger** - Always add swagger decorators to DTOs
+1. **Don't use Express-specific code** — This uses Fastify, not Express
+2. **Always generate migrations** — Don't rely on `synchronize: true`
+3. **Use the custom HttpException** — Not the NestJS one, for consistent error format
+4. **Import from `@/`** — Use path aliases, not relative paths like `../../`
+5. **Add entities to DbModule** — New entities must be added to `src/modules/_db/db.module.ts`
+6. **Implement `idPrefix()`** — Required for all entities extending BaseEntity
+7. **Don't skip validation** — Always add class-validator decorators to DTOs
+8. **Don't skip Swagger** — Always add Swagger decorators to DTOs
