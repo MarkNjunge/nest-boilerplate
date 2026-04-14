@@ -1,5 +1,5 @@
 import { CrudService } from "@/lib/crud/service/crud.service";
-import { DeepPartial, ObjectLiteral } from "typeorm";
+import { DeepPartial } from "typeorm";
 import {
   Body,
   Delete,
@@ -23,10 +23,11 @@ import { parseRawFilter } from "@/lib/crud/query/query";
 import { AuthGuard } from "@/guards/auth.guard";
 import { ErrorCodes, HttpException } from "@/utils";
 import { BaseController, BaseRouteNames, ControllerOptions } from "@/lib/crud/controller/base.controller";
+import { BaseEntity } from "@/lib/crud";
 
 export type CrudRouteNames = "create" | "createBulk" | "upsert" | "upsertBulk" | "updateIndexed" | "update" | "deleteIndexed" | "deleteById";
 
-export function CrudController<Entity extends ObjectLiteral>(
+export function CrudController<Entity extends BaseEntity>(
   entityType: new () => Entity,
   createDtoType?: new () => any,
   updateDtoType?: new () => any,

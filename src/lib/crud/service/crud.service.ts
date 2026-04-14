@@ -1,13 +1,15 @@
-import { DeepPartial, ObjectLiteral, Repository } from "typeorm";
+import { ObjectLiteral, Repository } from "typeorm";
 import { parseFilter } from "@/lib/crud/query/typeorm-query-mapper";
 import { Filter } from "@/lib/crud/query/query";
 import { BaseService } from "@/lib/crud/service/base.service";
+import { BaseEntity } from "@/lib/crud/entity/base.entity";
+import { genId } from "@/lib/crud/entity/id";
 
 export class CrudService<
-  Entity extends ObjectLiteral,
-  Create extends DeepPartial<Entity> = DeepPartial<Entity>,
-  Update extends DeepPartial<Entity> = DeepPartial<Entity>
-> extends BaseService<Entity>{
+  Entity extends BaseEntity,
+  Create extends ObjectLiteral = ObjectLiteral,
+  Update extends ObjectLiteral = ObjectLiteral
+> extends BaseService<Entity> {
 
   constructor(
     protected readonly name: string,
@@ -16,13 +18,25 @@ export class CrudService<
     super(name, repository);
   }
 
+  // Sets id, createdAt, and updatedAt on an entity if they are not already present.
+  private prepareEntity(entity: Entity, now: Date): void {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    entity.id = entity.id ?? genId(entity.idPrefix());
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    entity.createdAt = entity.createdAt ?? now;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    entity.updatedAt = entity.updatedAt ?? now;
+  }
+
   async create(data: Create): Promise<Entity> {
     this.logger.debug(`${this.name}::create`, { data: { data } });
     const attr = { entity: this.name, operation: "create" };
     let status = "success";
     const start = Date.now();
     try {
-      return await this.repository.save(this.repository.create(data));
+      const entity = this.repository.create(data as any) as unknown as Entity;
+      this.prepareEntity(entity, new Date());
+      return await this.repository.save(entity);
     } catch (e) {
       status = "failure";
       throw e;
@@ -38,7 +52,12 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
-      return await this.repository.save(this.repository.create(data));
+      const now = new Date();
+      const entities = this.repository.create(data as any[]).map(entity => {
+        this.prepareEntity(entity, now);
+        return entity;
+      });
+      return await this.repository.save(entities);
     } catch (e) {
       status = "failure";
       throw e;
@@ -54,8 +73,12 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
-      const entity = this.repository.create(data);
-      return await this.repository.save(entity);
+      const now = new Date();
+      const entity = this.repository.create(data as any) as unknown as Entity;
+      this.prepareEntity(entity, now);
+      entity.updatedAt = now;
+      await this.repository.upsert(entity as any, { conflictPaths: ["id"] });
+      return entity;
     } catch (e) {
       status = "failure";
       throw e;
@@ -71,8 +94,14 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
-      const entities = this.repository.create(data);
-      return await this.repository.save(entities);
+      const now = new Date();
+      const entities = this.repository.create(data as any[]).map(entity => {
+        this.prepareEntity(entity, now);
+        entity.updatedAt = now;
+        return entity;
+      });
+      await this.repository.upsert(entities as any[], { conflictPaths: ["id"] });
+      return entities;
     } catch (e) {
       status = "failure";
       throw e;
@@ -82,7 +111,7 @@ export class CrudService<
     }
   }
 
-  async update(id: string, data: Update): Promise<Entity | null> {
+  async update(id: string, data: Update, options?: { silent?: boolean }): Promise<Entity | null> {
     this.logger.debug(`${this.name}::update`, { data: { id, data } });
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -94,13 +123,12 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
-      // Find entity first so that TypeORM hooks (e.g. @BeforeUpdate, @AfterUpdate) are triggered
-      const entity = await this.repository.findOne({ where: { id } as any });
-      if (!entity) {
-        return null;
+      const updateData: Record<string, any> = { ...data };
+      if (!options?.silent) {
+        updateData.updatedAt = new Date();
       }
-      Object.assign(entity, data);
-      return await this.repository.save(entity);
+      await this.repository.update(id, updateData);
+      return await this.repository.findOne({ where: { id } as any });
     } catch (e) {
       status = "failure";
       throw e;
@@ -110,24 +138,21 @@ export class CrudService<
     }
   }
 
-  async updateIndexed(filter: Filter<Entity>, data: Update): Promise<Entity[]> {
+  async updateIndexed(filter: Filter<Entity>, data: Update, options?: { silent?: boolean }): Promise<Entity[]> {
     this.logger.debug(`${this.name}::updateIndexed`, { data: { filter: data } });
     const attr = { entity: this.name, operation: "update_indexed" };
     let status = "success";
     const start = Date.now();
     try {
-      // Find entities first so that TypeORM hooks (e.g. @BeforeUpdate, @AfterUpdate) are triggered
-      const typeormFindOptions = parseFilter(filter);
-      const entities = await this.repository.find({ where: typeormFindOptions });
+      const filterConditions = parseFilter(filter);
+      const entities = await this.repository.find({ where: filterConditions });
       if (entities.length === 0) {
         return [];
       }
-      const updates = entities.map(entity => ({
-        ...entity,
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        ...data
-      }));
-      return await this.repository.save(updates);
+      const ids = entities.map(e => e.id);
+      const updateData = options?.silent ? { ...data } : { ...data, updatedAt: new Date() };
+      await this.repository.update(ids as any, updateData);
+      return entities.map(entity => Object.assign({}, entity, updateData) as Entity);
     } catch (e) {
       status = "failure";
       throw e;
@@ -142,18 +167,14 @@ export class CrudService<
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id == null) {
-      throw new Error("null id passed in update");
+      throw new Error("null id passed in deleteById");
     }
 
     const attr = { entity: this.name, operation: "delete_by_id" };
     let status = "success";
     const start = Date.now();
     try {
-      // Find entity first so that TypeORM hooks (e.g. @BeforeRemove, @AfterRemove) are triggered
-      const entity = await this.repository.findOne({ where: { id } as any });
-      if (entity) {
-        await this.repository.remove(entity);
-      }
+      await this.repository.delete(id);
     } catch (e) {
       status = "failure";
       throw e;
@@ -169,12 +190,8 @@ export class CrudService<
     let status = "success";
     const start = Date.now();
     try {
-      // Find entities first so that TypeORM hooks (e.g. @BeforeRemove, @AfterRemove) are triggered
-      const typeormFindOptions = parseFilter(filter);
-      const entities = await this.repository.find({ where: typeormFindOptions });
-      if (entities.length > 0) {
-        await this.repository.remove(entities);
-      }
+      const filterConditions = parseFilter(filter);
+      await this.repository.delete(filterConditions as any);
     } catch (e) {
       status = "failure";
       throw e;

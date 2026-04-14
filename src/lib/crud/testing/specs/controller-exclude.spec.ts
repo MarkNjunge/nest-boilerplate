@@ -2,9 +2,12 @@
 import "reflect-metadata";
 import { BaseController, BaseRouteNames } from "@/lib/crud/controller/base.controller";
 import { CrudController, CrudRouteNames } from "@/lib/crud/controller/crud.controller";
+import { BaseEntity } from "@/lib/crud";
 
-class FakeEntity {
-  id: string;
+class FakeEntity extends BaseEntity {
+  idPrefix(): string {
+    return "fe_";
+  }
 }
 
 describe("BaseController exclude", () => {

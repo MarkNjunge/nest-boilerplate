@@ -1,6 +1,7 @@
 import { DataSource, Repository } from "typeorm";
 import { BaseService } from "@/lib/crud/service/base.service";
-import { UserTestEntity } from "@/lib/crud/testing/test-entities/user-test.entity";
+import { CrudService } from "@/lib/crud/service/crud.service";
+import { UserTestEntity, UserTestCreateDto } from "@/lib/crud/testing/test-entities/user-test.entity";
 import { UserProfileTestEntity } from "@/lib/crud/testing/test-entities/user-profile-test.entity";
 import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { config } from "@/config";
@@ -14,6 +15,7 @@ describe("Base Service", () => {
   let userRepository: Repository<UserTestEntity>;
   let profileRepository: Repository<UserProfileTestEntity>;
   let service: BaseService<UserTestEntity>;
+  let crudService: CrudService<UserTestEntity, UserTestCreateDto>;
 
   beforeAll(async () => {
     const { opts, ...rest } = await createTestContainer();
@@ -30,6 +32,7 @@ describe("Base Service", () => {
     userRepository = dataSource.getRepository(UserTestEntity);
     profileRepository = dataSource.getRepository(UserProfileTestEntity);
     service = new BaseService("User", userRepository);
+    crudService = new CrudService("User", userRepository);
   });
 
   afterAll(async () => {
@@ -43,11 +46,10 @@ describe("Base Service", () => {
 
   describe("count", () => {
     it("can count all users", async () => {
-      const users = [
-        userRepository.create({ username: "john", email: "john@example.com" }),
-        userRepository.create({ username: "jane", email: "jane@example.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "john", email: "john@example.com" },
+        { username: "jane", email: "jane@example.com" }
+      ]);
 
       const result = await service.count({});
 
@@ -55,11 +57,10 @@ describe("Base Service", () => {
     });
 
     it("can count with filters", async () => {
-      const users = [
-        userRepository.create({ username: "john", email: "john@example.com" }),
-        userRepository.create({ username: "jane", email: "jane@example.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "john", email: "john@example.com" },
+        { username: "jane", email: "jane@example.com" }
+      ]);
 
       const result = await service.count({
         filter: { eq: [{ key: "username", value: "john" }] }
@@ -71,22 +72,19 @@ describe("Base Service", () => {
 
   describe("list", () => {
     it("can return all users when no filters applied", async () => {
-      const user1 = userRepository.create({
-        username: "john",
-        email: "john@example.com",
-        profile: { bio: "lorem ipsum" },
-        address: {
-          building: {
-            suite: "A01"
-          }
+      await crudService.createBulk([
+        {
+          username: "john",
+          email: "john@example.com",
+          profile: { bio: "lorem ipsum" },
+          address: { building: { suite: "A01" } }
+        },
+        {
+          username: "jane",
+          email: "jane@example.com",
+          profile: {}
         }
-      });
-      const user2 = userRepository.create({
-        username: "jane",
-        email: "jane@example.com",
-        profile: {}
-      });
-      await userRepository.save([user1, user2]);
+      ]);
 
       const result = await service.list({});
 
@@ -97,9 +95,10 @@ describe("Base Service", () => {
     });
 
     it("can filter users by username", async () => {
-      const user1 = userRepository.create({ username: "john", email: "john@example.com" });
-      const user2 = userRepository.create({ username: "jane", email: "jane@example.com" });
-      await userRepository.save([user1, user2]);
+      await crudService.createBulk([
+        { username: "john", email: "john@example.com" },
+        { username: "jane", email: "jane@example.com" }
+      ]);
 
       const result = await service.list({ filter: { eq: [{ key: "username", value: "john" }] } });
 
@@ -109,8 +108,7 @@ describe("Base Service", () => {
     });
 
     it("can return empty array when no matches found", async () => {
-      const user = userRepository.create({ username: "john", email: "john@example.com" });
-      await userRepository.save(user);
+      await crudService.create({ username: "john", email: "john@example.com" });
 
       const result = await service.list({
         filter: {
@@ -125,12 +123,11 @@ describe("Base Service", () => {
     });
 
     it("can order results by username ascending", async () => {
-      const users = [
-        userRepository.create({ username: "charlie", email: "charlie@example.com" }),
-        userRepository.create({ username: "alice", email: "alice@example.com" }),
-        userRepository.create({ username: "bob", email: "bob@example.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "charlie", email: "charlie@example.com" },
+        { username: "alice", email: "alice@example.com" },
+        { username: "bob", email: "bob@example.com" }
+      ]);
 
       const result = await service.list({ sort: { username: "ASC" } });
 
@@ -141,10 +138,9 @@ describe("Base Service", () => {
     });
 
     it("can apply skip and take for pagination", async () => {
-      const users = Array.from({ length: 10 }, (_, i) =>
-        userRepository.create({ username: `user${i}`, email: `user${i}@example.com` })
+      await crudService.createBulk(
+        Array.from({ length: 10 }, (_, i) => ({ username: `user${i}`, email: `user${i}@example.com` }))
       );
-      await userRepository.save(users);
 
       const result = await service.list({
         offset: 3,
@@ -157,13 +153,12 @@ describe("Base Service", () => {
     });
 
     it("can combine filters, ordering, and pagination", async () => {
-      const users = [
-        userRepository.create({ username: "alice", email: "alice@a.com" }),
-        userRepository.create({ username: "bob", email: "bob@b.com" }),
-        userRepository.create({ username: "charlie", email: "charlie@a.com" }),
-        userRepository.create({ username: "david", email: "david@a.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "alice", email: "alice@a.com" },
+        { username: "bob", email: "bob@b.com" },
+        { username: "charlie", email: "charlie@a.com" },
+        { username: "david", email: "david@a.com" }
+      ]);
 
       const result = await service.list({
         filter: { like: [{ key: "email", value: "%@a.com" }] },
@@ -178,17 +173,12 @@ describe("Base Service", () => {
     });
 
     it("can include relations", async () => {
-      const user1 = userRepository.create({
+      await crudService.create({
         username: "john",
         email: "john@example.com",
         profile: { bio: "lorem ipsum" },
-        address: {
-          building: {
-            suite: "A01"
-          }
-        }
+        address: { building: { suite: "A01" } }
       });
-      await userRepository.save([user1]);
 
       const result = await service.list({ include: ["address.building"] });
 
@@ -201,8 +191,7 @@ describe("Base Service", () => {
 
   describe("get", () => {
     it("can get a single user", async () => {
-      const user = userRepository.create({ username: "john", email: "john@example.com" });
-      await userRepository.save(user);
+      await crudService.create({ username: "john", email: "john@example.com" });
 
       const result = await service.get({
         filter: { eq: [{ key: "username", value: "john" }] }
@@ -223,8 +212,7 @@ describe("Base Service", () => {
 
   describe("getById", () => {
     it("can get user by id", async () => {
-      const user = userRepository.create({ username: "john", email: "john@example.com" });
-      const saved = await userRepository.save(user);
+      const saved = await crudService.create({ username: "john", email: "john@example.com" });
 
       const result = await service.getById(saved.id);
 
@@ -234,17 +222,12 @@ describe("Base Service", () => {
     });
 
     it("can get user by id with relations", async () => {
-      const user = userRepository.create({
+      const saved = await crudService.create({
         username: "john",
         email: "john@example.com",
         profile: { bio: "lorem ipsum" },
-        address: {
-          building: {
-            suite: "A01"
-          }
-        }
+        address: { building: { suite: "A01" } }
       });
-      const saved = await userRepository.save(user);
 
       const result = await service.getById(saved.id, {
         include: ["address.building"]
@@ -264,12 +247,11 @@ describe("Base Service", () => {
 
   describe("listCursor", () => {
     it("returns first page with correct pageInfo", async () => {
-      const users = [
-        userRepository.create({ username: "user1", email: "user1@example.com" }),
-        userRepository.create({ username: "user2", email: "user2@example.com" }),
-        userRepository.create({ username: "user3", email: "user3@example.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "user1", email: "user1@example.com" },
+        { username: "user2", email: "user2@example.com" },
+        { username: "user3", email: "user3@example.com" }
+      ]);
 
       const result = await service.listCursor({ limit: 2 });
 
@@ -281,12 +263,11 @@ describe("Base Service", () => {
     });
 
     it("paginates forward using after cursor", async () => {
-      const users = [
-        userRepository.create({ username: "user1", email: "user1@example.com" }),
-        userRepository.create({ username: "user2", email: "user2@example.com" }),
-        userRepository.create({ username: "user3", email: "user3@example.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "user1", email: "user1@example.com" },
+        { username: "user2", email: "user2@example.com" },
+        { username: "user3", email: "user3@example.com" }
+      ]);
 
       const firstPage = await service.listCursor({ limit: 1 });
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -299,12 +280,11 @@ describe("Base Service", () => {
     });
 
     it("paginates backward using before cursor", async () => {
-      const users = [
-        userRepository.create({ username: "user1", email: "user1@example.com" }),
-        userRepository.create({ username: "user2", email: "user2@example.com" }),
-        userRepository.create({ username: "user3", email: "user3@example.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "user1", email: "user1@example.com" },
+        { username: "user2", email: "user2@example.com" },
+        { username: "user3", email: "user3@example.com" }
+      ]);
 
       const lastPage = await service.listCursor({ limit: 1 });
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -324,12 +304,11 @@ describe("Base Service", () => {
     });
 
     it("works with filters", async () => {
-      const users = [
-        userRepository.create({ username: "alice", email: "alice@a.com" }),
-        userRepository.create({ username: "bob", email: "bob@b.com" }),
-        userRepository.create({ username: "charlie", email: "charlie@a.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "alice", email: "alice@a.com" },
+        { username: "bob", email: "bob@b.com" },
+        { username: "charlie", email: "charlie@a.com" }
+      ]);
 
       const result = await service.listCursor({
         filter: { like: [{ key: "email", value: "%@a.com" }] },
@@ -351,10 +330,9 @@ describe("Base Service", () => {
     });
 
     it("respects limit parameter", async () => {
-      const users = Array.from({ length: 10 }, (_, i) =>
-        userRepository.create({ username: `user${i}`, email: `user${i}@example.com` })
+      await crudService.createBulk(
+        Array.from({ length: 10 }, (_, i) => ({ username: `user${i}`, email: `user${i}@example.com` }))
       );
-      await userRepository.save(users);
 
       const result = await service.listCursor({ limit: 5 });
 
@@ -363,11 +341,10 @@ describe("Base Service", () => {
     });
 
     it("returns hasNextPage false on last page", async () => {
-      const users = [
-        userRepository.create({ username: "user1", email: "user1@example.com" }),
-        userRepository.create({ username: "user2", email: "user2@example.com" })
-      ];
-      await userRepository.save(users);
+      await crudService.createBulk([
+        { username: "user1", email: "user1@example.com" },
+        { username: "user2", email: "user2@example.com" }
+      ]);
 
       const result = await service.listCursor({ limit: 10 });
 
