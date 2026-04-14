@@ -1,6 +1,7 @@
-// Copyright (c) 2015 Sami Koskimäki
-// https://github.com/Vincit/objection.js/blob/dbb20aebaac2059149ec18386283b3cce4a3d7f0/lib/utils/identifierMapping.js
-
+/**
+ * Copyright (c) 2015 Sami Koskimäki
+ * @See https://github.com/Vincit/objection.js/blob/dbb20aebaac2059149ec18386283b3cce4a3d7f0/lib/utils/identifierMapping.js
+ */
 export function snakeCase(
   str: string,
   {
@@ -11,6 +12,10 @@ export function snakeCase(
 ) {
   if (str.length === 0) {
     return str;
+  }
+
+  function isDigit(char) {
+    return char >= "0" && char <= "9";
   }
 
   const upper: string = str.toUpperCase();
@@ -60,8 +65,4 @@ export function snakeCase(
   } else {
     return out;
   }
-}
-
-function isDigit(char) {
-  return char >= "0" && char <= "9";
 }

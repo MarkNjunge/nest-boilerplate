@@ -5,6 +5,7 @@ import { CursorPaginationResult } from "@/lib/crud/query/cursor-pagination";
 import { Logger } from "@/logging/Logger";
 import opentelemetry, { Counter, Histogram } from "@opentelemetry/api";
 import { ErrorCodes, HttpException } from "@/utils";
+import { snakeCase } from "@/lib/crud/utils/snake-case";
 
 export class BaseService<
   Entity extends ObjectLiteral
@@ -47,13 +48,17 @@ export class BaseService<
     return clone;
   }
 
-  async count(query: Query<Entity>) {
-    this.logger.debug(`${this.name}::count`, { data: { query } });
-    const attr = { entity: this.name, operation: "count" };
+  protected async track<T>(
+    method: string,
+    logData: Record<string, unknown>,
+    fn: () => Promise<T>
+  ): Promise<T> {
+    this.logger.debug(`${this.name}::${method}`, { data: logData });
+    const attr = { entity: this.name, operation: snakeCase(method) };
     let status = "success";
     const start = Date.now();
     try {
-      return await this.repository.count(mapQueryToTypeorm(query));
+      return await fn();
     } catch (e) {
       status = "failure";
       throw e;
@@ -61,74 +66,39 @@ export class BaseService<
       this.metrics.operation.add(1, { ...attr, status });
       this.metrics.duration.record((Date.now() - start) / 1000, attr);
     }
+  }
+
+  async count(query: Query<Entity>) {
+    return this.track("count", { query }, () => this.repository.count(mapQueryToTypeorm(query)));
   }
 
   async list(query: Query<Entity> = {}): Promise<Entity[]> {
-    this.logger.debug(`${this.name}::list`, { data: { query } });
-    const attr = { entity: this.name, operation: "list" };
-    let status = "success";
-    const start = Date.now();
-    try {
-      return await this.repository.find(mapQueryToTypeorm(query));
-    } catch (e) {
-      status = "failure";
-      throw e;
-    } finally {
-      this.metrics.operation.add(1, { ...attr, status });
-      this.metrics.duration.record((Date.now() - start) / 1000, attr);
-    }
+    return this.track("list", { query }, () => this.repository.find(mapQueryToTypeorm(query)));
   }
 
   async get(query: Query<Entity> = {}): Promise<Entity | null> {
-    this.logger.debug(`${this.name}::get`, { data: { query } });
-    const attr = { entity: this.name, operation: "get" };
-    let status = "success";
-    const start = Date.now();
-    try {
-      return await this.repository.findOne(mapQueryToTypeorm(query) as FindOneOptions<Entity>);
-    } catch (e) {
-      status = "failure";
-      throw e;
-    } finally {
-      this.metrics.operation.add(1, { ...attr, status });
-      this.metrics.duration.record((Date.now() - start) / 1000, attr);
-    }
+    return this.track("get", { query }, () =>
+      this.repository.findOne(mapQueryToTypeorm(query) as FindOneOptions<Entity>)
+    );
   }
 
   async getById(id: string, query: Query<Entity> = {}): Promise<Entity | null> {
-    this.logger.debug(`${this.name}::getById`, { data: { query } });
-
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id == null) {
       throw new Error("null id passed in update");
     }
-
-    const attr = { entity: this.name, operation: "get_by_id" };
-    let status = "success";
-    const start = Date.now();
-    try {
+    return this.track("getById", { query }, () => {
       const options = mapQueryToTypeorm(query) as FindOneOptions<Entity>;
-      return await this.repository.findOne({
+      return this.repository.findOne({
         ...options,
         // eslint-disable-next-line @typescript-eslint/no-misused-spread
         where: { ...options.where, id } as any
       });
-    } catch (e) {
-      status = "failure";
-      throw e;
-    } finally {
-      this.metrics.operation.add(1, { ...attr, status });
-      this.metrics.duration.record((Date.now() - start) / 1000, attr);
-    }
+    });
   }
 
   async listCursor(query: Query<Entity> = {}): Promise<CursorPaginationResult<Entity>> {
-    this.logger.debug(`${this.name}::listCursor`, { data: { query } });
-    const attr = { entity: this.name, operation: "list_cursor" };
-    let status = "success";
-    const start = Date.now();
-
-    try {
+    return this.track("listCursor", { query }, async () => {
       const { after, before, limit = 20, ...restQuery } = query;
 
       if (after && before) {
@@ -169,13 +139,7 @@ export class BaseService<
           endCursor: items[items.length - 1]?.id ?? null
         }
       };
-    } catch (e) {
-      status = "failure";
-      throw e;
-    } finally {
-      this.metrics.operation.add(1, { ...attr, status });
-      this.metrics.duration.record((Date.now() - start) / 1000, attr);
-    }
+    });
   }
 
 }
