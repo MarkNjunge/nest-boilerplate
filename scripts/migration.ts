@@ -1,20 +1,12 @@
 import { execSync } from "child_process";
 
 const [, , command, name] = process.argv;
-const dataSource = "src/modules/_db/data-source.ts";
+const dataSource = "dist/modules/_db/data-source.js";
 const migrationsDir = "src/db/migrations";
 
 function run(cmd: string, clearNodeOptions = false) {
   const env = clearNodeOptions ? { ...process.env, NODE_OPTIONS: "" } : process.env;
   execSync(cmd, { stdio: "inherit", env });
-}
-
-function pregenerate() {
-  run("swc src/models src/utils src/modules/_db/data-source.ts src/config -d dist --strip-leading-paths");
-}
-
-function preup() {
-  run("swc src/db/migrations -d dist --strip-leading-paths");
 }
 
 switch (command) {
@@ -25,16 +17,18 @@ switch (command) {
   }
   case "generate": {
     const migrationName = name || "new_migration";
-    pregenerate();
-    run(`typeorm-ts-node-commonjs migration:generate -d ${dataSource} ${migrationsDir}/${migrationName}`, true);
+    // Only build what is necessary
+    run("swc src/models src/utils src/modules/_db src/config src/logging src/cls -d dist --strip-leading-paths");
+    run(`typeorm-ts-node-commonjs migration:generate -d ${dataSource} ${migrationsDir}/${migrationName}`);
     break;
   }
   case "up":
-    preup();
-    run(`typeorm-ts-node-commonjs migration:run -d ${dataSource}`, true);
+    run("npm run build");
+    run(`typeorm-ts-node-commonjs migration:run -d ${dataSource}`);
     break;
   case "down":
-    run(`typeorm-ts-node-commonjs migration:revert -d ${dataSource}`, true);
+    run("npm run build");
+    run(`typeorm-ts-node-commonjs migration:revert -d ${dataSource}`);
     break;
   default:
     console.error("Usage: npm run migration <create|generate|up|down> [name]");
