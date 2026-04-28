@@ -72,7 +72,6 @@ interface Validator {
 }
 
 interface Logging {
-  timestampFormat: string;
   logDataConsole: boolean;
 }
 

@@ -27,7 +27,6 @@
     "forbidUnknown": true
   },
   "logging": {
-    "timestampFormat": "YYYY-MM-DD HH:mm:ss.SSS",
     "logDataConsole": false
   },
   "fileUpload": {
