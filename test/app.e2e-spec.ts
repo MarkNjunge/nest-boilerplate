@@ -1,4 +1,4 @@
-import * as request from "supertest";
+import request from "supertest";
 
 function randomString(length: number) {
   let result = "";

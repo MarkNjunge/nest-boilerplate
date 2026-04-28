@@ -95,7 +95,7 @@ export class CrudService<
       }
       const ids = entities.map(e => e.id);
       const updateData = options?.silent ? { ...data } : { ...data, updatedAt: new Date() };
-      await this.repository.update(ids as any, updateData);
+      await this.repository.update(ids, updateData);
       return entities.map(entity => Object.assign({}, entity, updateData) as Entity);
     });
   }
@@ -111,7 +111,7 @@ export class CrudService<
   async deleteIndexed(filter: Filter<Entity>): Promise<void> {
     return this.track("deleteIndexed", { filter }, async () => {
       const filterConditions = parseFilter(filter);
-      await this.repository.delete(filterConditions as any);
+      await this.repository.delete(filterConditions);
     });
   }
 }

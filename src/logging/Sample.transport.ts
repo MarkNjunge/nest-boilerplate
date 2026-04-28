@@ -1,4 +1,4 @@
-import * as Transport from "winston-transport";
+import Transport from "winston-transport";
 import { clone } from "@/utils";
 
 // Batching adapted from https://github.com/winstonjs/winston/blob/master/lib/winston/transports/http.js

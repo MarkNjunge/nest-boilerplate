@@ -139,7 +139,7 @@ export function validateSort(s: string): boolean {
 
   return s.split(":").every(s => {
     const { 0: key, 1: direction } = s.slice(1, -1).split(",");
-    return s.startsWith("(") && s.endsWith(")") && ["ASC", "DESC"].includes(direction as FilterOp);
+    return s.startsWith("(") && s.endsWith(")") && ["ASC", "DESC"].includes(direction);
   });
 }
 
@@ -205,13 +205,14 @@ export function parseRawFilter(filterStr: string | undefined): Filter {
 
   match.map(s => {
     const { 0: key, 1: op, 2: value, 3: secondValue } = s.slice(1, -1).split(",");
-    filter[op] ??= [];
+    filter[op as FilterOp] ??= [];
 
     const kv: KeyValuePair = { key, value };
     if (secondValue) {
       kv.secondValue = secondValue;
     }
-    filter[op].push(kv);
+
+    filter[op as FilterOp]?.push(kv);
   });
 
   return filter;
@@ -223,7 +224,7 @@ export function parseRawQuery(rawQuery: RawQuery, cursor = false): Query {
   if (rawQuery.select) {
     const fields = rawQuery.select.split(",").map(s => s.trim());
 
-    query.select = fields.reduce((acc, field) => {
+    query.select = fields.reduce<any>((acc, field) => {
       const parts = field.split(".");
       let current = acc;
 

@@ -1,6 +1,6 @@
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { config } from "@/config";
-import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
+import { DataSourceOptions } from "typeorm";
 
 export async function createTestContainer(): Promise<{ container: StartedPostgreSqlContainer; opts: DataSourceOptions }> {
   const container = await new PostgreSqlContainer(config.integrationTest.pgImage).start();

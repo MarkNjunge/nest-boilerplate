@@ -55,18 +55,19 @@ export class FileHandler {
       return;
     }
 
-    Object.keys(request.body ?? {}).forEach(key => {
-      if (Array.isArray(request.body?.[key])) {
-        Object.keys(request.body[key]).forEach(subKey => {
-          delete request.body?.[key][subKey].file;
-          delete request.body?.[key][subKey].fields;
-          delete request.body?.[key][subKey].toBuffer;
+    const body = (request.body ?? {}) as Record<string, any>;
+    Object.keys(body).forEach(key => {
+      if (Array.isArray(body[key])) {
+        Object.keys(body[key]).forEach(subKey => {
+          delete body[key][subKey].file;
+          delete body[key][subKey].fields;
+          delete body[key][subKey].toBuffer;
         });
       }
 
-      delete request.body?.[key].file;
-      delete request.body?.[key].fields;
-      delete request.body?.[key].toBuffer;
+      delete body[key].file;
+      delete body[key].fields;
+      delete body[key].toBuffer;
     });
 
     return request.body;
@@ -87,8 +88,9 @@ export class FileHandler {
     }
 
     if (config.fileUpload.removeAfterUpload || hasFailed) {
+      const body = request.body as Record<string, any>;
       Object.keys(request.body ?? {}).forEach(key => {
-        const dto = request.body?.[key] as UploadedFileDto;
+        const dto = body[key] as UploadedFileDto;
         if (Array.isArray(dto)) {
           dto.forEach(d => handleDto(d));
         } else {

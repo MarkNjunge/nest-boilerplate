@@ -1,4 +1,4 @@
-import * as configPackage from "config";
+import configPackage from "config";
 import { Logger } from "@/logging/Logger";
 import { deepMerge } from "@/utils/deep-merge";
 import { loadSecrets } from "@/config/secrets-manager";

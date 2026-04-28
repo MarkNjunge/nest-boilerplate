@@ -38,7 +38,7 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   });
 
   // Ignore certain urls from tracing
-  const httpUrlIgnore = [];
+  const httpUrlIgnore: string[] = [];
   const httpUrlIgnoreRx = RegExp(httpUrlIgnore.join("|"));
 
   const configuration: Partial<NodeSDKConfiguration> = {

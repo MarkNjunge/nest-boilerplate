@@ -12,7 +12,7 @@
     "start": "nest start -b swc --type-check",
     "start:dev": "nest start --watch -b swc --type-check",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "start:e2e": "nest start -b swc",
     "codegen": "cross-env NODE_OPTIONS='--import tsx' node_modules/plop/bin/plop.js --plopfile=plopfile.ts",
     "migration": "cross-env NODE_OPTIONS='--import tsx' node scripts/migration.ts",
@@ -92,8 +92,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "4.2.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^8.35.1"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.1"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -104,7 +104,16 @@
     "rootDir": "src",
     "testRegex": ".spec.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "diagnostics": {
+            "ignoreCodes": [
+              151001
+            ]
+          }
+        }
+      ]
     },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",

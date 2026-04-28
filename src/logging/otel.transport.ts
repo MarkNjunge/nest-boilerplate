@@ -1,4 +1,4 @@
-import * as Transport from "winston-transport";
+import Transport from "winston-transport";
 import * as logsAPI from "@opentelemetry/api-logs";
 import { SeverityNumber } from "@opentelemetry/api-logs";
 import { Config } from "@/config";
@@ -65,7 +65,7 @@ export class OtelTransport extends Transport {
       delete splat.data;
     }
 
-    const attributes = {};
+    const attributes: Record<string, any> = {};
     for (const key in splat) {
       if (Object.prototype.hasOwnProperty.call(splat, key)) {
         attributes[key] = splat[key];

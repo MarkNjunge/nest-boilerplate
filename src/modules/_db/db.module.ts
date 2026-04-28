@@ -16,6 +16,7 @@ import { TransactionService } from "@/lib/crud";
       ...(dbOptions as any),
       logging: "all",
       logger: new DbLogger(true),
+      autoLoadEntities: true,
     }),
   ],
   providers: [DbService, TransactionService],

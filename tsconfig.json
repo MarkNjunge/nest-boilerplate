@@ -1,20 +1,23 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es2022",
+    "target": "es2025",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "rootDir": ".",
     "incremental": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
+    "strictPropertyInitialization": false,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
+    "types": ["node", "jest"]
   },
   "include": [
     "src/**/*",

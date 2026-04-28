@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { DataSource, EntityManager } from "typeorm";
-import { IsolationLevel } from "typeorm/driver/types/IsolationLevel";
 import { Logger } from "@/logging/Logger";
+
+export type IsolationLevel = "READ UNCOMMITTED" | "READ COMMITTED" | "REPEATABLE READ" | "SERIALIZABLE";
 
 export interface TransactionOptions {
   isolationLevel?: IsolationLevel;

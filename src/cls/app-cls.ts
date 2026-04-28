@@ -27,6 +27,6 @@ export const appClsOptions: ClsModuleOptions = {
 };
 
 export interface AppClsStore extends ClsStore {
-  [CLS_REQ_TIME]: number;
+  [CLS_REQ_TIME]?: number;
   [CLS_AUTH_USER]?: AuthenticatedUser;
 }

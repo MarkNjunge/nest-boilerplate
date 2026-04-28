@@ -1,4 +1,4 @@
-import * as winston from "winston";
+import winston from "winston";
 import { BlankTransport } from "./Blank.transport";
 
 winston.configure({

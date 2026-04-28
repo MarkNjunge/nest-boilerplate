@@ -1,10 +1,10 @@
-import * as winston from "winston";
+import winston from "winston";
 import { bool, config } from "../config";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { SampleTransport } from "./Sample.transport";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import { clone, redact } from "@/utils";
-import * as Transport from "winston-transport";
+import Transport from "winston-transport";
 import { OtelTransport } from "@/logging/otel.transport";
 import { AppClsStore, CLS_REQ_TIME, CLS_AUTH_USER } from "@/cls/app-cls";
 import { ClsService, ClsServiceManager } from "nestjs-cls";

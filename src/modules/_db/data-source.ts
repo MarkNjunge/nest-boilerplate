@@ -2,7 +2,7 @@ import { DataSource } from "typeorm";
 // noinspection ES6PreferShortImport
 import { config } from "../../config"; // Do not use @/ because of TypeORM CLI
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { DataSourceOptions } from "typeorm/data-source/DataSourceOptions";
+import { DataSourceOptions } from "typeorm";
 
 export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
   type: "postgres",
@@ -13,10 +13,10 @@ export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
     undefined: "throw"
   },
   logging: true,
-  entities: ["dist/models/**/*.js"],
+  entities: ["dist/src/models/**/*.js"], // Migrations CLI
   subscribers: [],
   migrationsRun: true,
-  migrations: ["dist/db/migrations/*.js"],
+  migrations: ["dist/src/db/migrations/*.js"],  // Migrations CLI
   migrationsTableName: "migrations",
   poolSize: config.db.poolSize,
 };

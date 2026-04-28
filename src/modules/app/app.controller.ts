@@ -3,6 +3,7 @@ import { AppService } from "./app.service";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
 import { FileUploadDto } from "@/models/file-upload/file-upload.dto";
 import { ApiBody, ApiConsumes } from "@nestjs/swagger";
+import { FastifyReply } from "fastify";
 
 @Controller()
 export class AppController {
@@ -19,7 +20,7 @@ export class AppController {
   }
 
   @Get("/live")
-  async live(@Res({ passthrough: true }) res) {
+  async live(@Res({ passthrough: true }) res: FastifyReply) {
     const liveRes = await this.appService.live();
     if (!liveRes.ok) {
       res.status(500);

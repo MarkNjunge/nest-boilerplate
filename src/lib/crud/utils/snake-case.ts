@@ -14,7 +14,7 @@ export function snakeCase(
     return str;
   }
 
-  function isDigit(char) {
+  function isDigit(char: string) {
     return char >= "0" && char <= "9";
   }
 

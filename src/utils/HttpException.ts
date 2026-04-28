@@ -13,7 +13,7 @@ export class HttpException extends Error {
     status: number,
     message: string,
     code?: string,
-    meta: any = undefined,
+    meta?: any,
   ) {
     super(message);
     this.status = status;

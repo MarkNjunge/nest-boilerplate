@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 
 const [, , command, name] = process.argv;
-const dataSource = "dist/modules/_db/data-source.js";
+const dataSource = "dist/src/modules/_db/data-source.js";
 const migrationsDir = "src/db/migrations";
 
 function run(cmd: string, clearNodeOptions = false) {
@@ -17,8 +17,7 @@ switch (command) {
   }
   case "generate": {
     const migrationName = name || "new_migration";
-    // Only build what is necessary
-    run("swc src/models src/utils src/modules/_db src/config src/logging src/cls -d dist --strip-leading-paths");
+    run("npm run build");
     run(`typeorm-ts-node-commonjs migration:generate -d ${dataSource} ${migrationsDir}/${migrationName}`);
     break;
   }

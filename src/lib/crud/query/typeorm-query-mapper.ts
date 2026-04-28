@@ -76,17 +76,17 @@ export function parseFilter<T extends Record<string, any> = any>(filter: Filter<
     }, {});
   }
 
-  Object.keys(filter).forEach((op: FilterOp) => {
-    filter[op]?.forEach(({ key, value, secondValue }) => {
+  Object.keys(filter).forEach((op: string) => {
+    filter[op as FilterOp]?.forEach(({ key, value, secondValue }) => {
       if (where[key]) {
         const prevElement: typeorm.FindOperator<any> = where[key];
         if (prevElement.type === "and") {
-          where[key] = typeorm.And(...prevElement.value, mapFilterOp(op, value, secondValue));
+          where[key] = typeorm.And(...prevElement.value, mapFilterOp(op as FilterOp, value, secondValue));
         } else {
-          where[key] = typeorm.And(prevElement, mapFilterOp(op, value, secondValue));
+          where[key] = typeorm.And(prevElement, mapFilterOp(op as FilterOp, value, secondValue));
         }
       } else {
-        where[key] = mapFilterOp(op, value, secondValue);
+        where[key] = mapFilterOp(op as FilterOp, value, secondValue);
       }
     });
   });
@@ -103,7 +103,7 @@ export function mapQueryToTypeorm<T extends Record<string, any> = any>(options: 
   const relations: Record<string, any> = {};
 
   options.include?.forEach(field => {
-    const parts = field.split(".");
+    const parts = (field as string).split(".");
     let current = relations;
 
     parts.forEach((part, index) => {

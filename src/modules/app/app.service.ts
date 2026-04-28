@@ -52,7 +52,7 @@ export class AppService {
     try {
       await this.dbService.testConnection();
       return { ok: true, message: "Database OK" };
-    } catch (e) {
+    } catch (e: any) {
       return { ok: false, message: e.message };
     }
   }
