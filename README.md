@@ -378,6 +378,37 @@ For example, `select=title,content,comments.content,comments.user.username&inclu
 ]
 ```
 
+To select fields from a relation itself (not just the root entity), use dot notation in `select` for each level, and list every relation path in `include`:
+
+```
+select=id,comments.id,comments.user.username
+include=comments,comments.user
+```
+
+This selects only `id` at the root, the `id` of each loaded comment, and the `username` of each comment's user:
+
+```json
+[
+  {
+    "id": "post_01jt...",
+    "comments": [
+      {
+        "id": "com_01jt...",
+        "user": {
+          "username": "Sarah"
+        }
+      }
+    ]
+  }
+]
+```
+
+Non-selected fields at every level (e.g. `title`, `content`, `email`, `createdAt`) are omitted from the response.
+
+> **Note:** The root entity's `id` is automatically included when `include` is used. However, the `id` of each
+> intermediate relation must be selected explicitly — for example, `comments.user.username` requires `comments.id`
+> in `select`, otherwise TypeORM cannot link the nested records.
+
 #### Paging
 
 Paging can be done using `limit` and `offset`.

@@ -671,5 +671,75 @@ describe("App e2e", () => {
       expect(post.comments[0].user).not.toHaveProperty("email");
       expect(post.comments[0].user).not.toHaveProperty("createdAt");
     });
+
+    it("GET /post selecting only relation fields (id,comments.id,comments.user.username)", async () => {
+      // Create a user
+      const userDto = {
+        username: randomString(6),
+        email: `${randomString(6)}@mail.com`,
+        profile: { bio: "author" }
+      };
+      const userRes = await request(host)
+        .post("/users")
+        .send(userDto)
+        .set("Authorization", "Bearer api-key");
+      const userId = userRes.body.id;
+
+      // Create a post
+      const postDto = {
+        title: `Post ${randomString(6)}`,
+        content: "Post content",
+        userId
+      };
+      const postRes = await request(host)
+        .post("/post")
+        .send(postDto)
+        .set("Authorization", "Bearer api-key");
+      const postId = postRes.body.id;
+
+      // Create a comment on the post
+      const commentDto = {
+        content: "Nice post!",
+        userId,
+        postId
+      };
+      await request(host)
+        .post("/comment")
+        .send(commentDto)
+        .set("Authorization", "Bearer api-key");
+
+      // Query selecting only relation fields: root id, comments.id, comments.user.username
+      const response = await request(host)
+        .get("/post")
+        .query({
+          select: "id,comments.id,comments.user.username",
+          include: "comments,comments.user",
+          filter: `(id,eq,${postId})`
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(1);
+
+      const post = response.body[0];
+
+      // Only id should be present at the root level
+      expect(post.id).toBe(postId);
+      expect(post).not.toHaveProperty("title");
+      expect(post).not.toHaveProperty("content");
+      expect(post).not.toHaveProperty("userId");
+      expect(post).not.toHaveProperty("createdAt");
+
+      // Comment id should be present, other fields absent
+      expect(post.comments).toHaveLength(1);
+      expect(post.comments[0].id).toBeDefined();
+      expect(post.comments[0]).not.toHaveProperty("content");
+      expect(post.comments[0]).not.toHaveProperty("postId");
+      expect(post.comments[0]).not.toHaveProperty("createdAt");
+
+      // Only username should be present on the nested user
+      expect(post.comments[0].user.username).toBe(userDto.username);
+      expect(post.comments[0].user).not.toHaveProperty("email");
+      expect(post.comments[0].user).not.toHaveProperty("createdAt");
+    });
   });
 });

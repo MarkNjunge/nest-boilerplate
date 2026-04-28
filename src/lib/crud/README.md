@@ -334,6 +334,13 @@ GET /posts?include=comments,author
 GET /posts?select=title,comments.content,comments.user.username&include=comments,comments.user
 ```
 
+**Nested relation field selection** (select specific fields from a relation and its sub-relation):
+```
+GET /posts?select=id,comments.id,comments.user.username&include=comments,comments.user
+```
+> The root `id` is auto-injected when `include` is used. Intermediate relation IDs (e.g. `comments.id`) must be
+> selected explicitly so TypeORM can link nested records.
+
 **Filter by field:**
 ```
 GET /users?filter=(username,eq,john)
