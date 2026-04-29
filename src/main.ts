@@ -29,11 +29,10 @@ async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
 
   await initializeConfig();
+  initInstrumentation();
 
   // Import AppModule AFTER config is initialized so it has the loaded secrets
   const { AppModule } = await import("./modules/app/app.module");
-
-  initInstrumentation();
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
