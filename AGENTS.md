@@ -218,7 +218,7 @@ handler(@ReqCtx() ctx: IReqCtx) {
 - Unit tests live alongside source files as `*.spec.ts`
 - Use `@testcontainers/postgresql` for integration tests requiring a database
 - Mock dependencies using Jest's `jest.mock()`
-- E2E tests live in `test/app.e2e-spec.ts`
+- E2E tests live in `e2e-test/app.e2e-spec.ts`
 
 ## Pitfalls to Avoid
 

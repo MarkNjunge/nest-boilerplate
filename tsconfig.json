@@ -21,7 +21,7 @@
   },
   "include": [
     "src/**/*",
-    "test/**/*",
+    "e2e-test/**/*",
     "scripts/**/*",
     "eslint.config.mjs"
   ],

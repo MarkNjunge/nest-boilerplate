@@ -22,7 +22,7 @@ services:
     environment:
       - HOST=http://nest-bp-e2e_app:3000
     volumes:
-      - ./test/run-e2e.sh:/run-e2e.sh
+      - ./e2e-test/run-e2e.sh:/run-e2e.sh
     command: [ "sh", "-c", "/run-e2e.sh" ]
   app:
     build:

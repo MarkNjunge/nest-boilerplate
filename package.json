@@ -24,7 +24,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "docker compose -f docker-compose-e2e.yml up --abort-on-container-exit --exit-code-from test",
     "posttest:e2e": "docker compose -f docker-compose-e2e.yml down --rmi all",
-    "test:e2e:local": "jest --config ./test/jest-e2e.json"
+    "test:e2e:local": "jest --verbose --config e2e-test/jest-e2e.json"
   },
   "dependencies": {
     "@fastify/helmet": "^13.0.2",
@@ -117,7 +117,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "setupFiles": [
-      "../test/util/logging.ts"
+      "../e2e-test/util/logging.ts"
     ],
     "moduleNameMapper": {
       "@/(.*)": [
