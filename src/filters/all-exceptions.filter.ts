@@ -7,6 +7,7 @@ import { ErrorCodes, getErrorCode, HttpException, parseStacktrace } from "@/util
 import { FileHandler } from "@/utils/file-handler";
 import { AppAlsService } from "@/als/app-als.service";
 import { QueryFailedError } from "typeorm";
+import { config } from "@/config";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -37,10 +38,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (e instanceof QueryFailedError) {
       (e as any).code = ErrorCodes.DB_ERROR;
-      (e as any).meta = {
-        query: e.query,
-        parameters: e.parameters,
-      };
+      if (config.env === "development") {
+        (e as any).meta = {
+          query: e.query,
+          parameters: e.parameters,
+        };
+      } else {
+        e.message = "Database error";
+      }
     }
 
     // Get the correct http status
