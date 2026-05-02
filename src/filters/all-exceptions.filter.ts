@@ -5,8 +5,7 @@ import { Logger } from "@/logging/Logger";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 import { ErrorCodes, getErrorCode, HttpException, parseStacktrace } from "@/utils";
 import { FileHandler } from "@/utils/file-handler";
-import { AppClsStore } from "@/cls/app-cls";
-import { ClsService } from "nestjs-cls";
+import { AppAlsService } from "@/als/app-als.service";
 import { QueryFailedError } from "typeorm";
 
 @Catch()
@@ -14,7 +13,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   logger: Logger;
 
   constructor(
-    protected readonly clsService: ClsService<AppClsStore>
+    protected readonly alsService: AppAlsService,
   ) {
     this.logger = new Logger("HttpExceptionFilter");
   }
@@ -53,7 +52,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
     response.statusCode = status;
 
-    const traceId = this.clsService.getId();
+    const traceId = this.alsService.getId();
 
     response.header("x-trace-id", traceId);
 

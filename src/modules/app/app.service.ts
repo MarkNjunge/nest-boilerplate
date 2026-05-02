@@ -1,9 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@/logging/Logger";
 import { IReqCtx } from "@/decorators/request-context.decorator";
-import { AppClsStore } from "@/cls/app-cls";
 import { ApiResponseDto } from "@/models/_shared/ApiResponse.dto";
-import { ClsService } from "nestjs-cls";
+import { AppAlsService } from "@/als/app-als.service";
 import { DbService } from "@/modules/_db/db.service";
 import { ErrorCodes, HttpException } from "@/utils";
 
@@ -12,14 +11,13 @@ export class AppService {
   logger: Logger;
 
   constructor(
-    private readonly clsService: ClsService<AppClsStore>,
     private readonly dbService: DbService
   ) {
     this.logger = new Logger("AppService");
   }
 
   getHello(ctx: IReqCtx): string {
-    // ctx.traceId and this.clsService.getId() will have the same value
+    // ctx.traceId and alsService.getId() will have the same value
     const traceId = ctx.traceId;
     this.logger.debug(`Request with id ${traceId}`, {
       tag: "AppService.getHello",

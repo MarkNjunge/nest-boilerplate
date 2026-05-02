@@ -55,7 +55,6 @@
     "config": "^4.4.1",
     "dayjs": "^1.11.20",
     "lodash": "^4.18.1",
-    "nestjs-cls": "^6.2.0",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.2",

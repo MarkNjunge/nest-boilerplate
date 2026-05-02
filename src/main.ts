@@ -17,9 +17,9 @@ import { GlobalInterceptor } from "./interceptors/global.interceptor";
 import { DbService } from "@/modules/_db/db.service";
 import multipart from "@fastify/multipart";
 import { FileHandler } from "@/utils/file-handler";
-import { ClsService, ClsServiceManager } from "nestjs-cls";
-import { AppClsStore } from "@/cls/app-cls";
 import { fastifyOtelInstrumentation } from "@/utils/instrumentation";
+import { AppAlsService } from "@/als/app-als.service";
+import { appAlsMiddleware } from "@/als/als.middleware";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -46,12 +46,13 @@ async function bootstrap(): Promise<void> {
   await enablePlugins(app);
   initializeSwagger(app);
 
-  const clsService: ClsService<AppClsStore> = ClsServiceManager.getClsService();
+  const alsService = new AppAlsService();
 
-  app.useGlobalFilters(new AllExceptionsFilter(clsService));
-  app.useGlobalInterceptors(new GlobalInterceptor(new Reflector(), clsService));
+  app.useGlobalFilters(new AllExceptionsFilter(alsService));
+  app.useGlobalInterceptors(new GlobalInterceptor(new Reflector(), alsService));
   app.useGlobalPipes(new ValidationPipe());
   app.use(globalMiddleware);
+  app.use(appAlsMiddleware);
 
   // const dbService = app.get<DbService>(DbService);
   // Catch this to allow the application to start when the db is unreachable

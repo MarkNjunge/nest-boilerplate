@@ -1,15 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { FastifyRequest } from "fastify";
-import { ClsService } from "nestjs-cls";
 import { AuthService } from "@/modules/auth/auth.service";
-import { AppClsStore, CLS_AUTH_USER } from "@/cls/app-cls";
+import { AppAlsService, ALS_AUTH_USER } from "@/als/app-als.service";
 import { ErrorCodes, HttpException } from "@/utils";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
-    private readonly clsService: ClsService<AppClsStore>,
+    private readonly alsService: AppAlsService,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -37,7 +36,7 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    this.clsService.set(CLS_AUTH_USER, user);
+    this.alsService.set(ALS_AUTH_USER, user);
 
     return true;
   }

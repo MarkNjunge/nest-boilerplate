@@ -1,11 +1,10 @@
-import { DynamicModule, Module, Provider } from "@nestjs/common";
+import { DynamicModule, MiddlewareConsumer, Module, NestModule, Provider } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { bool, config } from "@/config";
 import { ThrottlerGuard, ThrottlerModule, seconds } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
-import { ClsModule } from "nestjs-cls";
-import { appClsOptions } from "@/cls/app-cls";
+import { AppAlsModule } from "@/als/als.module";
 import { DbModule } from "@/modules/_db/db.module";
 import { AuthModule } from "@/modules/auth/auth.module";
 import { UserModule } from "@/modules/user/user.module";
@@ -34,9 +33,9 @@ if (bool(config.rateLimit.enabled)) {
 
 @Module({
   imports: [
-    ClsModule.forRoot(appClsOptions),
     ...modules,
     DbModule,
+    AppAlsModule,
     AuthModule,
     UserModule,
     UserProfileModule,

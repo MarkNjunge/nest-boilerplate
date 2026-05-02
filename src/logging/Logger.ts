@@ -6,8 +6,7 @@ import dayjs from "dayjs";
 import { clone, redact } from "@/utils";
 import Transport from "winston-transport";
 import { OtelTransport } from "@/logging/otel.transport";
-import { AppClsStore, CLS_REQ_TIME, CLS_AUTH_USER } from "@/cls/app-cls";
-import { ClsService, ClsServiceManager } from "nestjs-cls";
+import { appAls, ALS_REQ_TIME, ALS_AUTH_USER } from "@/als/app-als.service";
 import opentelemetry from "@opentelemetry/api";
 import { AuthenticatedUser } from "@/models/auth/auth";
 
@@ -33,13 +32,9 @@ interface LogObject {
 }
 
 export class Logger {
-  private readonly clsService: ClsService<AppClsStore>;
-
   constructor(
     private readonly name: string,
-  ) {
-    this.clsService = ClsServiceManager.getClsService();
-  }
+  ) {}
 
   info(message: string, meta: ILogMeta = {}): void {
     winston.info(this.getLogObject(message, meta));
@@ -75,10 +70,9 @@ export class Logger {
     const url = request.url;
     const tag = "ROUTE";
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const requestTime = this.clsService.get()?.[CLS_REQ_TIME] ?? Date.now();
-    const requestTimeISO = dayjs(requestTime).toISOString();
-    const duration = dayjs().valueOf() - requestTime;
+    const requestTime = appAls.getStore()?.[ALS_REQ_TIME] ?? Date.now();
+    const requestTimeISO = new Date(requestTime).toISOString();
+    const duration = Date.now() - requestTime;
 
     const data = {
       request: {
@@ -106,8 +100,8 @@ export class Logger {
     const tag = meta.tag ?? this.name;
     const activeSpan = opentelemetry.trace.getActiveSpan();
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const traceId = meta.traceId ?? this.clsService.getId() ?? activeSpan?.spanContext().traceId ?? "00000";
-    const user = this.clsService.get(CLS_AUTH_USER);
+    const traceId = meta.traceId ?? appAls.getStore()?.id ?? activeSpan?.spanContext().traceId ?? "00000";
+    const user = appAls.getStore()?.[ALS_AUTH_USER];
     const obj: LogObject = {
       tag,
       traceId,

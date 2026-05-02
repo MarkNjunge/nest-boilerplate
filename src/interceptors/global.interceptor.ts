@@ -13,8 +13,7 @@ import { ResponseUtils } from "@/utils";
 import { SerializeKey } from "@/decorators/serialize.decorator";
 import { FileHandler } from "@/utils/file-handler";
 import { Logger } from "@/logging/Logger";
-import { AppClsStore } from "@/cls/app-cls";
-import { ClsService } from "nestjs-cls";
+import { AppAlsService } from "@/als/app-als.service";
 
 @Injectable()
 export class GlobalInterceptor implements NestInterceptor {
@@ -22,7 +21,7 @@ export class GlobalInterceptor implements NestInterceptor {
 
   constructor(
     private readonly reflector: Reflector,
-    private readonly clsService: ClsService<AppClsStore>
+    private readonly alsService: AppAlsService,
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -30,7 +29,7 @@ export class GlobalInterceptor implements NestInterceptor {
     const request = ctx.getRequest<FastifyRequest>();
     const response = ctx.getResponse<FastifyReply>();
 
-    const traceId = this.clsService.getId();
+    const traceId = this.alsService.getId();
     const clz = this.reflector.get<ClassConstructor<any> | undefined>(
       SerializeKey,
       context.getHandler(),
