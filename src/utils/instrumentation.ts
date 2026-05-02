@@ -12,11 +12,8 @@ import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
 import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-node";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { Logger } from "@/logging/Logger";
-import { FastifyOtelInstrumentation } from "@fastify/otel";
 
 const logger = new Logger("Instrumentation");
-
-export const fastifyOtelInstrumentation = new FastifyOtelInstrumentation();
 
 function initInstrumentation() {
   if (config.instrumentation.enabled.toString() === "true") {
@@ -48,7 +45,6 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
     sampler: new TraceIdRatioBasedSampler(config.instrumentation.sampleRatio),
     resource,
     instrumentations: [
-      fastifyOtelInstrumentation,
       getNodeAutoInstrumentations({
         "@opentelemetry/instrumentation-fs": { enabled: false },
         // A new package will likely be introduced

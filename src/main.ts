@@ -17,7 +17,6 @@ import { GlobalInterceptor } from "./interceptors/global.interceptor";
 import { DbService } from "@/modules/_db/db.service";
 import multipart from "@fastify/multipart";
 import { FileHandler } from "@/utils/file-handler";
-import { fastifyOtelInstrumentation } from "@/utils/instrumentation";
 import { AppAlsService } from "@/als/app-als.service";
 import { appAlsMiddleware } from "@/als/als.middleware";
 
@@ -104,8 +103,6 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
       (part as any).value = await FileHandler.writeUploadFile(part);
     }
   });
-
-  await app.register(fastifyOtelInstrumentation.plugin());
 }
 
 process.on("uncaughtException", (e, origin) => {
