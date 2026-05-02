@@ -5,6 +5,10 @@ export class ApplicationLogger implements LoggerService {
   private logger = new Logger("NestApplication");
 
   log(message: string): void {
+    if (message.startsWith("Mapped {/")) {
+      return;
+    }
+
     this.logger.info(message);
   }
 

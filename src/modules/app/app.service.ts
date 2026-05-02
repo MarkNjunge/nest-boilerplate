@@ -23,7 +23,7 @@ export class AppService {
     const traceId = ctx.traceId;
     this.logger.debug(`Request with id ${traceId}`, {
       tag: "AppService.getHello",
-      data: { traceId: this.clsService.getId() }
+      data: { ranAt: new Date().toISOString() }
     });
 
     return `Hello ${traceId}!`;

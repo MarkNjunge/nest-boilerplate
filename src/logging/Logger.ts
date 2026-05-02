@@ -81,7 +81,6 @@ export class Logger {
     const duration = dayjs().valueOf() - requestTime;
 
     const data = {
-      tag,
       request: {
         url,
         method,

@@ -49,7 +49,9 @@
     "logs": {
       "enabled": true,
       "url": "http://localhost:4318/v1/logs",
-      "logData": true
+      "logData": true,
+      "logRequestData": false,
+      "logResponseData": false
     }
   },
   "integrationTest": {

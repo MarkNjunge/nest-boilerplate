@@ -36,6 +36,8 @@ export interface Config {
       enabled: boolean;
       url: string;
       logData: boolean;
+      logRequestData: boolean;
+      logResponseData: boolean;
     };
   };
   integrationTest: {

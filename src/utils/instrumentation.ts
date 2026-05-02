@@ -1,5 +1,5 @@
 import { NodeSDK, NodeSDKConfiguration } from "@opentelemetry/sdk-node";
-import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
+import { diag, DiagConsoleLogger, DiagLogLevel, trace } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
@@ -12,10 +12,13 @@ import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
 import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-node";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { Logger } from "@/logging/Logger";
+import { FastifyOtelInstrumentation } from "@fastify/otel";
 
 const logger = new Logger("Instrumentation");
 
-export function initInstrumentation() {
+export const fastifyOtelInstrumentation = new FastifyOtelInstrumentation();
+
+function initInstrumentation() {
   if (config.instrumentation.enabled.toString() === "true") {
     const signals = {
       tracing: config.instrumentation.tracing.enabled.toString() === "true",
@@ -45,8 +48,11 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
     sampler: new TraceIdRatioBasedSampler(config.instrumentation.sampleRatio),
     resource,
     instrumentations: [
+      fastifyOtelInstrumentation,
       getNodeAutoInstrumentations({
         "@opentelemetry/instrumentation-fs": { enabled: false },
+        // A new package will likely be introduced
+        // https://github.com/open-telemetry/opentelemetry-js-contrib/pull/3435
         "@opentelemetry/instrumentation-nestjs-core": { enabled: true },
         "@opentelemetry/instrumentation-http": {
           enabled: true,
@@ -60,8 +66,10 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
           }
         },
         "@opentelemetry/instrumentation-winston": {
-          enabled: true, // Injects trace_id into logs
-          disableLogSending: true, // Doesn't work even if enabled
+          // Doesn't work. The logger sets it manually.
+          disableLogCorrelation: false,
+          // Doesn't work even if false.
+          disableLogSending: true,
         },
         "@opentelemetry/instrumentation-pg": { enabled: true },
         "@opentelemetry/instrumentation-dns": { enabled: false },
@@ -73,14 +81,18 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   // Tracing
   if (signals.tracing) {
     configuration.traceExporter = new OTLPTraceExporter({ url: config.instrumentation.tracing.url });
+    // fastifyOtelInstrumentation.setTracerProvider(trace.getTracerProvider());
   }
 
   // Metrics
   if (signals.metrics) {
-    configuration.metricReader = new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({ url: config.instrumentation.metrics.url }),
-      exportIntervalMillis: 10000 // Default is 60_000
-    });
+    configuration.metricReaders = [
+      new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter({ url: config.instrumentation.metrics.url }),
+        exportTimeoutMillis: 10000, // Clamped to export interval
+        exportIntervalMillis: 10000 // Default is 60_000
+      })
+    ];
   }
 
   // Logs
@@ -98,5 +110,8 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   const sdk = new NodeSDK(configuration);
 
   sdk.start();
-  logger.info(`Initialized instrumentation: ${JSON.stringify(signals)}`);
+  console.log(`Initialized instrumentation: ${JSON.stringify(signals)}`);
 }
+
+// Must be initialized at import time, before @nestjs/platform-fastify
+initInstrumentation();

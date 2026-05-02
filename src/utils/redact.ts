@@ -1,4 +1,4 @@
-export const privateKeys = ["password", "x-api-key", "authorization", "email"];
+export const privateKeys = ["password", "x-api-key", "authorization", "email", "cookie"];
 
 const replaceValue = "REDACTED";
 

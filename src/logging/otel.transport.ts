@@ -65,10 +65,27 @@ export class OtelTransport extends Transport {
       delete splat.data;
     }
 
-    const attributes: Record<string, any> = {};
+    if (this.config.instrumentation.logs.logRequestData.toString() !== "true") {
+      delete splat.data?.request?.headers;
+      delete splat.data?.request?.query;
+      delete splat.data?.request?.body;
+    }
+    if (this.config.instrumentation.logs.logResponseData.toString() !== "true") {
+      delete splat.data?.response?.headers;
+      delete splat.data?.response?.body;
+    }
+
+    let attributes: Record<string, any> = {};
     for (const key in splat) {
       if (Object.prototype.hasOwnProperty.call(splat, key)) {
         attributes[key] = splat[key];
+        if (key === "data") {
+          attributes = {
+            ...attributes,
+            ...flattenObject({ data: attributes[key] })
+          };
+          delete attributes.data;
+        }
       }
     }
     this.logger.emit({
@@ -78,9 +95,80 @@ export class OtelTransport extends Transport {
       attributes: {
         ...attributes,
         // trace_id is not reliable under load, whereas traceId is
-        trace_id: (attributes as any).traceId,
+        trace_id: attributes.traceId,
       },
       timestamp: new Date(info.timestamp)
     });
   }
+}
+
+type FlattenedObject = Record<string, unknown>;
+
+function isPlainTraversable(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object") return false;
+  if (value instanceof Date) return false;
+  if (value instanceof RegExp) return false;
+  if (value instanceof Map || value instanceof Set) return false;
+  if (ArrayBuffer.isView(value)) return false;
+  return true;
+}
+
+function transformLeaf(value: unknown): unknown {
+  if (value instanceof Date) return value.toISOString();
+  if (Array.isArray(value) && value.length === 0) return JSON.stringify(value);
+  if (
+    isPlainTraversable(value) &&
+    Object.keys(value).length === 0
+  ) {
+    return JSON.stringify(value);
+  }
+  return value;
+}
+
+function flattenObject(
+  obj: unknown,
+  prefix = "",
+  separator = "."
+): FlattenedObject {
+  const result: FlattenedObject = {};
+
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) {
+      result[prefix] = JSON.stringify(obj);
+      return result;
+    }
+    obj.forEach((item, index) => {
+      const newKey = prefix ? `${prefix}${separator}${index}` : String(index);
+      if (isPlainTraversable(item) || Array.isArray(item)) {
+        Object.assign(result, flattenObject(item, newKey, separator));
+      } else {
+        result[newKey] = transformLeaf(item);
+      }
+    });
+    return result;
+  }
+
+  if (!isPlainTraversable(obj)) {
+    if (prefix) result[prefix] = transformLeaf(obj);
+    return result;
+  }
+
+  const keys = Object.keys(obj);
+  if (keys.length === 0 && prefix) {
+    result[prefix] = JSON.stringify(obj);
+    return result;
+  }
+
+  for (const key of keys) {
+    const newKey = prefix ? `${prefix}${separator}${key}` : key;
+    const value = obj[key];
+
+    if (isPlainTraversable(value) || Array.isArray(value)) {
+      Object.assign(result, flattenObject(value, newKey, separator));
+    } else {
+      result[newKey] = transformLeaf(value);
+    }
+  }
+
+  return result;
 }

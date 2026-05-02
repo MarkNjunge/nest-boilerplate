@@ -1,6 +1,6 @@
 import "@/config/env-loader";
+import "@/utils/instrumentation";
 import { config, bool, initializeConfig } from "./config";
-import { initInstrumentation } from "@/utils/instrumentation";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
 import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
@@ -19,6 +19,7 @@ import multipart from "@fastify/multipart";
 import { FileHandler } from "@/utils/file-handler";
 import { ClsService, ClsServiceManager } from "nestjs-cls";
 import { AppClsStore } from "@/cls/app-cls";
+import { fastifyOtelInstrumentation } from "@/utils/instrumentation";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -29,7 +30,6 @@ async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
 
   await initializeConfig();
-  initInstrumentation();
 
   // Import AppModule AFTER config is initialized so it has the loaded secrets
   const { AppModule } = await import("./modules/app/app.module");
@@ -103,6 +103,8 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
       (part as any).value = await FileHandler.writeUploadFile(part);
     }
   });
+
+  await app.register(fastifyOtelInstrumentation.plugin());
 }
 
 process.on("uncaughtException", (e, origin) => {

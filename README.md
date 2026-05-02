@@ -570,6 +570,17 @@ viewing signals.
 
 > **Note:** Global and per-signal instrumentation needs to be enabled via [config](#configuration).
 
+#### Config
+
+| Key                                    | Description                                                                                                                                       |
+|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `instrumentation.enabled`              | Global toggle. Must be `true` for any other instrumentation settings to take effect.                                                              |
+| `instrumentation.debug`                | Print debug information from the OpenTelemetry SDK.                                                                                               |
+| `instrumentation.sampleRatio`          | Configures the [TraceIDRatioBasedSampler](https://opentelemetry.io/docs/languages/js/sampling/). Value between `0` (drop all) and `1` (keep all). |
+| `instrumentation.logs.logData`         | Whether to include the full `data` object passed into log calls.                                                                                  |
+| `instrumentation.logs.logRequestData`  | Whether to include request headers, query params, and body in logs. When `false`, these fields are stripped.                                      |
+| `instrumentation.logs.logResponseData` | Whether to include response headers and body in logs. When `false`, these fields are stripped.                                                    |
+
 #### Traces
 
 Automatic instrumentation is enabled and will suit most needs.

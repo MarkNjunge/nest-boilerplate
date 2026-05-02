@@ -38,14 +38,10 @@ services:
     volumes:
       - ./config/tempo/tempo.yaml:/etc/tempo.yaml
       - nb_tempo:/var/tempo
-    expose:
-      - 4317
   loki:
     image: grafana/loki:3.5
     container_name: nb-loki
     user: "0"
-    ports:
-      - "9100:3100"
     command: -config.file=/etc/loki-config.yaml
     volumes:
       - ./config/loki/loki-config.yaml:/etc/loki-config.yaml
