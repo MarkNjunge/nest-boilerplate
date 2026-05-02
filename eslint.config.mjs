@@ -17,7 +17,8 @@ export default defineConfig([
       "@typescript-eslint/no-unused-vars": "off",
       "@stylistic/operator-linebreak": ["warn", "after", {
         overrides: { "|": "before" }
-      }]
+      }],
+      "@typescript-eslint/prefer-for-of": "off"
     }
   },
 ]);

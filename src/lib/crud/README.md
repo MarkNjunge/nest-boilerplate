@@ -366,6 +366,109 @@ GET /posts?sort=(createdAt,DESC)&limit=20&offset=40
 GET /posts?select=title,content,author.username&include=author&filter=(published,eq,true):(createdAt,gte,2025-01-01)&sort=(createdAt,DESC)&limit=10
 ```
 
+## Cursor Pagination
+
+Cursor pagination is suited for infinite-scroll feeds and large datasets where offset pagination degrades in 
+performance or stability.
+
+Unlike offset-based pagination, cursor pagination is immune to rows being inserted or deleted between pages.
+
+### When to use cursor vs offset pagination
+
+|                                      | Offset | Cursor |
+|--------------------------------------|--------|--------|
+| Arbitrary page jump                  | ✓      | ✗      |
+| Stable results under inserts/deletes | ✗      | ✓      |
+| Scalable to large datasets           | ✗      | ✓      |
+
+### Endpoint
+
+```
+GET /{resource}/cursor
+```
+
+### Query Parameters
+
+| Param       | Type            | Default | Description                                                     |
+|-------------|-----------------|---------|-----------------------------------------------------------------|
+| `after`     | string          | —       | Return items **greater than** this cursor                       |
+| `before`    | string          | —       | Return items **less than** this cursor                          |
+| `sortField` | string          | `id`    | Field to sort and paginate by. id is still used a a tie-breaker |
+| `sortDir`   | `ASC` \| `DESC` | `ASC`   | Sort direction for the ORDER BY                                 |
+| `limit`     | number          | 20      | Max items per page (max 99)                                     |
+| `select`    | string          | —       | Field selection (same as list endpoint)                         |
+| `include`   | string          | —       | Relation loading (same as list endpoint)                        |
+| `filter`    | string          | —       | Filtering (same as list endpoint)                               |
+
+`after` and `before` cannot be combined. `offset` and `sort` are not available on this endpoint.
+
+### Cursor semantics
+
+- `after=X`: fetch items where `(sortField, id) > (X_sortValue, X_id)`
+- `before=X`: fetch items where `(sortField, id) < (X_sortValue, X_id)`
+- `sortDir` controls the ORDER BY direction, not the WHERE inequality direction
+
+### Cursor format
+
+- **Default (`sortField=id`):** cursor is the entity ID string, e.g. `usr_01jt...`
+- **Custom `sortField`:** cursor is an opaque base64url string encoding both the sort value and entity ID. Treat it as opaque — do not parse it.
+
+### Response shape
+
+```typescript
+{
+  data: Entity[];
+  pageInfo: {
+    hasNextPage: boolean;       // more items exist after the last cursor
+    hasPreviousPage: boolean;   // more items exist before the first cursor
+    startCursor: string | null; // cursor of the first item
+    endCursor: string | null;   // cursor of the last item
+  }
+}
+```
+
+### Examples
+
+**First page (default sort by id ASC):**
+```
+GET /posts?limit=10
+```
+
+**Next page using endCursor:**
+```
+GET /posts/cursor?after=post_01jt...&limit=10
+```
+
+**Sort by createdAt DESC (newest first):**
+```
+GET /posts/cursor?sortField=createdAt&sortDir=DESC&limit=10
+```
+
+**Next page with DESC sort — use `before` with endCursor:**
+```
+GET /posts/cursor?sortField=createdAt&sortDir=DESC&before=<endCursor>&limit=10
+```
+
+**With filters and field selection:**
+```
+GET /posts/cursor?select=title,content&filter=(published,eq,true)&sortField=createdAt&sortDir=DESC&limit=5
+```
+
+**Example response:**
+```json
+{
+  "data": [
+    { "id": "post_01jt...", "title": "Hello World", "createdAt": "2025-04-28T10:00:00Z" }
+  ],
+  "pageInfo": {
+    "hasNextPage": true,
+    "hasPreviousPage": false,
+    "startCursor": "post_01jt...",
+    "endCursor": "cG9zdF8wMWp0Li4u"
+  }
+}
+```
+
 ## File Structure
 
 ```

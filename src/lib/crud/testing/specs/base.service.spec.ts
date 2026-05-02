@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { DataSource, Repository } from "typeorm";
 import { BaseService } from "@/lib/crud/service/base.service";
 import { CrudService } from "@/lib/crud/service/crud.service";
@@ -350,6 +351,192 @@ describe("Base Service", () => {
 
       expect(result.data).toHaveLength(2);
       expect(result.pageInfo.hasNextPage).toBe(false);
+    });
+
+    describe("custom sort field", () => {
+      const limit = 1;
+      const records = [
+        { id: "usr_1", username: "user1A", email: "A" },
+        { id: "usr_2", username: "user2B", email: "B" },
+        { id: "usr_3", username: "user3C", email: "C" },
+        { id: "usr_4", username: "user4C", email: "C" },
+        { id: "usr_5", username: "user5D", email: "D" },
+        { id: "usr_6", username: "user6D", email: "D" }
+      ];
+
+      it("can page forwards using after (ASC)", async () => {
+        await crudService.createBulk(records);
+
+        const expected = records.map(r => r.username);
+        const actual = [];
+
+        let nextCursor: string | null = null;
+        for (let i = 0; i < records.length; i++) {
+          // const record = records[i];
+          const isFirst = i === 0;
+          const isLast = i === records.length - 1;
+
+          const result = await service.listCursor({ limit, sortField: "email", sortDir: "ASC", after: nextCursor ?? undefined });
+
+          expect(result.data).toHaveLength(limit);
+          actual.push(result.data[0].username);
+
+          // true, true, ..., false
+          expect(result.pageInfo.hasNextPage).toBe(!isLast);
+          // false, true, ..., true
+          expect(result.pageInfo.hasPreviousPage).toBe(!isFirst);
+
+          nextCursor = result.pageInfo.endCursor;
+        }
+
+        expect(actual).toEqual(expected);
+      });
+
+      it("can page backwards using after (DESC)", async () => {
+        await crudService.createBulk(records);
+
+        const recordsReversed = [...records].reverse();
+        const expected = recordsReversed.map(r => r.username);
+        const actual = [];
+
+        let nextCursor: string | null = null;
+        for (let i = 0; i < recordsReversed.length; i++) {
+          const isFirst = i === 0;
+          const isLast = i === recordsReversed.length - 1;
+
+          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", after: nextCursor ?? undefined });
+
+          expect(result.data).toHaveLength(limit);
+          actual.push(result.data[0].username);
+
+          // true, true, ..., false
+          expect(result.pageInfo.hasNextPage).toBe(!isLast);
+          // false, true, ..., true
+          expect(result.pageInfo.hasPreviousPage).toBe(!isFirst);
+
+          nextCursor = result.pageInfo.endCursor;
+        }
+
+        expect(actual).toEqual(expected);
+      });
+
+      it("can page backwards using before (ASC)", async () => {
+        await crudService.createBulk(records);
+
+        // Page forward through all items to get the last cursor
+        let cursor: string | null = null;
+        for (let i = 0; i < records.length; i++) {
+          const result = await service.listCursor({ limit, sortField: "email", after: cursor ?? undefined });
+          cursor = result.pageInfo.startCursor;
+        }
+
+        // Now page backwards from the last item using `before`
+        // The first one is removed since it's "already been read".
+        const expected = [...records].reverse().slice(limit);
+        const actual = [];
+
+        let prevCursor: string | null = cursor;
+        for (let i = 0; i < records.length - 1; i++) {
+          const isFirst = i === 0;
+          const isLast = i === records.length - 2;
+
+          const result = await service.listCursor({ limit, sortField: "email", before: prevCursor ?? undefined });
+
+          expect(result.data).toHaveLength(limit);
+          actual.push(result.data[0].username);
+
+          expect(result.pageInfo.hasNextPage).toBe(true);
+          expect(result.pageInfo.hasPreviousPage).toBe(!isLast);
+          prevCursor = result.pageInfo.startCursor;
+        }
+
+        // ASC order is [1A, 2B, 3C, 4C, 5D, 6D], paging backwards before 6D gives [5D, 4C, 3C, 2B, 1A]
+        expect(actual).toEqual(expected.map(r => r.username));
+      });
+
+      it("can page backwards using before (DESC)", async () => {
+        await crudService.createBulk(records);
+
+        let cursor: string | null = null;
+        for (let i = 0; i < records.length; i++) {
+          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", after: cursor ?? undefined });
+          cursor = result.pageInfo.endCursor;
+        }
+
+        const actual = [];
+
+        let prevCursor: string | null = cursor;
+        for (let i = 0; i < records.length - 1; i++) {
+          const isLast = i === records.length - 2;
+
+          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", before: prevCursor ?? undefined });
+
+          expect(result.data).toHaveLength(limit);
+          actual.push(result.data[0].username);
+
+          expect(result.pageInfo.hasNextPage).toBe(true);
+          expect(result.pageInfo.hasPreviousPage).toBe(!isLast);
+          prevCursor = result.pageInfo.startCursor;
+        }
+
+        expect(actual).toEqual(["user2B", "user3C", "user4C", "user5D", "user6D"]);
+      });
+
+      it("can page forward then backward to return to start (ASC)", async () => {
+        await crudService.createBulk(records);
+
+        // Page forward 3 items
+        let cursor: string | null = null;
+        const forwardItems: string[] = [];
+        for (let i = 0; i < 3; i++) {
+          const result = await service.listCursor({ limit, sortField: "email", after: cursor ?? undefined });
+          expect(result.data).toHaveLength(limit);
+          forwardItems.push(result.data[0].username);
+          cursor = result.pageInfo.endCursor;
+        }
+
+        // Page backward 2 items using before from where we ended up
+        const backwardItems: string[] = [];
+        let prevCursor: string | null = cursor;
+        for (let i = 0; i < 2; i++) {
+          const result = await service.listCursor({ limit, sortField: "email", before: prevCursor ?? undefined });
+          expect(result.data).toHaveLength(limit);
+          backwardItems.push(result.data[0].username);
+          prevCursor = result.pageInfo.startCursor;
+        }
+
+        // Forward was [user1A, user2B, user3C], backward from user3C should be [user2B, user1A]
+        expect(forwardItems).toEqual(["user1A", "user2B", "user3C"]);
+        expect(backwardItems).toEqual(["user2B", "user1A"]);
+      });
+
+      it("can page forward then backward to return to start (DESC)", async () => {
+        await crudService.createBulk(records);
+
+        // Page forward 3 items in DESC
+        let cursor: string | null = null;
+        const forwardItems: string[] = [];
+        for (let i = 0; i < 3; i++) {
+          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", after: cursor ?? undefined });
+          expect(result.data).toHaveLength(limit);
+          forwardItems.push(result.data[0].username);
+          cursor = result.pageInfo.endCursor;
+        }
+
+        // Page backward 2 items
+        const backwardItems: string[] = [];
+        let prevCursor: string | null = cursor;
+        for (let i = 0; i < 2; i++) {
+          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", before: prevCursor ?? undefined });
+          expect(result.data).toHaveLength(limit);
+          backwardItems.push(result.data[0].username);
+          prevCursor = result.pageInfo.startCursor;
+        }
+
+        // Forward DESC was [user6D, user5D, user4C], backward should be [user5D, user6D]
+        expect(forwardItems).toEqual(["user6D", "user5D", "user4C"]);
+        expect(backwardItems).toEqual(["user5D", "user6D"]);
+      });
     });
   });
 });

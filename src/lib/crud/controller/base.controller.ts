@@ -12,7 +12,7 @@ import {
   ApiResponse,
   getSchemaPath
 } from "@nestjs/swagger";
-import { parseRawQuery, RawQuery } from "@/lib/crud/query/query";
+import { parseRawQuery, ListRawQuery, CursorRawQuery } from "@/lib/crud/query/query";
 import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagination";
 import { HttpException } from "@/utils";
 
@@ -37,21 +37,21 @@ export function BaseController<
     @Get("/count")
     @ApiOperation({ summary: "Count entities matching the query" })
     @ApiResponse({ status: 200, type: Number })
-    async count(@Query() query: RawQuery): Promise<number> {
+    async count(@Query() query: ListRawQuery): Promise<number> {
       return this.service.count(parseRawQuery(query));
     }
 
     @Get("/")
     @ApiOperation({ summary: "List entities matching the query" })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
-    async list(@Query() query: RawQuery): Promise<Entity[]> {
+    async list(@Query() query: ListRawQuery): Promise<Entity[]> {
       return this.service.list(parseRawQuery(query));
     }
 
     @Get("/first")
     @ApiOperation({ summary: "Get the first entity matching the query" })
     @ApiResponse({ status: 200, type: entityType })
-    async get(@Query() query: RawQuery): Promise<Entity | null> {
+    async get(@Query() query: ListRawQuery): Promise<Entity | null> {
       const result = await this.service.get(parseRawQuery(query));
       if (!result) {
         throw new HttpException(404, "Entity not found");
@@ -72,7 +72,7 @@ export function BaseController<
         }
       }
     })
-    async listCursor(@Query() query: RawQuery): Promise<CursorPaginationResult<Entity>> {
+    async listCursor(@Query() query: CursorRawQuery): Promise<CursorPaginationResult<Entity>> {
       return this.service.listCursor(parseRawQuery(query, true));
     }
 
@@ -82,7 +82,7 @@ export function BaseController<
     @ApiResponse({ status: 200, type: entityType })
     async getById(
       @Param("id") id: string,
-      @Query() query: RawQuery
+      @Query() query: ListRawQuery
     ): Promise<Entity | null> {
       const result = await this.service.getById(id, parseRawQuery(query));
       if (!result) {

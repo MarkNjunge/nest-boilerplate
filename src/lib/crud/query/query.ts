@@ -143,7 +143,7 @@ export function validateSort(s: string): boolean {
   });
 }
 
-export class RawQuery {
+export class BaseRawQuery {
   @ApiProperty({ required: false, description: "Example: title,content" })
   @IsOptional()
   select?: string;
@@ -160,7 +160,9 @@ export class RawQuery {
   @ApiProperty({ required: false, description: "Example: 10" })
   @IsOptional()
   limit?: string;
+}
 
+export class ListRawQuery extends BaseRawQuery {
   @ApiProperty({ required: false, description: "Example: 20" })
   @IsOptional()
   offset?: string;
@@ -169,15 +171,27 @@ export class RawQuery {
   @IsOptional()
   @IsValidSort()
   sort?: string;
+}
 
-  @ApiProperty({ required: false, description: "Cursor for forward pagination (entity ID)" })
+export class CursorRawQuery extends BaseRawQuery {
+  @ApiProperty({ required: false, description: "Fetch items greater than this cursor" })
   @IsOptional()
   after?: string;
 
-  @ApiProperty({ required: false, description: "Cursor for backward pagination (entity ID)" })
+  @ApiProperty({ required: false, description: "Fetch items less than this cursor" })
   @IsOptional()
   before?: string;
+
+  @ApiProperty({ required: false, description: "Field to sort by. Defaults to id." })
+  @IsOptional()
+  sortField?: string;
+
+  @ApiProperty({ required: false, description: "Sort direction: ASC or DESC. Defaults to ASC." })
+  @IsOptional()
+  sortDir?: "ASC" | "DESC";
 }
+
+export type RawQuery = ListRawQuery;
 
 export interface Query<T extends Record<string, any> = any> {
   select?: typeorm.FindOptionsSelect<T>;
@@ -188,6 +202,8 @@ export interface Query<T extends Record<string, any> = any> {
   offset?: number;
   after?: string;
   before?: string;
+  sortField?: string;
+  sortDir?: "ASC" | "DESC";
   rawOptions?: typeorm.FindManyOptions<T>;
 }
 
@@ -218,7 +234,7 @@ export function parseRawFilter(filterStr: string | undefined): Filter {
   return filter;
 }
 
-export function parseRawQuery(rawQuery: RawQuery, cursor = false): Query {
+export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = false): Query {
   const query: Query = {};
 
   if (rawQuery.select) {
@@ -255,11 +271,12 @@ export function parseRawQuery(rawQuery: RawQuery, cursor = false): Query {
 
   // Sort and offset are only used for offset-based pagination
   if (!cursor) {
-    if (rawQuery.sort) {
+    const listQuery = rawQuery as ListRawQuery;
+    if (listQuery.sort) {
       const sort: Sort = {};
-      const match = rawQuery.sort.match(/\([^)]+\)/g);
+      const match = listQuery.sort.match(/\([^)]+\)/g);
       if (match) {
-        match.map(s => {
+        match.map((s: string) => {
           const { 0: key, 1: direction } = s.slice(1, -1).split(",");
           sort[key] = direction as "ASC" | "DESC";
         });
@@ -267,8 +284,8 @@ export function parseRawQuery(rawQuery: RawQuery, cursor = false): Query {
       query.sort = sort;
     }
 
-    if (rawQuery.offset) {
-      query.offset = parseInt(rawQuery.offset);
+    if (listQuery.offset) {
+      query.offset = parseInt(listQuery.offset);
     }
   }
 
@@ -284,8 +301,11 @@ export function parseRawQuery(rawQuery: RawQuery, cursor = false): Query {
 
   // Cursor fields are only used for cursor-based pagination
   if (cursor) {
-    query.after = rawQuery.after;
-    query.before = rawQuery.before;
+    const cursorQuery = rawQuery as CursorRawQuery;
+    query.after = cursorQuery.after;
+    query.before = cursorQuery.before;
+    query.sortField = cursorQuery.sortField ?? "id";
+    query.sortDir = cursorQuery.sortDir ?? "ASC";
   }
 
   return query;
