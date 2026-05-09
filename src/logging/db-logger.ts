@@ -35,7 +35,7 @@ export class DbLogger extends AbstractLogger {
       if (typeof binding === "string") {
         binding = `'${binding}'`;
       }
-      sql = sql.replace(`$${i + 1}`, binding);
+      sql = sql.replaceAll(`$${i + 1}`, binding);
     }
 
     return sql;
