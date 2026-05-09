@@ -13,12 +13,16 @@ export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
     undefined: "throw"
   },
   logging: true,
-  entities: ["dist/src/models/**/*.js"], // Migrations CLI
+  entities: ["dist/src/models/**/*.js"],
   subscribers: [],
-  migrationsRun: true,
-  migrations: ["dist/src/db/migrations/*.js"],  // Migrations CLI
+  migrationsRun: config.db.runMigrations,
+  migrations: ["dist/src/db/migrations/*.js"],
   migrationsTableName: "migrations",
   poolSize: config.db.poolSize,
+  verboseRetryLog: true,
+  connectTimeoutMS: config.db.connectTimeoutMS,
+  retryAttempts: config.db.retryAttempts,
+  retryDelay: config.db.retryDelay
 };
 
 export default new DataSource(dbOptions as DataSourceOptions);

@@ -30,6 +30,10 @@ export class DbLogger extends AbstractLogger {
   }
 
   private fillBindings(sql: string, bindings: any[] = []): string {
+    if (!config.db.logQueryBindings) {
+      return sql;
+    }
+
     for (let i = 0; i < bindings.length; i++) {
       let binding = bindings[i];
       if (typeof binding === "string") {

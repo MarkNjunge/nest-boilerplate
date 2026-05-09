@@ -7,7 +7,12 @@
   "db": {
     "url": "postgres://username:password@host:port/database",
     "poolSize": 50,
-    "logQueries": false
+    "logQueries": false,
+    "logQueryBindings": true,
+    "runMigrations": true,
+    "connectTimeoutMS": 5000,
+    "retryAttempts": 10,
+    "retryDelay": 3000
   },
   "swagger": {
     "enabled": true,

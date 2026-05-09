@@ -50,6 +50,11 @@ interface Db {
   url: string;
   poolSize: number;
   logQueries: boolean;
+  logQueryBindings: boolean;
+  runMigrations: boolean;
+  connectTimeoutMS: number;
+  retryAttempts: number;
+  retryDelay: number;
 }
 
 interface Swagger {

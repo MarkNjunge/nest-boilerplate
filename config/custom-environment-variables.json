@@ -6,7 +6,13 @@
   "apiKey": "API_KEY",
   "db": {
     "url": "DB_URL",
-    "poolSize": "DB_POOL_SIZE"
+    "poolSize": "DB_POOL_SIZE",
+    "logQueries": "DB_LOG_QUERIES",
+    "logQueryBindings": "DB_LOG_QUERY_BINDINGS",
+    "runMigrations": "DB_RUN_MIGRATIONS",
+    "connectTimeoutMS": "DB_CONNECT_TIMEOUT",
+    "retryAttempts": "DB_RETRY_ATTEMPT",
+    "retryDelay": "DB_RETRY_DELAY"
   },
   "swagger": {
     "enabled": "SWAGGER_ENABLED",
