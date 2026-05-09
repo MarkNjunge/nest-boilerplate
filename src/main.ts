@@ -25,6 +25,8 @@ const logger = new Logger("Application");
 
 bootstrap().catch((e: Error) => logger.error(`Startup error: ${e}`, {}, e));
 
+let app: NestFastifyApplication;
+
 async function bootstrap(): Promise<void> {
   logger.info("****** Starting API ******");
 
@@ -33,7 +35,7 @@ async function bootstrap(): Promise<void> {
   // Import AppModule AFTER config is initialized so it has the loaded secrets
   const { AppModule } = await import("./modules/app/app.module");
 
-  const app = await NestFactory.create<NestFastifyApplication>(
+  app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ trustProxy: true }),
     {
@@ -108,6 +110,19 @@ async function enablePlugins(app: NestFastifyApplication): Promise<void> {
 process.on("uncaughtException", (e, origin) => {
   logger.error(`${origin}: ${e.message}`, {}, e);
 });
+
+const shutdown = async (signal: string) => {
+  logger.info(`Received ${signal}, shutting down`);
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (app) {
+    await app.close();
+  }
+  process.exit(0);
+};
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+process.on("SIGINT", () => shutdown("SIGINT"));
 
 function initializeSwagger(app: NestFastifyApplication): void {
   if (!bool(config.swagger.enabled)) {
