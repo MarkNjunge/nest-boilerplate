@@ -1,13 +1,13 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { FastifyRequest } from "fastify";
-import { AuthService } from "@/modules/auth/auth.service";
+import { AuthValidator } from "@/guards/auth.validator";
 import { AppAlsService, ALS_AUTH_USER } from "@/als/app-als.service";
 import { ErrorCodes, HttpException } from "@/utils";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private readonly authService: AuthService,
+    private readonly authValidator: AuthValidator,
     private readonly alsService: AppAlsService,
   ) {}
 
@@ -26,7 +26,7 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    const user = this.authService.validateToken(token);
+    const user = this.authValidator.validateToken(token);
 
     if (!user) {
       throw new HttpException(
