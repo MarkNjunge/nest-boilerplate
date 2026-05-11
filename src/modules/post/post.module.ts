@@ -10,5 +10,6 @@ import { CommentModule } from "@/modules/comment/comment.module";
   imports: [DbModule, TypeOrmModule.forFeature([Post]), CommentModule],
   controllers: [PostController],
   providers: [PostService],
+  exports: [PostService],
 })
 export class PostModule {}

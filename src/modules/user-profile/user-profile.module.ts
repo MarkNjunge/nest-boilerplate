@@ -8,7 +8,8 @@ import { UserProfile } from "@/models/user-profile/user-profile";
 @Module({
   imports: [DbModule, TypeOrmModule.forFeature([UserProfile])],
   controllers: [UserProfileController],
-  providers: [UserProfileService]
+  providers: [UserProfileService],
+  exports: [UserProfileService]
 })
 export class UserProfileModule {
 }
