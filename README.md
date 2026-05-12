@@ -89,7 +89,7 @@ A simple authentication pattern is implemented using a modular service-based app
 - **AuthGuard** (`src/guards/auth.guard.ts`) - Guards routes requiring authentication
 
 The `AuthGuard` extracts the Bearer token, validates it via `AuthService`, and stores the authenticated user in the
-request context (CLS).
+request context (ALS).
 
 ### Accessing the Authenticated User
 
@@ -495,32 +495,43 @@ in [redact.ts](src/utils/redact.ts).
 
 ### Request Context
 
-[nestjs-cls](https://papooch.github.io/nestjs-cls/) is implemented to maintain request state.
+Node's built-in `AsyncLocalStorage` is used to maintain request state via a custom `AppAlsModule`.
 
-The request ID is the trace ID if observability is enabled, otherwise it's a random string. It can be accessed using the
-`AppClsService`.
+The request ID is the trace ID if observability is enabled, otherwise it's a random string prefixed with `ctx_`. It can be accessed by injecting `AppAlsService`.
 
 ```typescript
 class Service {
   constructor(
-    // This needs to be ClsService<AppClsStore>. A custom type AppClsService will not work.
-    private readonly clsService: ClsService<AppClsStore>
+    private readonly alsService: AppAlsService
   ) {
   }
 
   handler() {
-    this.clsService.getId();
+    this.alsService.getId();
   }
 }
 ```
 
-Alternatively, `@ReqCtx()` can be used:
+To get the authenticated user, use `alsService.get(ALS_AUTH_USER)`:
+
+```typescript
+class Service {
+  constructor(private readonly alsService: AppAlsService) {}
+
+  handler() {
+    const user = this.alsService.get(ALS_AUTH_USER); // AuthenticatedUser | undefined
+  }
+}
+```
+
+Alternatively, `@ReqCtx()` can be used in controllers to access both the trace ID and the authenticated user:
 
 ```typescript
 class Controller {
   @Get()
   getHello(@ReqCtx() ctx: IReqCtx) {
     console.log(ctx.traceId) // 0d8df9931b05fbcd2262bc696a1410a6
+    console.log(ctx.user)    // { userId: "sample-user-id" } | undefined
   }
 }
 ```

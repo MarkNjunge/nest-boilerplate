@@ -51,7 +51,7 @@ src/
 ├── decorators/                # @Serialize, @ReqCtx
 ├── pipes/                     # Validation pipe
 ├── logging/                   # Winston logger
-├── cls/                       # Request context (trace IDs)
+├── als/                       # Request context (trace IDs)
 ├── config/                    # Config loading and secrets manager
 └── utils/                     # HttpException, error codes, helpers
 
