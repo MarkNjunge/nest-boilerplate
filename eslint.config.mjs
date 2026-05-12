@@ -18,7 +18,8 @@ export default defineConfig([
       "@stylistic/operator-linebreak": ["warn", "after", {
         overrides: { "|": "before" }
       }],
-      "@typescript-eslint/prefer-for-of": "off"
+      "@typescript-eslint/prefer-for-of": "off",
+      "@typescript-eslint/no-non-null-assertion": "off"
     }
   },
 ]);
