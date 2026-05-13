@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { DataSource, Repository } from "typeorm";
 import { BaseService } from "@/lib/crud/service/base.service";
 import { CrudService } from "@/lib/crud/service/crud.service";
@@ -9,6 +8,9 @@ import { config } from "@/config";
 import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
 import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-test.entity";
 import { createTestContainer } from "@/lib/crud/testing/test.utils";
+import { ICrudContext } from "@/lib/crud";
+
+const ctx: ICrudContext = { traceId: "test" };
 
 describe("Base Service", () => {
   let container: StartedPostgreSqlContainer;
@@ -47,23 +49,23 @@ describe("Base Service", () => {
 
   describe("count", () => {
     it("can count all users", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "john", email: "john@example.com" },
         { username: "jane", email: "jane@example.com" }
       ]);
 
-      const result = await service.count({});
+      const result = await service.count(ctx, {});
 
       expect(result).toBe(2);
     });
 
     it("can count with filters", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "john", email: "john@example.com" },
         { username: "jane", email: "jane@example.com" }
       ]);
 
-      const result = await service.count({
+      const result = await service.count(ctx, {
         filter: { eq: [{ key: "username", value: "john" }] }
       });
 
@@ -73,7 +75,7 @@ describe("Base Service", () => {
 
   describe("list", () => {
     it("can return all users when no filters applied", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         {
           username: "john",
           email: "john@example.com",
@@ -87,7 +89,7 @@ describe("Base Service", () => {
         }
       ]);
 
-      const result = await service.list({});
+      const result = await service.list(ctx, {});
 
       expect(result).toHaveLength(2);
       expect(result[0].username).toBe("john");
@@ -96,12 +98,12 @@ describe("Base Service", () => {
     });
 
     it("can filter users by username", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "john", email: "john@example.com" },
         { username: "jane", email: "jane@example.com" }
       ]);
 
-      const result = await service.list({ filter: { eq: [{ key: "username", value: "john" }] } });
+      const result = await service.list(ctx, { filter: { eq: [{ key: "username", value: "john" }] } });
 
       expect(result).toHaveLength(1);
       expect(result[0].username).toBe("john");
@@ -109,9 +111,9 @@ describe("Base Service", () => {
     });
 
     it("can return empty array when no matches found", async () => {
-      await crudService.create({ username: "john", email: "john@example.com" });
+      await crudService.create(ctx, { username: "john", email: "john@example.com" });
 
-      const result = await service.list({
+      const result = await service.list(ctx, {
         filter: {
           eq: [{
             key: "username",
@@ -124,13 +126,13 @@ describe("Base Service", () => {
     });
 
     it("can order results by username ascending", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "charlie", email: "charlie@example.com" },
         { username: "alice", email: "alice@example.com" },
         { username: "bob", email: "bob@example.com" }
       ]);
 
-      const result = await service.list({ sort: { username: "ASC" } });
+      const result = await service.list(ctx, { sort: { username: "ASC" } });
 
       expect(result).toHaveLength(3);
       expect(result[0].username).toBe("alice");
@@ -140,10 +142,11 @@ describe("Base Service", () => {
 
     it("can apply skip and take for pagination", async () => {
       await crudService.createBulk(
+        ctx,
         Array.from({ length: 10 }, (_, i) => ({ username: `user${i}`, email: `user${i}@example.com` }))
       );
 
-      const result = await service.list({
+      const result = await service.list(ctx, {
         offset: 3,
         limit: 5,
         sort: { username: "ASC" }
@@ -154,14 +157,14 @@ describe("Base Service", () => {
     });
 
     it("can combine filters, ordering, and pagination", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "alice", email: "alice@a.com" },
         { username: "bob", email: "bob@b.com" },
         { username: "charlie", email: "charlie@a.com" },
         { username: "david", email: "david@a.com" }
       ]);
 
-      const result = await service.list({
+      const result = await service.list(ctx, {
         filter: { like: [{ key: "email", value: "%@a.com" }] },
         sort: { username: "ASC" },
         offset: 1,
@@ -174,14 +177,14 @@ describe("Base Service", () => {
     });
 
     it("can include relations", async () => {
-      await crudService.create({
+      await crudService.create(ctx, {
         username: "john",
         email: "john@example.com",
         profile: { bio: "lorem ipsum" },
         address: { building: { suite: "A01" } }
       });
 
-      const result = await service.list({ include: ["address.building"] });
+      const result = await service.list(ctx, { include: ["address.building"] });
 
       expect(result).toHaveLength(1);
       expect(result[0].username).toBe("john");
@@ -192,9 +195,9 @@ describe("Base Service", () => {
 
   describe("get", () => {
     it("can get a single user", async () => {
-      await crudService.create({ username: "john", email: "john@example.com" });
+      await crudService.create(ctx, { username: "john", email: "john@example.com" });
 
-      const result = await service.get({
+      const result = await service.get(ctx, {
         filter: { eq: [{ key: "username", value: "john" }] }
       });
 
@@ -203,7 +206,7 @@ describe("Base Service", () => {
     });
 
     it("returns null when no match found", async () => {
-      const result = await service.get({
+      const result = await service.get(ctx, {
         filter: { eq: [{ key: "username", value: "nonexistent" }] }
       });
 
@@ -213,9 +216,9 @@ describe("Base Service", () => {
 
   describe("getById", () => {
     it("can get user by id", async () => {
-      const saved = await crudService.create({ username: "john", email: "john@example.com" });
+      const saved = await crudService.create(ctx, { username: "john", email: "john@example.com" });
 
-      const result = await service.getById(saved.id);
+      const result = await service.getById(ctx,saved.id);
 
       expect(result).not.toBeNull();
       expect(result?.id).toBe(saved.id);
@@ -223,14 +226,14 @@ describe("Base Service", () => {
     });
 
     it("can get user by id with relations", async () => {
-      const saved = await crudService.create({
+      const saved = await crudService.create(ctx, {
         username: "john",
         email: "john@example.com",
         profile: { bio: "lorem ipsum" },
         address: { building: { suite: "A01" } }
       });
 
-      const result = await service.getById(saved.id, {
+      const result = await service.getById(ctx,saved.id, {
         include: ["address.building"]
       });
 
@@ -240,7 +243,7 @@ describe("Base Service", () => {
     });
 
     it("returns null when id not found", async () => {
-      const result = await service.getById("non-existent-id");
+      const result = await service.getById(ctx,"non-existent-id");
 
       expect(result).toBeNull();
     });
@@ -248,13 +251,13 @@ describe("Base Service", () => {
 
   describe("listCursor", () => {
     it("returns first page with correct pageInfo", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "user1", email: "user1@example.com" },
         { username: "user2", email: "user2@example.com" },
         { username: "user3", email: "user3@example.com" }
       ]);
 
-      const result = await service.listCursor({ limit: 2 });
+      const result = await service.listCursor(ctx, { limit: 2 });
 
       expect(result.data).toHaveLength(2);
       expect(result.pageInfo.hasNextPage).toBe(true);
@@ -264,15 +267,15 @@ describe("Base Service", () => {
     });
 
     it("paginates forward using after cursor", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "user1", email: "user1@example.com" },
         { username: "user2", email: "user2@example.com" },
         { username: "user3", email: "user3@example.com" }
       ]);
 
-      const firstPage = await service.listCursor({ limit: 1 });
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const secondPage = await service.listCursor({ limit: 1, after: firstPage.pageInfo.endCursor! });
+      const firstPage = await service.listCursor(ctx, { limit: 1 });
+
+      const secondPage = await service.listCursor(ctx, { limit: 1, after: firstPage.pageInfo.endCursor! });
 
       expect(secondPage.data).toHaveLength(1);
       expect(secondPage.data[0].id).not.toBe(firstPage.data[0].id);
@@ -281,17 +284,17 @@ describe("Base Service", () => {
     });
 
     it("paginates backward using before cursor", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "user1", email: "user1@example.com" },
         { username: "user2", email: "user2@example.com" },
         { username: "user3", email: "user3@example.com" }
       ]);
 
-      const lastPage = await service.listCursor({ limit: 1 });
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const nextPage = await service.listCursor({ limit: 1, after: lastPage.pageInfo.endCursor! });
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const previousPage = await service.listCursor({ limit: 1, before: nextPage.pageInfo.startCursor! });
+      const lastPage = await service.listCursor(ctx, { limit: 1 });
+
+      const nextPage = await service.listCursor(ctx, { limit: 1, after: lastPage.pageInfo.endCursor! });
+
+      const previousPage = await service.listCursor(ctx, { limit: 1, before: nextPage.pageInfo.startCursor! });
 
       expect(previousPage.data).toHaveLength(1);
       expect(previousPage.data[0].id).toBe(lastPage.data[0].id);
@@ -300,18 +303,18 @@ describe("Base Service", () => {
 
     it("throws error when both after and before cursors provided", async () => {
       await expect(
-        service.listCursor({ after: "cursor1", before: "cursor2" })
+        service.listCursor(ctx, { after: "cursor1", before: "cursor2" })
       ).rejects.toThrow("Cannot use both 'after' and 'before' cursors");
     });
 
     it("works with filters", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "alice", email: "alice@a.com" },
         { username: "bob", email: "bob@b.com" },
         { username: "charlie", email: "charlie@a.com" }
       ]);
 
-      const result = await service.listCursor({
+      const result = await service.listCursor(ctx, {
         filter: { like: [{ key: "email", value: "%@a.com" }] },
         limit: 10
       });
@@ -321,7 +324,7 @@ describe("Base Service", () => {
     });
 
     it("handles empty results", async () => {
-      const result = await service.listCursor({ limit: 10 });
+      const result = await service.listCursor(ctx, { limit: 10 });
 
       expect(result.data).toHaveLength(0);
       expect(result.pageInfo.hasNextPage).toBe(false);
@@ -332,22 +335,23 @@ describe("Base Service", () => {
 
     it("respects limit parameter", async () => {
       await crudService.createBulk(
+        ctx,
         Array.from({ length: 10 }, (_, i) => ({ username: `user${i}`, email: `user${i}@example.com` }))
       );
 
-      const result = await service.listCursor({ limit: 5 });
+      const result = await service.listCursor(ctx, { limit: 5 });
 
       expect(result.data).toHaveLength(5);
       expect(result.pageInfo.hasNextPage).toBe(true);
     });
 
     it("returns hasNextPage false on last page", async () => {
-      await crudService.createBulk([
+      await crudService.createBulk(ctx, [
         { username: "user1", email: "user1@example.com" },
         { username: "user2", email: "user2@example.com" }
       ]);
 
-      const result = await service.listCursor({ limit: 10 });
+      const result = await service.listCursor(ctx, { limit: 10 });
 
       expect(result.data).toHaveLength(2);
       expect(result.pageInfo.hasNextPage).toBe(false);
@@ -365,7 +369,7 @@ describe("Base Service", () => {
       ];
 
       it("can page forwards using after (ASC)", async () => {
-        await crudService.createBulk(records);
+        await crudService.createBulk(ctx, records);
 
         const expected = records.map(r => r.username);
         const actual = [];
@@ -376,7 +380,7 @@ describe("Base Service", () => {
           const isFirst = i === 0;
           const isLast = i === records.length - 1;
 
-          const result = await service.listCursor({ limit, sortField: "email", sortDir: "ASC", after: nextCursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", sortDir: "ASC", after: nextCursor ?? undefined });
 
           expect(result.data).toHaveLength(limit);
           actual.push(result.data[0].username);
@@ -393,7 +397,7 @@ describe("Base Service", () => {
       });
 
       it("can page backwards using after (DESC)", async () => {
-        await crudService.createBulk(records);
+        await crudService.createBulk(ctx, records);
 
         const recordsReversed = [...records].reverse();
         const expected = recordsReversed.map(r => r.username);
@@ -404,7 +408,7 @@ describe("Base Service", () => {
           const isFirst = i === 0;
           const isLast = i === recordsReversed.length - 1;
 
-          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", after: nextCursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", sortDir: "DESC", after: nextCursor ?? undefined });
 
           expect(result.data).toHaveLength(limit);
           actual.push(result.data[0].username);
@@ -421,12 +425,12 @@ describe("Base Service", () => {
       });
 
       it("can page backwards using before (ASC)", async () => {
-        await crudService.createBulk(records);
+        await crudService.createBulk(ctx, records);
 
         // Page forward through all items to get the last cursor
         let cursor: string | null = null;
         for (let i = 0; i < records.length; i++) {
-          const result = await service.listCursor({ limit, sortField: "email", after: cursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", after: cursor ?? undefined });
           cursor = result.pageInfo.startCursor;
         }
 
@@ -440,7 +444,7 @@ describe("Base Service", () => {
           const isFirst = i === 0;
           const isLast = i === records.length - 2;
 
-          const result = await service.listCursor({ limit, sortField: "email", before: prevCursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", before: prevCursor ?? undefined });
 
           expect(result.data).toHaveLength(limit);
           actual.push(result.data[0].username);
@@ -455,11 +459,11 @@ describe("Base Service", () => {
       });
 
       it("can page backwards using before (DESC)", async () => {
-        await crudService.createBulk(records);
+        await crudService.createBulk(ctx, records);
 
         let cursor: string | null = null;
         for (let i = 0; i < records.length; i++) {
-          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", after: cursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", sortDir: "DESC", after: cursor ?? undefined });
           cursor = result.pageInfo.endCursor;
         }
 
@@ -469,7 +473,7 @@ describe("Base Service", () => {
         for (let i = 0; i < records.length - 1; i++) {
           const isLast = i === records.length - 2;
 
-          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", before: prevCursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", sortDir: "DESC", before: prevCursor ?? undefined });
 
           expect(result.data).toHaveLength(limit);
           actual.push(result.data[0].username);
@@ -483,13 +487,13 @@ describe("Base Service", () => {
       });
 
       it("can page forward then backward to return to start (ASC)", async () => {
-        await crudService.createBulk(records);
+        await crudService.createBulk(ctx, records);
 
         // Page forward 3 items
         let cursor: string | null = null;
         const forwardItems: string[] = [];
         for (let i = 0; i < 3; i++) {
-          const result = await service.listCursor({ limit, sortField: "email", after: cursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", after: cursor ?? undefined });
           expect(result.data).toHaveLength(limit);
           forwardItems.push(result.data[0].username);
           cursor = result.pageInfo.endCursor;
@@ -499,7 +503,7 @@ describe("Base Service", () => {
         const backwardItems: string[] = [];
         let prevCursor: string | null = cursor;
         for (let i = 0; i < 2; i++) {
-          const result = await service.listCursor({ limit, sortField: "email", before: prevCursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", before: prevCursor ?? undefined });
           expect(result.data).toHaveLength(limit);
           backwardItems.push(result.data[0].username);
           prevCursor = result.pageInfo.startCursor;
@@ -511,13 +515,13 @@ describe("Base Service", () => {
       });
 
       it("can page forward then backward to return to start (DESC)", async () => {
-        await crudService.createBulk(records);
+        await crudService.createBulk(ctx, records);
 
         // Page forward 3 items in DESC
         let cursor: string | null = null;
         const forwardItems: string[] = [];
         for (let i = 0; i < 3; i++) {
-          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", after: cursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", sortDir: "DESC", after: cursor ?? undefined });
           expect(result.data).toHaveLength(limit);
           forwardItems.push(result.data[0].username);
           cursor = result.pageInfo.endCursor;
@@ -527,7 +531,7 @@ describe("Base Service", () => {
         const backwardItems: string[] = [];
         let prevCursor: string | null = cursor;
         for (let i = 0; i < 2; i++) {
-          const result = await service.listCursor({ limit, sortField: "email", sortDir: "DESC", before: prevCursor ?? undefined });
+          const result = await service.listCursor(ctx, { limit, sortField: "email", sortDir: "DESC", before: prevCursor ?? undefined });
           expect(result.data).toHaveLength(limit);
           backwardItems.push(result.data[0].username);
           prevCursor = result.pageInfo.startCursor;

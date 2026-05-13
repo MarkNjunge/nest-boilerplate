@@ -99,7 +99,6 @@ export class Logger {
   private getLogObject(message: string, meta: ILogMeta): LogObject {
     const tag = meta.tag ?? this.name;
     const activeSpan = opentelemetry.trace.getActiveSpan();
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const traceId = meta.traceId ?? appAls.getStore()?.id ?? activeSpan?.spanContext().traceId ?? "00000";
     const user = appAls.getStore()?.[ALS_AUTH_USER];
     const obj: LogObject = {

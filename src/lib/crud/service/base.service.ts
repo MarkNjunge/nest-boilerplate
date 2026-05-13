@@ -7,6 +7,7 @@ import { Logger } from "@/logging/Logger";
 import opentelemetry, { Counter, Histogram } from "@opentelemetry/api";
 import { ErrorCodes, HttpException } from "@/utils";
 import { snakeCase } from "@/lib/crud/utils/snake-case";
+import { ICrudContext } from "@/lib/crud/utils/context";
 
 function encodeCursor(sortValue: string, id: string): string {
   return Buffer.from(`${sortValue}|||${id}`).toString("base64url");
@@ -79,21 +80,21 @@ export class BaseService<
     }
   }
 
-  async count(query: Query<Entity>) {
+  async count(ctx: ICrudContext, query: Query<Entity>) {
     return this.track("count", { query }, () => this.repository.count(mapQueryToTypeorm(query)));
   }
 
-  async list(query: Query<Entity> = {}): Promise<Entity[]> {
+  async list(ctx: ICrudContext, query: Query<Entity> = {}): Promise<Entity[]> {
     return this.track("list", { query }, () => this.repository.find(mapQueryToTypeorm(query)));
   }
 
-  async get(query: Query<Entity> = {}): Promise<Entity | null> {
+  async get(ctx: ICrudContext, query: Query<Entity> = {}): Promise<Entity | null> {
     return this.track("get", { query }, () =>
       this.repository.findOne(mapQueryToTypeorm(query) as FindOneOptions<Entity>)
     );
   }
 
-  async getById(id: string, query: Query<Entity> = {}): Promise<Entity | null> {
+  async getById(ctx: ICrudContext, id: string, query: Query<Entity> = {}): Promise<Entity | null> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id == null) {
       throw new Error("null id passed in update");
@@ -107,7 +108,7 @@ export class BaseService<
     });
   }
 
-  async listCursor(query: Query<Entity> = {}): Promise<CursorPaginationResult<Entity>> {
+  async listCursor(ctx: ICrudContext, query: Query<Entity> = {}): Promise<CursorPaginationResult<Entity>> {
     return this.track("listCursor", { query }, async () => {
       const { after, before, limit = 20, sortField = "id", sortDir = "ASC", ...restQuery } = query;
 

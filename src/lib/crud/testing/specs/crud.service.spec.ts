@@ -7,6 +7,9 @@ import { config } from "@/config";
 import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
 import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-test.entity";
 import { createTestContainer } from "@/lib/crud/testing/test.utils";
+import { ICrudContext } from "@/lib/crud";
+
+const ctx: ICrudContext = { traceId: "test" };
 
 describe("CRUD Service", () => {
   let container: StartedPostgreSqlContainer;
@@ -43,7 +46,7 @@ describe("CRUD Service", () => {
 
   describe("create", () => {
     it("can create user", async () => {
-      const createResult = await service.create({
+      const createResult = await service.create(ctx, {
         username: "john",
         email: "john@example.com",
         profile: { bio: "lorem ipsum" }
@@ -61,7 +64,7 @@ describe("CRUD Service", () => {
     it("does not override createdAt if already set", async () => {
       const existingDate = new Date("2020-01-01T00:00:00.000Z");
 
-      const result = await service.create({
+      const result = await service.create(ctx, {
         username: "john",
         email: "john@example.com",
         createdAt: existingDate
@@ -78,7 +81,7 @@ describe("CRUD Service", () => {
         { username: "jane", email: "jane@example.com" }
       ];
 
-      const result = await service.createBulk(users);
+      const result = await service.createBulk(ctx,users);
 
       expect(result).toHaveLength(2);
       expect(result[0].username).toBe("john");
@@ -91,7 +94,7 @@ describe("CRUD Service", () => {
 
   describe("upsert", () => {
     it("can insert new user", async () => {
-      const result = await service.upsert({
+      const result = await service.upsert(ctx, {
         username: "john",
         email: "john@example.com"
       });
@@ -103,9 +106,9 @@ describe("CRUD Service", () => {
     });
 
     it("can update existing user", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
 
-      const result = await service.upsert({
+      const result = await service.upsert(ctx, {
         id: user.id,
         username: "john_updated",
         email: "john@example.com"
@@ -120,14 +123,14 @@ describe("CRUD Service", () => {
 
   describe("upsertBulk", () => {
     it("can insert and update multiple users", async () => {
-      const existing = await service.create({ username: "john", email: "john@example.com" });
+      const existing = await service.create(ctx, { username: "john", email: "john@example.com" });
 
       const data = [
         { id: existing.id, username: "john_updated", email: "john@example.com" },
         { username: "jane", email: "jane@example.com" }
       ];
 
-      const result = await service.upsertBulk(data);
+      const result = await service.upsertBulk(ctx,data);
 
       expect(result).toHaveLength(2);
       expect(result[0].username).toBe("john_updated");
@@ -140,9 +143,9 @@ describe("CRUD Service", () => {
 
   describe("update", () => {
     it("can update user by id", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
 
-      const result = await service.update(user.id, { username: "john_updated" });
+      const result = await service.update(ctx,user.id, { username: "john_updated" });
       if (!result) {
         throw new Error("result is null");
       }
@@ -155,21 +158,21 @@ describe("CRUD Service", () => {
     });
 
     it("updates updatedAt by default", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
       const originalUpdatedAt = user.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 5));
-      const result = await service.update(user.id, { username: "john_updated" });
+      const result = await service.update(ctx,user.id, { username: "john_updated" });
 
       expect(result?.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
     });
 
     it("does not update updatedAt when silent", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
       const originalUpdatedAt = user.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 5));
-      const result = await service.update(user.id, { username: "john_updated" }, { silent: true });
+      const result = await service.update(ctx,user.id, { username: "john_updated" }, { silent: true });
 
       expect(result?.updatedAt.getTime()).toBe(originalUpdatedAt.getTime());
     });
@@ -177,13 +180,13 @@ describe("CRUD Service", () => {
 
   describe("updateIndexed", () => {
     it("can update multiple users matching filter", async () => {
-      await service.createBulk([
+      await service.createBulk(ctx,[
         { username: "john", email: "john@a.com" },
         { username: "jane", email: "jane@a.com" },
         { username: "bob", email: "bob@b.com" }
       ]);
 
-      const result = await service.updateIndexed(
+      const result = await service.updateIndexed(ctx,
         { like: [{ key: "email", value: "%@a.com" }] },
         { username: "updated" }
       );
@@ -197,9 +200,9 @@ describe("CRUD Service", () => {
     });
 
     it("does nothing when no matches found", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
 
-      const result = await service.updateIndexed(
+      const result = await service.updateIndexed(ctx,
         { eq: [{ key: "username", value: "nonexistent" }] },
         { username: "updated" }
       );
@@ -211,11 +214,11 @@ describe("CRUD Service", () => {
     });
 
     it("updates updatedAt by default", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
       const originalUpdatedAt = user.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 5));
-      const result = await service.updateIndexed(
+      const result = await service.updateIndexed(ctx,
         { eq: [{ key: "id", value: user.id }] },
         { username: "john_updated" }
       );
@@ -224,11 +227,11 @@ describe("CRUD Service", () => {
     });
 
     it("does not update updatedAt when silent", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
       const originalUpdatedAt = user.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 5));
-      const result = await service.updateIndexed(
+      const result = await service.updateIndexed(ctx,
         { eq: [{ key: "id", value: user.id }] },
         { username: "john_updated" },
         { silent: true }
@@ -240,16 +243,16 @@ describe("CRUD Service", () => {
 
   describe("deleteById", () => {
     it("can delete user by id", async () => {
-      const user = await service.create({ username: "john", email: "john@example.com" });
+      const user = await service.create(ctx, { username: "john", email: "john@example.com" });
 
-      await service.deleteById(user.id);
+      await service.deleteById(ctx,user.id);
 
       const count = await userRepository.count();
       expect(count).toBe(0);
     });
 
     it("does nothing when id not found", async () => {
-      await service.deleteById("non-existent-id");
+      await service.deleteById(ctx,"non-existent-id");
 
       // Should not throw error
       const count = await userRepository.count();
@@ -259,13 +262,13 @@ describe("CRUD Service", () => {
 
   describe("deleteIndexed", () => {
     it("can delete multiple users matching filter", async () => {
-      await service.createBulk([
+      await service.createBulk(ctx,[
         { username: "john", email: "john@a.com" },
         { username: "jane", email: "jane@a.com" },
         { username: "bob", email: "bob@b.com" }
       ]);
 
-      await service.deleteIndexed({
+      await service.deleteIndexed(ctx, {
         like: [{ key: "email", value: "%@a.com" }]
       });
 
@@ -275,9 +278,9 @@ describe("CRUD Service", () => {
     });
 
     it("does nothing when no matches found", async () => {
-      await service.create({ username: "john", email: "john@example.com" });
+      await service.create(ctx, { username: "john", email: "john@example.com" });
 
-      await service.deleteIndexed({
+      await service.deleteIndexed(ctx, {
         eq: [{ key: "username", value: "nonexistent" }]
       });
 

@@ -53,11 +53,9 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
         "@opentelemetry/instrumentation-http": {
           enabled: true,
           ignoreOutgoingRequestHook: request => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return httpUrlIgnore.length > 0 ? httpUrlIgnoreRx.test(request.path!) : false;
           },
           ignoreIncomingRequestHook: request => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return httpUrlIgnore.length > 0 ? httpUrlIgnoreRx.test(request.url!) : false;
           }
         },

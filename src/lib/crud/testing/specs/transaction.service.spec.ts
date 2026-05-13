@@ -8,6 +8,9 @@ import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-te
 import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { config } from "@/config";
 import { createTestContainer } from "@/lib/crud/testing/test.utils";
+import { ICrudContext } from "@/lib/crud";
+
+const ctx: ICrudContext = { traceId: "test" };
 
 describe("TransactionService", () => {
   let container: StartedPostgreSqlContainer;
@@ -45,7 +48,7 @@ describe("TransactionService", () => {
     it("commits on success", async () => {
       const result = await transactionService.run(async manager => {
         const txService = userService.withTransaction(manager);
-        return txService.create({ username: "john", email: "john@example.com" });
+        return txService.create(ctx, { username: "john", email: "john@example.com" });
       });
 
       expect(result.username).toBe("john");
@@ -58,7 +61,7 @@ describe("TransactionService", () => {
       await expect(
         transactionService.run(async manager => {
           const txService = userService.withTransaction(manager);
-          await txService.create({ username: "john", email: "john@example.com" });
+          await txService.create(ctx, { username: "john", email: "john@example.com" });
           throw new Error("Simulated failure");
         })
       ).rejects.toThrow("Simulated failure");
@@ -70,8 +73,8 @@ describe("TransactionService", () => {
     it("supports multiple operations in a single transaction", async () => {
       const result = await transactionService.run(async manager => {
         const txService = userService.withTransaction(manager);
-        const user1 = await txService.create({ username: "john", email: "john@example.com" });
-        const user2 = await txService.create({ username: "jane", email: "jane@example.com" });
+        const user1 = await txService.create(ctx, { username: "john", email: "john@example.com" });
+        const user2 = await txService.create(ctx, { username: "jane", email: "jane@example.com" });
         return [user1, user2];
       });
 
@@ -85,8 +88,8 @@ describe("TransactionService", () => {
       await expect(
         transactionService.run(async manager => {
           const txService = userService.withTransaction(manager);
-          await txService.create({ username: "john", email: "john@example.com" });
-          await txService.create({ username: "jane", email: "jane@example.com" });
+          await txService.create(ctx, { username: "john", email: "john@example.com" });
+          await txService.create(ctx, { username: "jane", email: "jane@example.com" });
           throw new Error("Late failure");
         })
       ).rejects.toThrow("Late failure");
@@ -100,10 +103,10 @@ describe("TransactionService", () => {
     it("clone uses transaction-scoped repository", async () => {
       await transactionService.run(async manager => {
         const txService = userService.withTransaction(manager);
-        const created = await txService.create({ username: "tx-user", email: "tx@example.com" });
+        const created = await txService.create(ctx, { username: "tx-user", email: "tx@example.com" });
         expect(created.username).toBe("tx-user");
 
-        const found = await txService.getById(created.id);
+        const found = await txService.getById(ctx,created.id);
         expect(found).not.toBeNull();
         expect(found?.username).toBe("tx-user");
       });
@@ -119,7 +122,7 @@ describe("TransactionService", () => {
         expect(typeof txService.update).toBe("function");
         expect(typeof txService.deleteById).toBe("function");
         // Verify the clone actually works
-        await txService.create({ username: "proto-test", email: "proto@example.com" });
+        await txService.create(ctx, { username: "proto-test", email: "proto@example.com" });
       });
     });
   });

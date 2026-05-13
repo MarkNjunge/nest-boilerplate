@@ -1,3 +1,4 @@
+export * from "./utils/context";
 export * from "./entity/id";
 export * from "./entity/base.entity";
 export * from "./query/query";

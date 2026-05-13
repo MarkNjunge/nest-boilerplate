@@ -15,6 +15,8 @@ import {
 import { parseRawQuery, ListRawQuery, CursorRawQuery } from "@/lib/crud/query/query";
 import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagination";
 import { HttpException } from "@/utils";
+import { ReqCtx } from "@/decorators/request-context.decorator";
+import { ICrudContext } from "@/lib/crud/utils/context";
 
 export type BaseRouteNames = "count" | "list" | "get" | "listCursor" | "getById";
 
@@ -37,22 +39,22 @@ export function BaseController<
     @Get("/count")
     @ApiOperation({ summary: "Count entities matching the query" })
     @ApiResponse({ status: 200, type: Number })
-    async count(@Query() query: ListRawQuery): Promise<number> {
-      return this.service.count(parseRawQuery(query));
+    async count(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<number> {
+      return this.service.count(ctx, parseRawQuery(query));
     }
 
     @Get("/")
     @ApiOperation({ summary: "List entities matching the query" })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
-    async list(@Query() query: ListRawQuery): Promise<Entity[]> {
-      return this.service.list(parseRawQuery(query));
+    async list(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<Entity[]> {
+      return this.service.list(ctx, parseRawQuery(query));
     }
 
     @Get("/first")
     @ApiOperation({ summary: "Get the first entity matching the query" })
     @ApiResponse({ status: 200, type: entityType })
-    async get(@Query() query: ListRawQuery): Promise<Entity | null> {
-      const result = await this.service.get(parseRawQuery(query));
+    async get(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<Entity | null> {
+      const result = await this.service.get(ctx, parseRawQuery(query));
       if (!result) {
         throw new HttpException(404, "Entity not found");
       }
@@ -72,8 +74,8 @@ export function BaseController<
         }
       }
     })
-    async listCursor(@Query() query: CursorRawQuery): Promise<CursorPaginationResult<Entity>> {
-      return this.service.listCursor(parseRawQuery(query, true));
+    async listCursor(@ReqCtx() ctx: ICrudContext, @Query() query: CursorRawQuery): Promise<CursorPaginationResult<Entity>> {
+      return this.service.listCursor(ctx, parseRawQuery(query, true));
     }
 
     @Get("/:id")
@@ -81,10 +83,11 @@ export function BaseController<
     @ApiOperation({ summary: "Get an entity by id" })
     @ApiResponse({ status: 200, type: entityType })
     async getById(
+      @ReqCtx() ctx: ICrudContext,
       @Param("id") id: string,
       @Query() query: ListRawQuery
     ): Promise<Entity | null> {
-      const result = await this.service.getById(id, parseRawQuery(query));
+      const result = await this.service.getById(ctx, id, parseRawQuery(query));
       if (!result) {
         throw new HttpException(404, `Entity ${id} not found`);
       }

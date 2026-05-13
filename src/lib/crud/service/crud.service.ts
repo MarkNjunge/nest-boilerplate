@@ -4,6 +4,7 @@ import { Filter } from "@/lib/crud/query/query";
 import { BaseService } from "@/lib/crud/service/base.service";
 import { BaseEntity } from "@/lib/crud/entity/base.entity";
 import { genId } from "@/lib/crud/entity/id";
+import { ICrudContext } from "@/lib/crud/utils/context";
 
 export class CrudService<
   Entity extends BaseEntity,
@@ -28,7 +29,7 @@ export class CrudService<
     entity.updatedAt = entity.updatedAt ?? now;
   }
 
-  async create(data: Create): Promise<Entity> {
+  async create(ctx: ICrudContext, data: Create): Promise<Entity> {
     return this.track("create", { data }, async () => {
       const entity = this.repository.create(data as any) as unknown as Entity;
       this.prepareEntity(entity, new Date());
@@ -36,7 +37,7 @@ export class CrudService<
     });
   }
 
-  async createBulk(data: Create[]): Promise<Entity[]> {
+  async createBulk(ctx: ICrudContext, data: Create[]): Promise<Entity[]> {
     return this.track("createBulk", { data }, async () => {
       const now = new Date();
       const entities = this.repository.create(data as any[]).map(entity => {
@@ -47,7 +48,7 @@ export class CrudService<
     });
   }
 
-  async upsert(data: Create): Promise<Entity> {
+  async upsert(ctx: ICrudContext, data: Create): Promise<Entity> {
     return this.track("upsert", { data }, async () => {
       const now = new Date();
       const entity = this.repository.create(data as any) as unknown as Entity;
@@ -58,7 +59,7 @@ export class CrudService<
     });
   }
 
-  async upsertBulk(data: Create[]): Promise<Entity[]> {
+  async upsertBulk(ctx: ICrudContext, data: Create[]): Promise<Entity[]> {
     return this.track("upsertBulk", { data }, async () => {
       const now = new Date();
       const entities = this.repository.create(data as any[]).map(entity => {
@@ -71,7 +72,7 @@ export class CrudService<
     });
   }
 
-  async update(id: string, data: Update, options?: { silent?: boolean }): Promise<Entity | null> {
+  async update(ctx: ICrudContext, id: string, data: Update, options?: { silent?: boolean }): Promise<Entity | null> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id == null) {
       throw new Error("null id passed in update");
@@ -86,7 +87,7 @@ export class CrudService<
     });
   }
 
-  async updateIndexed(filter: Filter<Entity>, data: Update, options?: { silent?: boolean }): Promise<Entity[]> {
+  async updateIndexed(ctx: ICrudContext, filter: Filter<Entity>, data: Update, options?: { silent?: boolean }): Promise<Entity[]> {
     return this.track("updateIndexed", { filter: data }, async () => {
       const filterConditions = parseFilter(filter);
       const entities = await this.repository.find({ where: filterConditions });
@@ -100,7 +101,7 @@ export class CrudService<
     });
   }
 
-  async deleteById(id: string): Promise<void> {
+  async deleteById(ctx: ICrudContext, id: string): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id == null) {
       throw new Error("null id passed in deleteById");
@@ -108,7 +109,7 @@ export class CrudService<
     return this.track("deleteById", { id }, () => this.repository.delete(id).then(() => undefined));
   }
 
-  async deleteIndexed(filter: Filter<Entity>): Promise<void> {
+  async deleteIndexed(ctx: ICrudContext, filter: Filter<Entity>): Promise<void> {
     return this.track("deleteIndexed", { filter }, async () => {
       const filterConditions = parseFilter(filter);
       await this.repository.delete(filterConditions);

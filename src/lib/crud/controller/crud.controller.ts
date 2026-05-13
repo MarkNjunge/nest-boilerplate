@@ -24,6 +24,8 @@ import { AuthGuard } from "@/guards/auth.guard";
 import { ErrorCodes, HttpException } from "@/utils";
 import { BaseController, BaseRouteNames, ControllerOptions } from "@/lib/crud/controller/base.controller";
 import { BaseEntity } from "@/lib/crud";
+import { ReqCtx } from "@/decorators/request-context.decorator";
+import { ICrudContext } from "@/lib/crud/utils/context";
 
 export type CrudRouteNames = "create" | "createBulk" | "upsert" | "upsertBulk" | "updateIndexed" | "update" | "deleteIndexed" | "deleteById";
 
@@ -53,8 +55,8 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiOperation({ summary: "Create an entity" })
     @ApiBody({ type: createDtoType })
     @ApiResponse({ status: 201, type: entityType })
-    async create(@Body() dto: Create): Promise<Entity> {
-      return this.service.create(dto);
+    async create(@ReqCtx() ctx: ICrudContext, @Body() dto: Create): Promise<Entity> {
+      return this.service.create(ctx, dto);
     }
 
     @Post("/bulk")
@@ -63,8 +65,8 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiOperation({ summary: "Create entities in bulk" })
     @ApiBody({ type: createDtoType, isArray: true })
     @ApiResponse({ status: 201, type: entityType, isArray: true })
-    async createBulk(@Body() dto: Create[]): Promise<Entity[]> {
-      return this.service.createBulk(dto);
+    async createBulk(@ReqCtx() ctx: ICrudContext, @Body() dto: Create[]): Promise<Entity[]> {
+      return this.service.createBulk(ctx, dto);
     }
 
     @Put("/")
@@ -73,8 +75,8 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiOperation({ summary: "Create or update entity (upsert)" })
     @ApiBody({ type: createDtoType })
     @ApiResponse({ status: 200, type: entityType })
-    async upsert(@Body() dto: Create): Promise<Entity> {
-      return this.service.upsert(dto);
+    async upsert(@ReqCtx() ctx: ICrudContext, @Body() dto: Create): Promise<Entity> {
+      return this.service.upsert(ctx, dto);
     }
 
     @Put("/bulk")
@@ -83,8 +85,8 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiOperation({ summary: "Create or update multiple entities (upsert)" })
     @ApiBody({ type: createDtoType, isArray: true })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
-    async upsertBulk(@Body() dto: Create[]): Promise<Entity[]> {
-      return this.service.upsertBulk(dto);
+    async upsertBulk(@ReqCtx() ctx: ICrudContext, @Body() dto: Create[]): Promise<Entity[]> {
+      return this.service.upsertBulk(ctx, dto);
     }
 
     @Patch("/")
@@ -98,6 +100,7 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiBody({ type: updateDtoType })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
     async updateIndexed(
+      @ReqCtx() ctx: ICrudContext,
       @Query("filter") filter: string,
       @Body() dto: Update
     ): Promise<Entity[]> {
@@ -105,7 +108,7 @@ export function CrudController<Entity extends BaseEntity>(
         throw new HttpException(400, "filter query is required", ErrorCodes.CLIENT_ERROR);
       }
 
-      return this.service.updateIndexed(parseRawFilter(filter), dto);
+      return this.service.updateIndexed(ctx, parseRawFilter(filter), dto);
     }
 
     @Patch("/:id")
@@ -116,10 +119,11 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiBody({ type: updateDtoType })
     @ApiResponse({ status: 200, type: entityType })
     async update(
+      @ReqCtx() ctx: ICrudContext,
       @Param("id") id: string,
       @Body() dto: Update
     ): Promise<Entity> {
-      const result = await this.service.update(id, dto);
+      const result = await this.service.update(ctx, id, dto);
       if (!result) {
         throw new HttpException(404, `Entity ${id} not found`);
       }
@@ -136,12 +140,12 @@ export function CrudController<Entity extends BaseEntity>(
     })
     @HttpCode(204)
     @ApiResponse({ status: 204 })
-    async deleteIndexed(@Query("filter") filter: string): Promise<void> {
+    async deleteIndexed(@ReqCtx() ctx: ICrudContext, @Query("filter") filter: string): Promise<void> {
       if (!filter) {
         throw new HttpException(400, "filter query is required", ErrorCodes.CLIENT_ERROR);
       }
 
-      return this.service.deleteIndexed(parseRawFilter(filter));
+      return this.service.deleteIndexed(ctx, parseRawFilter(filter));
     }
 
     @Delete("/:id")
@@ -151,8 +155,8 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiOperation({ summary: "Delete an entity by id" })
     @HttpCode(204)
     @ApiResponse({ status: 204 })
-    async deleteById(@Param("id") id: string): Promise<void> {
-      return this.service.deleteById(id);
+    async deleteById(@ReqCtx() ctx: ICrudContext, @Param("id") id: string): Promise<void> {
+      return this.service.deleteById(ctx, id);
     }
   }
 
@@ -162,17 +166,17 @@ export function CrudController<Entity extends BaseEntity>(
   if (createDtoType) {
     for (const method of ["create", "createBulk", "upsert", "upsertBulk"] as const) {
       if (!excluded.has(method)) {
-        Reflect.defineMetadata("design:paramtypes", [createDtoType], CrudControllerHost.prototype, method);
+        Reflect.defineMetadata("design:paramtypes", [Object, createDtoType], CrudControllerHost.prototype, method);
       }
     }
   }
 
   if (updateDtoType) {
     if (!excluded.has("update")) {
-      Reflect.defineMetadata("design:paramtypes", [String, updateDtoType], CrudControllerHost.prototype, "update");
+      Reflect.defineMetadata("design:paramtypes", [Object, String, updateDtoType], CrudControllerHost.prototype, "update");
     }
     if (!excluded.has("updateIndexed")) {
-      Reflect.defineMetadata("design:paramtypes", [String, updateDtoType], CrudControllerHost.prototype, "updateIndexed");
+      Reflect.defineMetadata("design:paramtypes", [Object, String, updateDtoType], CrudControllerHost.prototype, "updateIndexed");
     }
   }
 

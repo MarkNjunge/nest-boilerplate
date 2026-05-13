@@ -564,7 +564,6 @@ describe("TypeORM Query Mapper", () => {
       expect(results).toHaveLength(1);
       expect(results[0].title).toBe("Book1");
       expect(results[0].parent).toBeDefined();
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(results[0].parent!.name).toBe("Author1");
       // Non-selected fields should be undefined
       expect(results[0].createdAt).toBeUndefined();
