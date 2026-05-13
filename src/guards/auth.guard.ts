@@ -14,6 +14,16 @@ export class AuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request: FastifyRequest = context.switchToHttp().getRequest();
 
+    if (
+      [
+        "/",
+        "/ready",
+        "/live"
+      ].includes(request.url)
+    ) {
+      return true;
+    }
+
     const authHeader: string | undefined = request.headers.authorization;
     const match = (authHeader ?? "").match(/Bearer (.*)/i);
     const token = match ? match[1] : null;
