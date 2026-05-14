@@ -245,15 +245,17 @@ describe("CRUD Service", () => {
     it("can delete user by id", async () => {
       const user = await service.create(ctx, { username: "john", email: "john@example.com" });
 
-      await service.deleteById(ctx,user.id);
+      const affected = await service.deleteById(ctx,user.id);
 
+      expect(affected).toBe(1);
       const count = await userRepository.count();
       expect(count).toBe(0);
     });
 
     it("does nothing when id not found", async () => {
-      await service.deleteById(ctx,"non-existent-id");
+      const affected = await service.deleteById(ctx,"non-existent-id");
 
+      expect(affected).toBe(0);
       // Should not throw error
       const count = await userRepository.count();
       expect(count).toBe(0);
@@ -268,10 +270,11 @@ describe("CRUD Service", () => {
         { username: "bob", email: "bob@b.com" }
       ]);
 
-      await service.deleteIndexed(ctx, {
+      const affected = await service.deleteIndexed(ctx, {
         like: [{ key: "email", value: "%@a.com" }]
       });
 
+      expect(affected).toBe(2);
       const remaining = await userRepository.find();
       expect(remaining).toHaveLength(1);
       expect(remaining[0].username).toBe("bob");
@@ -280,10 +283,11 @@ describe("CRUD Service", () => {
     it("does nothing when no matches found", async () => {
       await service.create(ctx, { username: "john", email: "john@example.com" });
 
-      await service.deleteIndexed(ctx, {
+      const affected = await service.deleteIndexed(ctx, {
         eq: [{ key: "username", value: "nonexistent" }]
       });
 
+      expect(affected).toBe(0);
       const count = await userRepository.count();
       expect(count).toBe(1);
     });

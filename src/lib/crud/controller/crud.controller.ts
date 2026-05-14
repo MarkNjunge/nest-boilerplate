@@ -26,6 +26,7 @@ import { BaseController, BaseRouteNames, ControllerOptions } from "@/lib/crud/co
 import { BaseEntity } from "@/lib/crud";
 import { ReqCtx } from "@/decorators/request-context.decorator";
 import { ICrudContext } from "@/lib/crud/utils/context";
+import { DeletedDto } from "@/lib/crud/utils/deleted.dto";
 
 export type CrudRouteNames = "create" | "createBulk" | "upsert" | "upsertBulk" | "updateIndexed" | "update" | "deleteIndexed" | "deleteById";
 
@@ -138,14 +139,17 @@ export function CrudController<Entity extends BaseEntity>(
       name: "filter",
       description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)"
     })
-    @HttpCode(204)
-    @ApiResponse({ status: 204 })
-    async deleteIndexed(@ReqCtx() ctx: ICrudContext, @Query("filter") filter: string): Promise<void> {
+    @HttpCode(200)
+    @ApiResponse({ status: 200, type: DeletedDto })
+    async deleteIndexed(@ReqCtx() ctx: ICrudContext, @Query("filter") filter: string): Promise<DeletedDto> {
       if (!filter) {
         throw new HttpException(400, "filter query is required", ErrorCodes.CLIENT_ERROR);
       }
 
-      return this.service.deleteIndexed(ctx, parseRawFilter(filter));
+      const affected = await this.service.deleteIndexed(ctx, parseRawFilter(filter));
+      return {
+        affected
+      };
     }
 
     @Delete("/:id")
@@ -153,10 +157,13 @@ export function CrudController<Entity extends BaseEntity>(
     @ApiSecurity("api-key")
     @ApiParam({ name: "id", type: String })
     @ApiOperation({ summary: "Delete an entity by id" })
-    @HttpCode(204)
-    @ApiResponse({ status: 204 })
-    async deleteById(@ReqCtx() ctx: ICrudContext, @Param("id") id: string): Promise<void> {
-      return this.service.deleteById(ctx, id);
+    @HttpCode(200)
+    @ApiResponse({ status: 200, type: DeletedDto })
+    async deleteById(@ReqCtx() ctx: ICrudContext, @Param("id") id: string): Promise<DeletedDto> {
+      const affected = await this.service.deleteById(ctx, id);
+      return {
+        affected
+      };
     }
   }
 

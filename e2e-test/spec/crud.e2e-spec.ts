@@ -329,7 +329,8 @@ describe("CRUD", () => {
       .delete(`/users/${createResult.body.id}`)
       .set("Authorization", "Bearer api-key");
 
-    expect(response.status).toBe(204);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ affected: 1 });
   });
 
   it("DELETE /users (deleteIndexed)", async () => {
@@ -348,7 +349,8 @@ describe("CRUD", () => {
       .query({ filter: "(email,eq,delete@mail.com)" })
       .set("Authorization", "Bearer api-key");
 
-    expect(response.status).toBe(204);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ affected: 1 });
   });
 
   it("DELETE /users without filter should fail", async () => {

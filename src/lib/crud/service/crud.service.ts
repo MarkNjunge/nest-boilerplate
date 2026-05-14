@@ -101,18 +101,22 @@ export class CrudService<
     });
   }
 
-  async deleteById(ctx: ICrudContext, id: string): Promise<void> {
+  async deleteById(ctx: ICrudContext, id: string): Promise<number> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id == null) {
       throw new Error("null id passed in deleteById");
     }
-    return this.track("deleteById", { id }, () => this.repository.delete(id).then(() => undefined));
+    return this.track("deleteById", { id }, async () => {
+      const result = await this.repository.delete(id);
+      return result.affected ?? 0;
+    });
   }
 
-  async deleteIndexed(ctx: ICrudContext, filter: Filter<Entity>): Promise<void> {
+  async deleteIndexed(ctx: ICrudContext, filter: Filter<Entity>): Promise<number> {
     return this.track("deleteIndexed", { filter }, async () => {
       const filterConditions = parseFilter(filter);
-      await this.repository.delete(filterConditions);
+      const result = await this.repository.delete(filterConditions);
+      return result.affected ?? 0;
     });
   }
 }
