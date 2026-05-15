@@ -19,6 +19,7 @@ import multipart from "@fastify/multipart";
 import { FileHandler } from "@/utils/file-handler";
 import { AppAlsService } from "@/als/app-als.service";
 import { appAlsMiddleware } from "@/als/als.middleware";
+import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -136,6 +137,11 @@ function initializeSwagger(app: NestFastifyApplication): void {
       type: "http",
       in: "header",
       scheme: "bearer",
+    })
+    .addGlobalResponse({
+      status: 500,
+      description: "Internal error",
+      type: ApiErrorDto
     })
     .build();
 
