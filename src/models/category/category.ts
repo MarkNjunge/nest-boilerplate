@@ -35,17 +35,17 @@ export class CategoryCreateDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   parentId?: string;
 }
 
 export class CategoryUpdateDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   name?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   parentId?: string;
 }

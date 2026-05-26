@@ -39,7 +39,7 @@ export class CommentCreateDto {
 }
 
 export class CommentUpdateDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   content?: string;
 }

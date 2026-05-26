@@ -45,21 +45,21 @@ export class PostCreateDto {
   @IsNotEmpty()
   content: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   categoryId?: string;
 }
 
 export class PostUpdateDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   title?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   content?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   categoryId?: string;
 }

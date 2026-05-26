@@ -14,7 +14,7 @@ export class ApiErrorDto {
   @ApiProperty()
   traceId: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsOptional()
   meta?: any;
 }
