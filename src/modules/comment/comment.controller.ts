@@ -7,7 +7,7 @@ import {
 } from "@/models/comment/comment";
 import { CommentService } from "@/modules/comment/comment.service";
 
-@Controller("comment")
+@Controller("comments")
 export class CommentController extends CrudController(
   Comment,
   CommentCreateDto,

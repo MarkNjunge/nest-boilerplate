@@ -7,7 +7,7 @@ import { CreatePostWithCommentDto } from "@/models/post/post-with-comment.dto";
 import { AuthGuard } from "@/guards/auth.guard";
 import { IReqCtx, ReqCtx } from "@/decorators/request-context.decorator";
 
-@Controller("post")
+@Controller("posts")
 export class PostController extends CrudController(
   Post,
   PostCreateDto,

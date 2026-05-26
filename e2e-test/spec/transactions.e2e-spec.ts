@@ -25,7 +25,7 @@ describe("Transactions", () => {
     };
 
     const response = await request(testApiHost)
-      .post("/post/with-comment")
+      .post("/posts/with-comment")
       .send(dto)
       .set("Authorization", `Bearer ${userId}`);
 
@@ -39,7 +39,7 @@ describe("Transactions", () => {
 
     // Verify both entities persisted
     const postRes = await request(testApiHost)
-      .get(`/post/${response.body.id}`)
+      .get(`/posts/${response.body.id}`)
       .query({ include: "comments" })
       .set("Authorization", `Bearer ${userId}`);
     expect(postRes.status).toBe(200);
@@ -56,7 +56,7 @@ describe("Transactions", () => {
     };
 
     const response = await request(testApiHost)
-      .post("/post/with-comment")
+      .post("/posts/with-comment")
       .send(dto)
       .set("Authorization", `Bearer ${userId}`);
 
@@ -64,7 +64,7 @@ describe("Transactions", () => {
 
     // Verify the post was NOT created (transaction rolled back)
     const postRes = await request(testApiHost)
-      .get("/post")
+      .get("/posts")
       .query({ filter: `(title,eq,${uniqueTitle})` })
       .set("Authorization", `Bearer ${userId}`);
 

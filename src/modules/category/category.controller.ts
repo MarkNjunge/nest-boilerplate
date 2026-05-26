@@ -3,7 +3,7 @@ import { CrudController } from "@/lib/crud";
 import { Category, CategoryCreateDto, CategoryUpdateDto } from "@/models/category/category";
 import { CategoryService } from "@/modules/category/category.service";
 
-@Controller("category")
+@Controller("categories")
 export class CategoryController extends CrudController(Category, CategoryCreateDto, CategoryUpdateDto)<CategoryCreateDto, CategoryUpdateDto> {
   constructor(
     protected readonly categoryService: CategoryService

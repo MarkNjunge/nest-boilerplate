@@ -50,7 +50,7 @@ describe("Nesting", () => {
       content: "Full post content here"
     };
     const postRes = await request(testApiHost)
-      .post("/post")
+      .post("/posts")
       .send(postDto)
       .set("Authorization", `Bearer ${userId}`);
     const postId = postRes.body.id;
@@ -61,13 +61,13 @@ describe("Nesting", () => {
       postId
     };
     await request(testApiHost)
-      .post("/comment")
+      .post("/comments")
       .send(commentDto)
       .set("Authorization", `Bearer ${userId}`);
 
     // Query with deep nested select: post.title, post.content, comments.content, comments.user.username
     const response = await request(testApiHost)
-      .get("/post")
+      .get("/posts")
       .query({
         select: "title,content,comments.content,comments.user.username",
         include: "comments,comments.user",
@@ -126,7 +126,7 @@ describe("Nesting", () => {
       content: "Post content"
     };
     const postRes = await request(testApiHost)
-      .post("/post")
+      .post("/posts")
       .send(postDto)
       .set("Authorization", `Bearer ${userId}`);
     const postId = postRes.body.id;
@@ -137,13 +137,13 @@ describe("Nesting", () => {
       postId
     };
     await request(testApiHost)
-      .post("/comment")
+      .post("/comments")
       .send(commentDto)
       .set("Authorization", `Bearer ${userId}`);
 
     // Query selecting only relation fields: root id, comments.id, comments.user.username
     const response = await request(testApiHost)
-      .get("/post")
+      .get("/posts")
       .query({
         select: "id,comments.id,comments.user.username",
         include: "comments,comments.user",
