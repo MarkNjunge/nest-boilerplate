@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  SetMetadata,
   UseGuards
 } from "@nestjs/common";
 import {
@@ -20,7 +21,7 @@ import {
   ApiSecurity
 } from "@nestjs/swagger";
 import { parseRawFilter } from "@/lib/crud/query/query";
-import { AuthGuard } from "@/guards/auth.guard";
+import { AUTH_MODE_KEY, AuthGuard } from "@/guards/auth.guard";
 import { ErrorCodes, HttpException } from "@/utils";
 import { BaseController, BaseRouteNames, ControllerOptions } from "@/lib/crud/controller/base.controller";
 import { BaseEntity } from "@/lib/crud";
@@ -39,9 +40,13 @@ export function CrudController<Entity extends BaseEntity>(
   const baseExclude = options?.exclude?.filter(
     (m): m is BaseRouteNames => ["count", "list", "get", "listCursor", "getById"].includes(m)
   );
+  const authOption = options?.auth;
   const BaseControllerClass = BaseController<Entity>(
     entityType,
-    baseExclude?.length ? { exclude: baseExclude } : undefined
+    {
+      ...(baseExclude?.length ? { exclude: baseExclude } : {}),
+      auth: authOption
+    }
   );
 
   class CrudControllerHost<
@@ -51,8 +56,6 @@ export function CrudController<Entity extends BaseEntity>(
     declare readonly service: CrudService<Entity, Create, Update>;
 
     @Post("/")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Create an entity" })
     @ApiBody({ type: createDtoType })
     @ApiResponse({ status: 201, type: entityType })
@@ -61,8 +64,6 @@ export function CrudController<Entity extends BaseEntity>(
     }
 
     @Post("/bulk")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Create entities in bulk" })
     @ApiBody({ type: createDtoType, isArray: true })
     @ApiResponse({ status: 201, type: entityType, isArray: true })
@@ -71,8 +72,6 @@ export function CrudController<Entity extends BaseEntity>(
     }
 
     @Put("/")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Create or update entity (upsert)" })
     @ApiBody({ type: createDtoType })
     @ApiResponse({ status: 200, type: entityType })
@@ -81,8 +80,6 @@ export function CrudController<Entity extends BaseEntity>(
     }
 
     @Put("/bulk")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Create or update multiple entities (upsert)" })
     @ApiBody({ type: createDtoType, isArray: true })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
@@ -91,8 +88,6 @@ export function CrudController<Entity extends BaseEntity>(
     }
 
     @Patch("/")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Update multiple entities by filter" })
     @ApiQuery({
       name: "filter",
@@ -113,8 +108,6 @@ export function CrudController<Entity extends BaseEntity>(
     }
 
     @Patch("/:id")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiParam({ name: "id", type: String })
     @ApiOperation({ summary: "Update an entity" })
     @ApiBody({ type: updateDtoType })
@@ -132,8 +125,6 @@ export function CrudController<Entity extends BaseEntity>(
     }
 
     @Delete("/")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Delete multiple entities by filter" })
     @ApiQuery({
       name: "filter",
@@ -153,8 +144,6 @@ export function CrudController<Entity extends BaseEntity>(
     }
 
     @Delete("/:id")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiParam({ name: "id", type: String })
     @ApiOperation({ summary: "Delete an entity by id" })
     @HttpCode(200)
@@ -192,6 +181,34 @@ export function CrudController<Entity extends BaseEntity>(
     if (method in CrudControllerHost.prototype) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (CrudControllerHost.prototype as any)[method];
+    }
+  }
+
+  const authConfig = options?.auth;
+  const publicReads = authConfig !== false && authConfig?.publicReads;
+  const mode = authConfig !== false ? authConfig?.mode : undefined;
+
+  if (publicReads) {
+    const writeMethods: CrudRouteNames[] = [
+      "create", "createBulk", "upsert", "upsertBulk",
+      "updateIndexed", "update", "deleteIndexed", "deleteById",
+    ];
+    for (const method of writeMethods) {
+      if (!(method in CrudControllerHost.prototype)) {
+        continue;
+      }
+      const descriptor = Object.getOwnPropertyDescriptor(CrudControllerHost.prototype, method)!;
+      UseGuards(AuthGuard)(CrudControllerHost.prototype, method, descriptor);
+      ApiSecurity("api-key")(CrudControllerHost.prototype, method, descriptor);
+      if (mode) {
+        SetMetadata(AUTH_MODE_KEY, mode)(CrudControllerHost.prototype, method, descriptor);
+      }
+    }
+  } else if (authConfig !== false) {
+    UseGuards(AuthGuard)(CrudControllerHost);
+    ApiSecurity("api-key")(CrudControllerHost);
+    if (mode) {
+      SetMetadata(AUTH_MODE_KEY, mode)(CrudControllerHost);
     }
   }
 

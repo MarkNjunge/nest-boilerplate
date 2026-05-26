@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Query,
+  SetMetadata,
   UseGuards
 } from "@nestjs/common";
 import {
@@ -19,12 +20,15 @@ import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagina
 import { HttpException } from "@/utils";
 import { ReqCtx } from "@/decorators/request-context.decorator";
 import { ICrudContext } from "@/lib/crud/utils/context";
-import { AuthGuard } from "@/guards/auth.guard";
+import { AUTH_MODE_KEY, AuthGuard } from "@/guards/auth.guard";
 
 export type BaseRouteNames = "count" | "list" | "get" | "listCursor" | "getById";
 
+export type AuthConfig = false | { mode?: string; publicReads?: boolean };
+
 export interface ControllerOptions<T extends string> {
   exclude?: T[];
+  auth?: AuthConfig;
 }
 
 export function BaseController<
@@ -40,8 +44,6 @@ export function BaseController<
     ) {}
 
     @Get("/count")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Count entities matching the query" })
     @ApiResponse({ status: 200, type: Number })
     async count(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<number> {
@@ -49,8 +51,6 @@ export function BaseController<
     }
 
     @Get("/")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "List entities matching the query" })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
     async list(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<Entity[]> {
@@ -58,8 +58,6 @@ export function BaseController<
     }
 
     @Get("/first")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Get the first entity matching the query" })
     @ApiResponse({ status: 200, type: entityType })
     async get(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<Entity | null> {
@@ -71,8 +69,6 @@ export function BaseController<
     }
 
     @Get("/cursor")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiOperation({ summary: "List entities with cursor-based pagination" })
     @ApiExtraModels(PageInfo)
     @ApiResponse({
@@ -90,8 +86,6 @@ export function BaseController<
     }
 
     @Get("/:id")
-    @UseGuards(AuthGuard)
-    @ApiSecurity("api-key")
     @ApiParam({ name: "id", type: String })
     @ApiOperation({ summary: "Get an entity by id" })
     @ApiResponse({ status: 200, type: entityType })
@@ -112,6 +106,20 @@ export function BaseController<
     for (const method of options.exclude) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (BaseControllerHost.prototype as any)[method];
+    }
+  }
+
+  const authConfig = options?.auth;
+  const publicReads = authConfig !== false && authConfig?.publicReads;
+
+  if (publicReads) {
+    // Empty guard list
+  } else if (authConfig !== false) {
+    UseGuards(AuthGuard)(BaseControllerHost);
+    ApiSecurity("api-key")(BaseControllerHost);
+
+    if (authConfig?.mode) {
+      SetMetadata(AUTH_MODE_KEY, authConfig.mode)(BaseControllerHost);
     }
   }
 

@@ -5,7 +5,7 @@ import { AuthValidator } from "@/guards/auth.validator";
 
 @Injectable()
 export class AuthService extends AuthValidator {
-  validateToken(token: string): AuthenticatedUser | null {
+  validateToken(token: string, mode?: string): AuthenticatedUser | null {
     return { userId: token };
   }
 }

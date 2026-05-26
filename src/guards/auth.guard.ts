@@ -1,14 +1,18 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import { FastifyRequest } from "fastify";
 import { AuthValidator } from "@/guards/auth.validator";
 import { AppAlsService, ALS_AUTH_USER } from "@/als/app-als.service";
 import { ErrorCodes, HttpException } from "@/utils";
+
+export const AUTH_MODE_KEY = "auth_mode";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly authValidator: AuthValidator,
     private readonly alsService: AppAlsService,
+    private readonly reflector: Reflector,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -24,6 +28,11 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    const mode = this.reflector.getAllAndOverride<string | undefined>(AUTH_MODE_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
     const authHeader: string | undefined = request.headers.authorization;
     const match = (authHeader ?? "").match(/Bearer (.*)/i);
     const token = match ? match[1] : null;
@@ -36,7 +45,7 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    const user = this.authValidator.validateToken(token);
+    const user = this.authValidator.validateToken(token, mode);
 
     if (!user) {
       throw new HttpException(

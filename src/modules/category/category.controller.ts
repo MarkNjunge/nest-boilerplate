@@ -4,7 +4,7 @@ import { Category, CategoryCreateDto, CategoryUpdateDto } from "@/models/categor
 import { CategoryService } from "@/modules/category/category.service";
 
 @Controller("categories")
-export class CategoryController extends CrudController(Category, CategoryCreateDto, CategoryUpdateDto)<CategoryCreateDto, CategoryUpdateDto> {
+export class CategoryController extends CrudController(Category, CategoryCreateDto, CategoryUpdateDto, { auth: { publicReads: true, mode: "ADMIN" } })<CategoryCreateDto, CategoryUpdateDto> {
   constructor(
     protected readonly categoryService: CategoryService
   ) {
