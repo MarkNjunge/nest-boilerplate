@@ -195,7 +195,9 @@ export class BaseService<
         if (sortField === "id") {
           return (item as any).id as string;
         }
-        return encodeCursor(String((item as any)[sortField]), (item as any).id as string);
+        const sortValue = (item as any)[sortField];
+        const sortStr = sortValue instanceof Date ? sortValue.toISOString() : String(sortValue);
+        return encodeCursor(sortStr, (item as any).id as string);
       };
 
       return {
