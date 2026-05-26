@@ -4,7 +4,8 @@ import { testApiHost, randomString } from "../util";
 describe("CRUD", () => {
   it("GET /users/count", async () => {
     const response = await request(testApiHost)
-      .get("/users/count");
+      .get("/users/count")
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);
@@ -24,7 +25,8 @@ describe("CRUD", () => {
 
     const response = await request(testApiHost)
       .get("/users/count")
-      .query({ filter: `(email,eq,${createDto.email})` });
+      .query({ filter: `(email,eq,${createDto.email})` })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);
@@ -33,7 +35,8 @@ describe("CRUD", () => {
 
   it("GET /users", async () => {
     const response = await request(testApiHost)
-      .get("/users");
+      .get("/users")
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);
@@ -51,7 +54,8 @@ describe("CRUD", () => {
         limit: "10",
         offset: "0",
         sort: "(username,ASC)"
-      });
+      })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);
@@ -64,7 +68,8 @@ describe("CRUD", () => {
 
   it("GET /users/first", async () => {
     const response = await request(testApiHost)
-      .get("/users/first");
+      .get("/users/first")
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);
@@ -83,7 +88,8 @@ describe("CRUD", () => {
 
     const response = await request(testApiHost)
       .get("/users/first")
-      .query({ filter: `(email,eq,${createDto.email})` });
+      .query({ filter: `(email,eq,${createDto.email})` })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);
@@ -104,7 +110,8 @@ describe("CRUD", () => {
       .set("Authorization", "Bearer api-key");
 
     const response = await request(testApiHost)
-      .get(`/users/${createResult.body.id}`);
+      .get(`/users/${createResult.body.id}`)
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);
@@ -126,7 +133,8 @@ describe("CRUD", () => {
 
     const response = await request(testApiHost)
       .get(`/users/${createResult.body.id}`)
-      .query({ select: "username,email" });
+      .query({ select: "username,email" })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/json/);

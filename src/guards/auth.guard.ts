@@ -31,8 +31,8 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new HttpException(
         401,
-        "Invalid authentication",
-        ErrorCodes.INVALID_AUTHENTICATION,
+        "Missing authentication",
+        ErrorCodes.MISSING_AUTHENTICATION,
       );
     }
 

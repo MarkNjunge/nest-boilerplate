@@ -10,6 +10,10 @@ export class UserProfile extends BaseEntity {
   @ApiProperty()
   bio: string;
 
+  @ApiProperty()
+  @Column({ name: "user_id" })
+  userId: string;
+
   @OneToOne("User", "profile", { onDelete: "CASCADE" })
   @JoinColumn({ name: "user_id", foreignKeyConstraintName: "FK__users__user_profiles" })
   user?: User;

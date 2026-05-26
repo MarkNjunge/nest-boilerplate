@@ -10,6 +10,6 @@ export class CategoryService extends CrudService<Category, CategoryCreateDto, Ca
     @InjectRepository(Category)
     protected readonly categoryRepository: Repository<Category>
   ) {
-    super("Category", categoryRepository);
+    super("Category", categoryRepository, { userScoped: false });
   }
 }

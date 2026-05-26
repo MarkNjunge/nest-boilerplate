@@ -10,6 +10,6 @@ export class UserService extends CrudService<User, UserCreateDto, UserUpdateDto>
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>
   ) {
-    super("User", usersRepository);
+    super("User", usersRepository, { userScoped: false });
   }
 }

@@ -1,4 +1,5 @@
 export class ErrorCodes {
+  static MISSING_AUTHENTICATION = "MissingAuthentication";
   static INVALID_AUTHENTICATION = "InvalidAuthentication";
   static INTERNAL_ERROR = "InternalError";
   static CLIENT_ERROR = "ClientError";

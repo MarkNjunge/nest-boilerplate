@@ -33,7 +33,7 @@ describe("TransactionService", () => {
     await dataSource.initialize();
     userRepository = dataSource.getRepository(UserTestEntity);
     transactionService = new TransactionService(dataSource);
-    userService = new CrudService("User", userRepository);
+    userService = new CrudService("User", userRepository, { userScoped: false });
   });
 
   afterAll(async () => {

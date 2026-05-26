@@ -6,10 +6,13 @@ import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { config } from "@/config";
 import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
 import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-test.entity";
+import { PostTestEntity, PostTestCreateDto } from "@/lib/crud/testing/test-entities/post-test.entity";
 import { createTestContainer } from "@/lib/crud/testing/test.utils";
 import { ICrudContext } from "@/lib/crud";
 
 const ctx: ICrudContext = { traceId: "test" };
+const user1Ctx: ICrudContext = { traceId: "test", user: { userId: "usr_1" } };
+const user2Ctx: ICrudContext = { traceId: "test", user: { userId: "usr_2" } };
 
 describe("CRUD Service", () => {
   let container: StartedPostgreSqlContainer;
@@ -24,7 +27,7 @@ describe("CRUD Service", () => {
 
     dataSource = new DataSource({
       ...opts,
-      entities: [UserTestEntity, UserProfileTestEntity, AddressTestEntity, BuildingTestEntity],
+      entities: [UserTestEntity, UserProfileTestEntity, AddressTestEntity, BuildingTestEntity, PostTestEntity],
       synchronize: true,
       logging: config.integrationTest.logQueries
     });
@@ -32,7 +35,7 @@ describe("CRUD Service", () => {
     await dataSource.initialize();
     userRepository = dataSource.getRepository(UserTestEntity);
     profileRepository = dataSource.getRepository(UserProfileTestEntity);
-    service = new CrudService("User", userRepository);
+    service = new CrudService("User", userRepository, { userScoped: false });
   });
 
   afterAll(async () => {
@@ -290,6 +293,116 @@ describe("CRUD Service", () => {
       expect(affected).toBe(0);
       const count = await userRepository.count();
       expect(count).toBe(1);
+    });
+  });
+
+  describe("user scoping", () => {
+    let postRepository: Repository<PostTestEntity>;
+    let postService: CrudService<PostTestEntity, PostTestCreateDto>;
+
+    beforeAll(() => {
+      postRepository = dataSource.getRepository(PostTestEntity);
+      postService = new CrudService("Post", postRepository);
+    });
+
+    beforeEach(async () => {
+      await postRepository.deleteAll();
+    });
+
+    it("create sets userId from context", async () => {
+      const post = await postService.create(user1Ctx, { title: "Hello" });
+      expect(post.userId).toBe("usr_1");
+    });
+
+    it("createBulk sets userId from context on all records", async () => {
+      const posts = await postService.createBulk(user1Ctx, [{ title: "A" }, { title: "B" }]);
+      expect(posts.every(p => p.userId === "usr_1")).toBe(true);
+    });
+
+    it("list only returns the current user's records", async () => {
+      await postService.create(user1Ctx, { title: "User 1 Post" });
+      await postService.create(user2Ctx, { title: "User 2 Post" });
+
+      const result = await postService.list(user1Ctx, {});
+      expect(result).toHaveLength(1);
+      expect(result[0].userId).toBe("usr_1");
+    });
+
+    it("getById returns null for another user's record", async () => {
+      const post = await postService.create(user1Ctx, { title: "User 1 Post" });
+      const result = await postService.getById(user2Ctx, post.id);
+      expect(result).toBeNull();
+    });
+
+    it("update cannot affect another user's record", async () => {
+      const post = await postService.create(user1Ctx, { title: "Original" });
+      const result = await postService.update(user2Ctx, post.id, { title: "Hacked" });
+      expect(result).toBeNull();
+
+      const unchanged = await postService.getById(user1Ctx, post.id);
+      expect(unchanged?.title).toBe("Original");
+    });
+
+    it("deleteById cannot delete another user's record", async () => {
+      const post = await postService.create(user1Ctx, { title: "User 1 Post" });
+      const affected = await postService.deleteById(user2Ctx, post.id);
+      expect(affected).toBe(0);
+
+      const count = await postRepository.count();
+      expect(count).toBe(1);
+    });
+
+    it("deleteIndexed only deletes the current user's matching records", async () => {
+      await postService.create(user1Ctx, { title: "shared title" });
+      await postService.create(user2Ctx, { title: "shared title" });
+
+      const affected = await postService.deleteIndexed(user1Ctx, {
+        eq: [{ key: "title", value: "shared title" }]
+      });
+
+      expect(affected).toBe(1);
+      const remaining = await postRepository.find();
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0].userId).toBe("usr_2");
+    });
+
+    it("throws when context has no user", async () => {
+      await expect(postService.list({ traceId: "test" }, {})).rejects.toThrow("User context missing");
+    });
+
+    describe("userScoped: false in context", () => {
+      it("update can modify another user's record", async () => {
+        const post = await postService.create(user1Ctx, { title: "Original" });
+        const result = await postService.update({ ...user2Ctx, userScoped: false }, post.id, { title: "Updated" });
+        expect(result?.title).toBe("Updated");
+      });
+
+      it("deleteById can delete another user's record", async () => {
+        const post = await postService.create(user1Ctx, { title: "User 1 Post" });
+        const affected = await postService.deleteById({ ...user2Ctx, userScoped: false }, post.id);
+        expect(affected).toBe(1);
+        const count = await postRepository.count();
+        expect(count).toBe(0);
+      });
+
+      it("deleteIndexed deletes matching records across all users", async () => {
+        await postService.create(user1Ctx, { title: "shared title" });
+        await postService.create(user2Ctx, { title: "shared title" });
+
+        const affected = await postService.deleteIndexed({ ...user1Ctx, userScoped: false }, {
+          eq: [{ key: "title", value: "shared title" }]
+        });
+
+        expect(affected).toBe(2);
+      });
+
+      it("does not affect the original context (still scoped)", async () => {
+        const post = await postService.create(user1Ctx, { title: "User 1 Post" });
+        await postService.deleteById({ ...user2Ctx, userScoped: false }, post.id);
+        // Confirm original scoping still prevents user2 from seeing user1 data
+        const result = await postService.getById(user2Ctx, post.id);
+        expect(result).toBeNull();
+      });
     });
   });
 });

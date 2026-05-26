@@ -14,6 +14,6 @@ export class UserProfileService extends CrudService<UserProfile, UserProfileCrea
     @InjectRepository(UserProfile)
     private readonly userProfilesRepository: Repository<UserProfile>
   ) {
-    super("UserProfile", userProfilesRepository);
+    super("UserProfile", userProfilesRepository, { userScoped: false });
   }
 }

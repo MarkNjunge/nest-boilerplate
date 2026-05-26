@@ -19,6 +19,10 @@ function decodeCursor(cursor: string): [string, string] {
   return [decoded.slice(0, sep), decoded.slice(sep + 3)];
 }
 
+export interface ServiceOptions {
+  userScoped?: boolean;
+}
+
 export class BaseService<
   Entity extends ObjectLiteral
 > {
@@ -31,7 +35,8 @@ export class BaseService<
 
   constructor(
     protected readonly name: string,
-    protected readonly repository: Repository<Entity>
+    protected readonly repository: Repository<Entity>,
+    protected readonly serviceOptions: ServiceOptions = {}
   ) {
     this.logger = new Logger(`CRUD:${this.name}`);
     const meter = opentelemetry.metrics.getMeter("crud");
@@ -47,6 +52,18 @@ export class BaseService<
         }
       })
     };
+  }
+
+  protected getUserId(ctx: ICrudContext): string | undefined {
+    const scoped = ctx.userScoped ?? this.serviceOptions.userScoped !== false;
+
+    if (!scoped) {
+      return undefined;
+    }
+    if (!ctx.user?.userId) {
+      throw new Error("User context missing");
+    }
+    return ctx.user.userId;
   }
 
   withTransaction(manager: EntityManager): this {
@@ -81,16 +98,20 @@ export class BaseService<
   }
 
   async count(ctx: ICrudContext, query: Query<Entity>) {
-    return this.track("count", { query }, () => this.repository.count(mapQueryToTypeorm(query)));
+    return this.track("count", { query }, () =>
+      this.repository.count(mapQueryToTypeorm(query, this.getUserId(ctx)))
+    );
   }
 
   async list(ctx: ICrudContext, query: Query<Entity> = {}): Promise<Entity[]> {
-    return this.track("list", { query }, () => this.repository.find(mapQueryToTypeorm(query)));
+    return this.track("list", { query }, () =>
+      this.repository.find(mapQueryToTypeorm(query, this.getUserId(ctx)))
+    );
   }
 
   async get(ctx: ICrudContext, query: Query<Entity> = {}): Promise<Entity | null> {
     return this.track("get", { query }, () =>
-      this.repository.findOne(mapQueryToTypeorm(query) as FindOneOptions<Entity>)
+      this.repository.findOne(mapQueryToTypeorm(query, this.getUserId(ctx)) as FindOneOptions<Entity>)
     );
   }
 
@@ -100,7 +121,7 @@ export class BaseService<
       throw new Error("null id passed in update");
     }
     return this.track("getById", { query }, () => {
-      const options = mapQueryToTypeorm(query) as FindOneOptions<Entity>;
+      const options = mapQueryToTypeorm(query, this.getUserId(ctx)) as FindOneOptions<Entity>;
       return this.repository.findOne({
         ...options,
         where: { ...options.where, id } as any
@@ -122,7 +143,7 @@ export class BaseService<
       }
 
       // Fetch limit + 1 to check for more pages
-      const typeormOptions = mapQueryToTypeorm({ ...restQuery, limit: limit + 1 });
+      const typeormOptions = mapQueryToTypeorm({ ...restQuery, limit: limit + 1 }, this.getUserId(ctx));
       const baseWhere = typeormOptions.where ?? {};
 
       if (sortField === "id") {

@@ -47,16 +47,87 @@ export class User extends BaseEntity {
 
 **Important**: Every entity MUST implement `idPrefix()` to return a 3-4 character prefix (e.g., `"usr_"`, `"post_"`, `"cmt_"`).
 
+## UserScopedEntity
+
+Extends `BaseEntity` for resources that belong to a specific user. Adds a `userId` column and a `@ManyToOne` relation
+to `User`. Services automatically filter all queries by the authenticated user's ID and inject it on create.
+
+```typescript
+import { Entity, Column } from "typeorm";
+import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
+
+@Entity("posts")
+export class Post extends UserScopedEntity {
+  idPrefix(): string {
+    return "post_";
+  }
+
+  @Column()
+  title: string;
+}
+```
+
+The corresponding service requires no extra configuration — user scoping is on by default:
+
+```typescript
+@Injectable()
+export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto> {
+  constructor(@InjectRepository(Post) repo: Repository<Post>) {
+    super("Post", repo); // userScoped: true by default
+  }
+}
+```
+
+For global resources that should not be filtered by user (e.g. `User`, `Category`), pass `{ userScoped: false }`:
+
+```typescript
+super("User", repo, { userScoped: false });
+```
+
+To bypass scoping for a **single call** (e.g. a public feed or an admin action) without changing the service
+constructor, pass `userScoped: false` in the context:
+
+```typescript
+// Public feed — list all posts regardless of author
+const feed = await this.postService.list({ ...ctx, userScoped: false }, query);
+
+// Admin — fetch any user's post by ID
+const post = await this.postService.getById({ ...ctx, userScoped: false }, id);
+```
+
+Authorization for who may make these calls is enforced by the guard layer, not the service.
+
+**Do not include `userId` in Create DTOs** for user-scoped entities — it is injected automatically from the
+authenticated user's context and any value provided in the request body is ignored.
+
 ## BaseService
 
-Provides read-only operations for entities.
+Provides read-only operations for entities. All methods accept an `ICrudContext` as their first argument, which carries
+the authenticated user's ID used for user-scoped filtering.
+
+### Constructor
+
+```typescript
+super(name: string, repository: Repository<Entity>, options?: ServiceOptions)
+```
+
+`ServiceOptions`:
+- `userScoped?: boolean` — defaults to `true`. When `true`, all queries are automatically filtered by the authenticated
+  user's `userId`. Set to `false` for global resources (e.g. `User`, `Category`).
+
+`ICrudContext`:
+- `traceId: string` — request trace ID
+- `user?: { userId: string }` — authenticated user; required when scoping is active
+- `userScoped?: boolean` — per-call override; when `false`, bypasses user filtering for that call regardless of the
+  service-level default
 
 ### Methods
 
-- `count(query?: QueryParams): Promise<number>` - Count entities matching query
-- `list(query?: QueryParams): Promise<Entity[]>` - List entities with filtering, sorting, pagination
-- `get(query: QueryParams): Promise<Entity | null>` - Get first entity matching query
-- `getById(id: string): Promise<Entity>` - Get entity by ID (throws if not found)
+- `count(ctx: ICrudContext, query?: Query): Promise<number>` - Count entities matching query
+- `list(ctx: ICrudContext, query?: Query): Promise<Entity[]>` - List entities with filtering, sorting, pagination
+- `get(ctx: ICrudContext, query: Query): Promise<Entity | null>` - Get first entity matching query
+- `getById(ctx: ICrudContext, id: string): Promise<Entity | null>` - Get entity by ID
+- `listCursor(ctx: ICrudContext, query?: Query): Promise<CursorPaginationResult<Entity>>` - Cursor-based pagination
 - `withTransaction(manager: EntityManager): this` - Create transaction-scoped clone
 
 ### Example
@@ -66,15 +137,14 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { BaseService } from "@/lib/crud";
-import { User } from "@/models/user/user.entity";
+import { User } from "@/models/user/user";
 
 @Injectable()
 export class UserService extends BaseService<User> {
   constructor(@InjectRepository(User) repo: Repository<User>) {
-    super("User", repo);
+    super("User", repo, { userScoped: false });
   }
 
-  // Add custom methods here
   async findByEmail(email: string): Promise<User | null> {
     return this.repository.findOne({ where: { email } });
   }
@@ -83,18 +153,19 @@ export class UserService extends BaseService<User> {
 
 ## CrudService
 
-Extends `BaseService` with write operations.
+Extends `BaseService` with write operations. When `userScoped` is true (the default), `userId` is automatically
+injected from context on create and all updates/deletes are scoped to the current user.
 
 ### Additional Methods
 
-- `create(dto: CreateDto): Promise<Entity>` - Create single entity
-- `createBulk(dtos: CreateDto[]): Promise<Entity[]>` - Create multiple entities
-- `upsert(dto: CreateDto | UpdateDto): Promise<Entity>` - Create or update based on unique fields
-- `upsertBulk(dtos: (CreateDto | UpdateDto)[]): Promise<Entity[]>` - Bulk upsert
-- `update(id: string, dto: UpdateDto): Promise<Entity>` - Update entity by ID
-- `updateIndexed(dto: UpdateDto & { id: string }): Promise<Entity>` - Update with ID in DTO
-- `deleteById(id: string): Promise<void>` - Delete entity by ID
-- `deleteIndexed(dto: { id: string }): Promise<void>` - Delete with ID in DTO
+- `create(ctx: ICrudContext, dto: CreateDto): Promise<Entity>` - Create entity; injects `userId` from context
+- `createBulk(ctx: ICrudContext, dtos: CreateDto[]): Promise<Entity[]>` - Create multiple entities
+- `upsert(ctx: ICrudContext, dto: CreateDto | UpdateDto): Promise<Entity>` - Create or update
+- `upsertBulk(ctx: ICrudContext, dtos: (CreateDto | UpdateDto)[]): Promise<Entity[]>` - Bulk upsert
+- `update(ctx: ICrudContext, id: string, dto: UpdateDto): Promise<Entity | null>` - Update by ID (scoped to user)
+- `updateIndexed(ctx: ICrudContext, filter: Filter, dto: UpdateDto): Promise<Entity[]>` - Update matching records
+- `deleteById(ctx: ICrudContext, id: string): Promise<number>` - Delete by ID (scoped to user); returns affected count
+- `deleteIndexed(ctx: ICrudContext, filter: Filter): Promise<number>` - Delete matching records
 
 ### Example
 
@@ -103,13 +174,13 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CrudService } from "@/lib/crud";
-import { User } from "@/models/user/user.entity";
-import { CreateUserDto, UpdateUserDto } from "@/models/user/user.dto";
+import { Post } from "@/models/post/post";
+import { CreatePostDto, UpdatePostDto } from "@/models/post/post";
 
 @Injectable()
-export class UserService extends CrudService<User, CreateUserDto, UpdateUserDto> {
-  constructor(@InjectRepository(User) repo: Repository<User>) {
-    super("User", repo);
+export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto> {
+  constructor(@InjectRepository(Post) repo: Repository<Post>) {
+    super("Post", repo); // userScoped: true by default
   }
 }
 ```
@@ -240,23 +311,21 @@ export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto>
     super("Post", repo);
   }
 
-  async createPostWithComment(dto: CreatePostWithCommentDto): Promise<Post> {
+  async createPostWithComment(ctx: ICrudContext, dto: CreatePostWithCommentDto): Promise<Post> {
     return this.transactionService.run(async manager => {
       // Create transaction-scoped service clones
       const txPostService = this.withTransaction(manager);
       const txCommentService = this.commentService.withTransaction(manager);
 
-      // All operations use the same transaction
-      const post = await txPostService.create({
+      // All operations use the same transaction; userId is injected from ctx automatically
+      const post = await txPostService.create(ctx, {
         title: dto.title,
         content: dto.content,
-        userId: dto.userId
       });
 
-      const comment = await txCommentService.create({
+      const comment = await txCommentService.create(ctx, {
         content: dto.comment.content,
-        userId: dto.userId,
-        postId: post.id
+        postId: post.id,
       });
 
       return Object.assign(post, { comments: [comment] });
@@ -268,7 +337,7 @@ export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto>
     return this.transactionService.run(
       async manager => {
         const txService = this.withTransaction(manager);
-        return txService.create(dto);
+        return txService.create(ctx, dto);
       },
       { isolationLevel: "SERIALIZABLE" }
     );
@@ -478,6 +547,7 @@ src/lib/crud/
 │   └── crud.controller.ts       # Full CRUD controller
 ├── entity/
 │   ├── base.entity.ts           # Entity base with id, timestamps
+│   ├── user-scoped.entity.ts    # Entity base with userId for per-user isolation
 │   └── id.ts                    # ULID generation utilities
 ├── query/
 │   ├── cursor-pagination.ts     # Cursor-based pagination
@@ -494,52 +564,76 @@ src/lib/crud/
 
 ## Best Practices
 
-1. **Always extend BaseEntity** - Ensures consistent IDs and timestamps
-2. **Implement idPrefix()** - Required for all entities (3-4 characters)
-3. **Use BaseService for read-only** - Prevents accidental mutations
-4. **Use CrudService for full CRUD** - Get all CRUD operations automatically
-5. **Leverage transactions** - Use `TransactionService` for multi-entity operations
-6. **Exclude unnecessary routes** - Use the `exclude` option to minimize API surface
-7. **Add custom methods** - Extend base classes with domain-specific logic
-8. **Test with QueryParams** - Use the query system for flexible filtering
+1. **Extend UserScopedEntity for user-owned resources** - Gives automatic userId injection and per-user filtering
+2. **Extend BaseEntity for global resources** - Use with `{ userScoped: false }` in the service constructor
+3. **Never put userId in Create DTOs** - For user-scoped entities it is injected from context automatically
+4. **Implement idPrefix()** - Required for all entities (3-4 characters)
+5. **Use BaseService for read-only** - Prevents accidental mutations
+6. **Use CrudService for full CRUD** - Get all CRUD operations automatically
+7. **Leverage transactions** - Use `TransactionService` for multi-entity operations
+8. **Exclude unnecessary routes** - Use the `exclude` option to minimize API surface
+9. **Add custom methods** - Extend base classes with domain-specific logic
 
 ## Common Patterns
 
-### Read-Only API
+### Global (Non-User-Scoped) API
+
+For resources shared across all users (e.g. categories, tags):
 
 ```typescript
-// Service
-export class CategoryService extends BaseService<Category> {
+// Service — explicitly opt out of user scoping
+export class CategoryService extends CrudService<Category, CreateCategoryDto, UpdateCategoryDto> {
   constructor(@InjectRepository(Category) repo: Repository<Category>) {
-    super("Category", repo);
+    super("Category", repo, { userScoped: false });
   }
 }
 
 // Controller
 @Controller("categories")
-export class CategoryController extends BaseController(Category) {
+export class CategoryController extends CrudController(Category, CreateCategoryDto, UpdateCategoryDto) {
   constructor(private readonly categoryService: CategoryService) {
     super(categoryService);
   }
 }
 ```
 
-### Full CRUD API
+### User-Scoped API
+
+For resources owned by a user (e.g. posts, orders). Extends `UserScopedEntity` and uses the default `userScoped: true`:
 
 ```typescript
-// Service
-export class ProductService extends CrudService<Product, CreateProductDto, UpdateProductDto> {
-  constructor(@InjectRepository(Product) repo: Repository<Product>) {
-    super("Product", repo);
+// Entity
+@Entity("posts")
+export class Post extends UserScopedEntity {
+  idPrefix() { return "post_"; }
+
+  @Column()
+  title: string;
+}
+
+// Service — user scoping is on by default
+export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto> {
+  constructor(@InjectRepository(Post) repo: Repository<Post>) {
+    super("Post", repo);
   }
 }
 
 // Controller
-@Controller("products")
-export class ProductController extends CrudController(Product, CreateProductDto, UpdateProductDto) {
-  constructor(private readonly productService: ProductService) {
-    super(productService);
+@Controller("posts")
+export class PostController extends CrudController(Post, CreatePostDto, UpdatePostDto) {
+  constructor(private readonly postService: PostService) {
+    super(postService);
   }
+}
+```
+
+The Create DTO must **not** include `userId`:
+
+```typescript
+export class CreatePostDto {
+  @IsNotEmpty()
+  title: string;
+  // no userId — it is injected from the authenticated user's context
 }
 ```
 
@@ -576,14 +670,14 @@ export class OrderService extends CrudService<Order, CreateOrderDto, UpdateOrder
     super("Order", repo);
   }
 
-  async createOrder(dto: CreateOrderDto): Promise<Order> {
+  async createOrder(ctx: ICrudContext, dto: CreateOrderDto): Promise<Order> {
     return this.transactionService.run(async manager => {
       const txOrderService = this.withTransaction(manager);
       const txInventoryService = this.inventoryService.withTransaction(manager);
       const txPaymentService = this.paymentService.withTransaction(manager);
 
-      // All operations in same transaction
-      const order = await txOrderService.create(dto);
+      // All operations in same transaction; userId injected from ctx automatically
+      const order = await txOrderService.create(ctx, dto);
       await txInventoryService.decrementStock(dto.items);
       await txPaymentService.createCharge(order.id, dto.amount);
 

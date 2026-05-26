@@ -17,10 +17,6 @@ export class CreatePostWithCommentDto {
   @IsNotEmpty()
   content: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  userId: string;
-
   @ApiProperty({ required: false })
   @IsOptional()
   categoryId?: string;

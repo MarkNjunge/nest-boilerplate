@@ -1,7 +1,7 @@
-import { ObjectLiteral, Repository } from "typeorm";
+import { Equal, ObjectLiteral, Repository } from "typeorm";
 import { parseFilter } from "@/lib/crud/query/typeorm-query-mapper";
 import { Filter } from "@/lib/crud/query/query";
-import { BaseService } from "@/lib/crud/service/base.service";
+import { BaseService, ServiceOptions } from "@/lib/crud/service/base.service";
 import { BaseEntity } from "@/lib/crud/entity/base.entity";
 import { genId } from "@/lib/crud/entity/id";
 import { ICrudContext } from "@/lib/crud/utils/context";
@@ -14,9 +14,10 @@ export class CrudService<
 
   constructor(
     protected readonly name: string,
-    protected readonly repository: Repository<Entity>
+    protected readonly repository: Repository<Entity>,
+    serviceOptions: ServiceOptions = {}
   ) {
-    super(name, repository);
+    super(name, repository, serviceOptions);
   }
 
   // Sets id, createdAt, and updatedAt on an entity if they are not already present.
@@ -32,6 +33,10 @@ export class CrudService<
   async create(ctx: ICrudContext, data: Create): Promise<Entity> {
     return this.track("create", { data }, async () => {
       const entity = this.repository.create(data as any) as unknown as Entity;
+      const userId = this.getUserId(ctx);
+      if (userId) {
+        (entity as any).userId = userId;
+      }
       this.prepareEntity(entity, new Date());
       return this.repository.save(entity);
     });
@@ -40,7 +45,11 @@ export class CrudService<
   async createBulk(ctx: ICrudContext, data: Create[]): Promise<Entity[]> {
     return this.track("createBulk", { data }, async () => {
       const now = new Date();
+      const userId = this.getUserId(ctx);
       const entities = this.repository.create(data as any[]).map(entity => {
+        if (userId) {
+          (entity as any).userId = userId;
+        }
         this.prepareEntity(entity, now);
         return entity;
       });
@@ -52,6 +61,10 @@ export class CrudService<
     return this.track("upsert", { data }, async () => {
       const now = new Date();
       const entity = this.repository.create(data as any) as unknown as Entity;
+      const userId = this.getUserId(ctx);
+      if (userId) {
+        (entity as any).userId = userId;
+      }
       this.prepareEntity(entity, now);
       entity.updatedAt = now;
       await this.repository.upsert(entity as any, { conflictPaths: ["id"] });
@@ -62,7 +75,11 @@ export class CrudService<
   async upsertBulk(ctx: ICrudContext, data: Create[]): Promise<Entity[]> {
     return this.track("upsertBulk", { data }, async () => {
       const now = new Date();
+      const userId = this.getUserId(ctx);
       const entities = this.repository.create(data as any[]).map(entity => {
+        if (userId) {
+          (entity as any).userId = userId;
+        }
         this.prepareEntity(entity, now);
         entity.updatedAt = now;
         return entity;
@@ -78,18 +95,28 @@ export class CrudService<
       throw new Error("null id passed in update");
     }
     return this.track("update", { id, data }, async () => {
+      const userId = this.getUserId(ctx);
+      const whereClause: any = userId ? { id, userId } : { id };
       const updateData: Record<string, any> = { ...data };
       if (!options?.silent) {
         updateData.updatedAt = new Date();
       }
-      await this.repository.update(id, updateData);
-      return this.repository.findOne({ where: { id } as any });
+      await this.repository.update(whereClause, updateData);
+      return this.repository.findOne({ where: whereClause });
     });
   }
 
   async updateIndexed(ctx: ICrudContext, filter: Filter<Entity>, data: Update, options?: { silent?: boolean }): Promise<Entity[]> {
     return this.track("updateIndexed", { filter: data }, async () => {
-      const filterConditions = parseFilter(filter);
+      const userId = this.getUserId(ctx);
+      let filterConditions = parseFilter(filter);
+      if (userId) {
+        if (Array.isArray(filterConditions)) {
+          filterConditions = filterConditions.map(f => ({ ...f, userId: Equal(userId) })) as any;
+        } else {
+          filterConditions = { ...filterConditions, userId: Equal(userId) };
+        }
+      }
       const entities = await this.repository.find({ where: filterConditions });
       if (entities.length === 0) {
         return [];
@@ -107,14 +134,28 @@ export class CrudService<
       throw new Error("null id passed in deleteById");
     }
     return this.track("deleteById", { id }, async () => {
-      const result = await this.repository.delete(id);
-      return result.affected ?? 0;
+      const userId = this.getUserId(ctx);
+      if (userId) {
+        const result = await this.repository.delete({ id, userId } as any);
+        return result.affected ?? 0;
+      } else {
+        const result = await this.repository.delete(id);
+        return result.affected ?? 0;
+      }
     });
   }
 
   async deleteIndexed(ctx: ICrudContext, filter: Filter<Entity>): Promise<number> {
     return this.track("deleteIndexed", { filter }, async () => {
-      const filterConditions = parseFilter(filter);
+      const userId = this.getUserId(ctx);
+      let filterConditions = parseFilter(filter);
+      if (userId) {
+        if (Array.isArray(filterConditions)) {
+          filterConditions = filterConditions.map(f => ({ ...f, userId: Equal(userId) })) as any;
+        } else {
+          filterConditions = { ...filterConditions, userId: Equal(userId) };
+        }
+      }
       const result = await this.repository.delete(filterConditions);
       return result.affected ?? 0;
     });

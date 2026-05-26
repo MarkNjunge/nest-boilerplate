@@ -1,13 +1,12 @@
-import { BaseEntity } from "@/lib/crud";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional } from "class-validator";
-import { User } from "../user/user";
 import { Category } from "../category/category";
 import { Comment } from "../comment/comment";
+import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
 
 @Entity({ name: "posts" })
-export class Post extends BaseEntity {
+export class Post extends UserScopedEntity {
   @ApiProperty()
   @Column()
   title: string;
@@ -17,19 +16,8 @@ export class Post extends BaseEntity {
   content: string;
 
   @ApiProperty()
-  @Column({ name: "user_id" })
-  userId: string;
-
-  @ApiProperty()
   @Column({ name: "category_id", nullable: true })
   categoryId?: string;
-
-  @ManyToOne(() => User, { onDelete: "CASCADE" })
-  @JoinColumn({
-    name: "user_id",
-    foreignKeyConstraintName: "FK__post__user_id",
-  })
-  user?: User;
 
   @ManyToOne(() => Category, {
     onDelete: "SET NULL",
@@ -56,10 +44,6 @@ export class PostCreateDto {
   @ApiProperty()
   @IsNotEmpty()
   content: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  userId: string;
 
   @ApiProperty()
   @IsOptional()

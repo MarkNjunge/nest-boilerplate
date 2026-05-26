@@ -191,6 +191,16 @@ export class CursorRawQuery extends BaseRawQuery {
   sortDir?: "ASC" | "DESC";
 }
 
+export class PagingCursorRawQuery extends BaseRawQuery {
+  @ApiProperty({ required: false, description: "Fetch items greater than this cursor" })
+  @IsOptional()
+  after?: string;
+
+  @ApiProperty({ required: false, description: "Fetch items less than this cursor" })
+  @IsOptional()
+  before?: string;
+}
+
 export type RawQuery = ListRawQuery;
 
 export interface Query<T extends Record<string, any> = any> {

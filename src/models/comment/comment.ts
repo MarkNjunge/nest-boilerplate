@@ -4,27 +4,17 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional } from "class-validator";
 import type { User } from "../user/user";
 import type { Post } from "../post/post";
+import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
 
 @Entity({ name: "comments" })
-export class Comment extends BaseEntity {
+export class Comment extends UserScopedEntity {
   @ApiProperty()
   @Column({ type: "text" })
   content: string;
 
   @ApiProperty()
-  @Column({ name: "user_id" })
-  userId: string;
-
-  @ApiProperty()
   @Column({ name: "post_id" })
   postId: string;
-
-  @ManyToOne("User", { onDelete: "CASCADE" })
-  @JoinColumn({
-    name: "user_id",
-    foreignKeyConstraintName: "FK__comment__user_id"
-  })
-  user?: User;
 
   @ManyToOne("Post", "comments", { onDelete: "CASCADE" })
   @JoinColumn({
@@ -42,10 +32,6 @@ export class CommentCreateDto {
   @ApiProperty()
   @IsNotEmpty()
   content: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  userId: string;
 
   @ApiProperty()
   @IsNotEmpty()

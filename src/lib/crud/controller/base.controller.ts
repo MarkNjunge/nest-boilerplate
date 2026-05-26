@@ -3,13 +3,15 @@ import { ObjectLiteral } from "typeorm";
 import {
   Get,
   Param,
-  Query
+  Query,
+  UseGuards
 } from "@nestjs/common";
 import {
   ApiExtraModels,
   ApiOperation,
   ApiParam,
   ApiResponse,
+  ApiSecurity,
   getSchemaPath
 } from "@nestjs/swagger";
 import { parseRawQuery, ListRawQuery, CursorRawQuery } from "@/lib/crud/query/query";
@@ -17,6 +19,7 @@ import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagina
 import { HttpException } from "@/utils";
 import { ReqCtx } from "@/decorators/request-context.decorator";
 import { ICrudContext } from "@/lib/crud/utils/context";
+import { AuthGuard } from "@/guards/auth.guard";
 
 export type BaseRouteNames = "count" | "list" | "get" | "listCursor" | "getById";
 
@@ -37,6 +40,8 @@ export function BaseController<
     ) {}
 
     @Get("/count")
+    @UseGuards(AuthGuard)
+    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Count entities matching the query" })
     @ApiResponse({ status: 200, type: Number })
     async count(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<number> {
@@ -44,6 +49,8 @@ export function BaseController<
     }
 
     @Get("/")
+    @UseGuards(AuthGuard)
+    @ApiSecurity("api-key")
     @ApiOperation({ summary: "List entities matching the query" })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
     async list(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<Entity[]> {
@@ -51,6 +58,8 @@ export function BaseController<
     }
 
     @Get("/first")
+    @UseGuards(AuthGuard)
+    @ApiSecurity("api-key")
     @ApiOperation({ summary: "Get the first entity matching the query" })
     @ApiResponse({ status: 200, type: entityType })
     async get(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<Entity | null> {
@@ -62,6 +71,8 @@ export function BaseController<
     }
 
     @Get("/cursor")
+    @UseGuards(AuthGuard)
+    @ApiSecurity("api-key")
     @ApiOperation({ summary: "List entities with cursor-based pagination" })
     @ApiExtraModels(PageInfo)
     @ApiResponse({
@@ -79,6 +90,8 @@ export function BaseController<
     }
 
     @Get("/:id")
+    @UseGuards(AuthGuard)
+    @ApiSecurity("api-key")
     @ApiParam({ name: "id", type: String })
     @ApiOperation({ summary: "Get an entity by id" })
     @ApiResponse({ status: 200, type: entityType })

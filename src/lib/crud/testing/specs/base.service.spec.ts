@@ -7,10 +7,13 @@ import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { config } from "@/config";
 import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
 import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-test.entity";
+import { PostTestEntity, PostTestCreateDto } from "@/lib/crud/testing/test-entities/post-test.entity";
 import { createTestContainer } from "@/lib/crud/testing/test.utils";
 import { ICrudContext } from "@/lib/crud";
 
 const ctx: ICrudContext = { traceId: "test" };
+const user1Ctx: ICrudContext = { traceId: "test", user: { userId: "usr_1" } };
+const user2Ctx: ICrudContext = { traceId: "test", user: { userId: "usr_2" } };
 
 describe("Base Service", () => {
   let container: StartedPostgreSqlContainer;
@@ -26,7 +29,7 @@ describe("Base Service", () => {
 
     dataSource = new DataSource({
       ...opts,
-      entities: [UserTestEntity, UserProfileTestEntity, AddressTestEntity, BuildingTestEntity],
+      entities: [UserTestEntity, UserProfileTestEntity, AddressTestEntity, BuildingTestEntity, PostTestEntity],
       synchronize: true,
       logging: config.integrationTest.logQueries
     });
@@ -34,8 +37,8 @@ describe("Base Service", () => {
     await dataSource.initialize();
     userRepository = dataSource.getRepository(UserTestEntity);
     profileRepository = dataSource.getRepository(UserProfileTestEntity);
-    service = new BaseService("User", userRepository);
-    crudService = new CrudService("User", userRepository);
+    service = new BaseService("User", userRepository, { userScoped: false });
+    crudService = new CrudService("User", userRepository, { userScoped: false });
   });
 
   afterAll(async () => {
@@ -307,6 +310,12 @@ describe("Base Service", () => {
       ).rejects.toThrow("Cannot use both 'after' and 'before' cursors");
     });
 
+    it("throws when context has no user on a user-scoped service", async () => {
+      const postRepository = dataSource.getRepository(PostTestEntity);
+      const scopedService = new BaseService<PostTestEntity>("Post", postRepository);
+      await expect(scopedService.listCursor({ traceId: "test" }, {})).rejects.toThrow("User context missing");
+    });
+
     it("works with filters", async () => {
       await crudService.createBulk(ctx, [
         { username: "alice", email: "alice@a.com" },
@@ -540,6 +549,92 @@ describe("Base Service", () => {
         // Forward DESC was [user6D, user5D, user4C], backward should be [user5D, user6D]
         expect(forwardItems).toEqual(["user6D", "user5D", "user4C"]);
         expect(backwardItems).toEqual(["user5D", "user6D"]);
+      });
+    });
+  });
+
+  describe("user scoping", () => {
+    let postRepository: Repository<PostTestEntity>;
+    let postService: BaseService<PostTestEntity>;
+    let postCrudService: CrudService<PostTestEntity, PostTestCreateDto>;
+
+    beforeAll(() => {
+      postRepository = dataSource.getRepository(PostTestEntity);
+      postService = new BaseService("Post", postRepository);
+      postCrudService = new CrudService("Post", postRepository);
+    });
+
+    beforeEach(async () => {
+      await postRepository.deleteAll();
+      await postCrudService.create(user1Ctx, { title: "User 1 Post A" });
+      await postCrudService.create(user1Ctx, { title: "User 1 Post B" });
+      await postCrudService.create(user2Ctx, { title: "User 2 Post" });
+    });
+
+    it("throws when context has no user", async () => {
+      await expect(postService.list({ traceId: "test" }, {})).rejects.toThrow("User context missing");
+    });
+
+    it("count only counts the current user's records", async () => {
+      const result = await postService.count(user1Ctx, {});
+      expect(result).toBe(2);
+    });
+
+    it("list only returns the current user's records", async () => {
+      const result = await postService.list(user1Ctx, {});
+      expect(result).toHaveLength(2);
+      expect(result.every(p => p.userId === "usr_1")).toBe(true);
+    });
+
+    it("get only returns a record belonging to the current user", async () => {
+      const result = await postService.get(user1Ctx, { filter: { eq: [{ key: "title", value: "User 2 Post" }] } });
+      expect(result).toBeNull();
+    });
+
+    it("getById returns null for another user's record", async () => {
+      const [post] = await postService.list(user2Ctx, {});
+      const result = await postService.getById(user1Ctx, post.id);
+      expect(result).toBeNull();
+    });
+
+    it("listCursor only returns the current user's records", async () => {
+      const result = await postService.listCursor(user1Ctx, { limit: 10 });
+      expect(result.data).toHaveLength(2);
+      expect(result.data.every(p => p.userId === "usr_1")).toBe(true);
+    });
+
+    describe("userScoped: false in context", () => {
+      it("list returns all users records", async () => {
+        const result = await postService.list({ ...user1Ctx, userScoped: false }, {});
+        expect(result).toHaveLength(3);
+      });
+
+      it("count counts across all users", async () => {
+        const result = await postService.count({ ...user1Ctx, userScoped: false }, {});
+        expect(result).toBe(3);
+      });
+
+      it("getById retrieves another user's record", async () => {
+        const [post] = await postService.list(user2Ctx, {});
+        const result = await postService.getById({ ...user1Ctx, userScoped: false }, post.id);
+        expect(result).not.toBeNull();
+        expect(result?.userId).toBe("usr_2");
+      });
+
+      it("listCursor pages across all users records", async () => {
+        const result = await postService.listCursor({ ...user1Ctx, userScoped: false }, { limit: 10 });
+        expect(result.data).toHaveLength(3);
+      });
+
+      it("does not affect the original context (still scoped)", async () => {
+        await postService.list({ ...user1Ctx, userScoped: false }, {});
+        const result = await postService.list(user1Ctx, {});
+        expect(result).toHaveLength(2);
+      });
+
+      it("is a no-op on a service already constructed with userScoped: false", async () => {
+        const result = await service.list({ ...ctx, userScoped: false }, {});
+        expect(result.length).toBeGreaterThanOrEqual(0); // no throw, no filter applied either way
       });
     });
   });

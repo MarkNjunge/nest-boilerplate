@@ -29,6 +29,9 @@ npm run start:prod
 - **Configuration** - Layered config via `node-config` with support for env vars, `.env` files, and external secrets
   managers.
 - **Authentication** - Bearer token auth with a guard-based pattern, integrated into the request context.
+- **User Scoping** - Automatic per-user data isolation: entities extend `UserScopedEntity` and all queries
+  are transparently filtered by the authenticated user's ID. Pass `userScoped: false` in the context to bypass
+  for a single call (public feeds, admin actions).
 - **Database** - TypeORM with migrations, a full CRUD service/controller inheritance layer, and a codegen
   tool to scaffold new resources.
 - **Query Parsing** - URL query parameters mapped to DB queries, supporting field selection, filtering, sorting,
@@ -85,29 +88,30 @@ configuration.
 A simple authentication pattern is implemented using a modular service-based approach:
 
 - **AuthModule** (`src/modules/auth/auth.module.ts`) - Global module providing auth services
-- **AuthService** (`src/modules/auth/auth.service.ts`) - Validates tokens against `config.apiKey`
-- **AuthGuard** (`src/guards/auth.guard.ts`) - Guards routes requiring authentication
+- **AuthService** (`src/modules/auth/auth.service.ts`) - Validates the Bearer token and returns an `AuthenticatedUser`
+- **AuthGuard** (`src/guards/auth.guard.ts`) - Applied globally; extracts the Bearer token, validates it via `AuthService`, and stores the authenticated user in the request context (ALS)
 
-The `AuthGuard` extracts the Bearer token, validates it via `AuthService`, and stores the authenticated user in the
-request context (ALS).
+All routes require a valid Bearer token except `/`, `/ready`, and `/live`.
+
+To implement authentication, extend `AuthValidator` in `AuthService` and return an `AuthenticatedUser` (containing
+`userId`) for valid tokens, or `null` to reject.
 
 ### Accessing the Authenticated User
 
 Use the `@ReqCtx()` decorator to access the authenticated user:
 
 ```typescript
-@UseGuards(AuthGuard)
 @Get()
-handler(@ReqCtx() ctx: IReqCtx ) {
+handler(@ReqCtx() ctx: IReqCtx) {
   console.log(ctx.traceId);  // Request trace ID
-  console.log(ctx.user);     // { userId: "sample-user-id" }
+  console.log(ctx.user);     // { userId: "usr_..." }
 }
 ```
 
 The `IReqCtx` interface provides:
 
 - `traceId: string` - Request trace ID for logging/debugging
-- `user?: AuthenticatedUser` - Authenticated user info (when using AuthGuard)
+- `user?: AuthenticatedUser` - Authenticated user info
 
 ## Database
 
@@ -147,20 +151,25 @@ npm run migration down
 
 The database layer uses inheritance to separate read and write operations:
 
-**Base Entity:**
+**Base Entities:**
 
 - [BaseEntity](src/lib/crud/entity/base.entity.ts) - Provides `id` generation as well as `createdAt`, `updatedAt`
   management.
+- [UserScopedEntity](src/lib/crud/entity/user-scoped.entity.ts) - Extends `BaseEntity` with a `userId` column and a
+  `@ManyToOne` relation to `User`. Entities that extend this are automatically filtered by the authenticated user's ID
+  on all reads and writes.
 
 **Services:**
 
-- [BaseService](src/lib/crud/service/base.service.ts) - Read-only operations (`count`, `list`, `get`, `getById`)
+- [BaseService](src/lib/crud/service/base.service.ts) - Read-only operations (`count`, `list`, `get`, `getById`).
+  Accepts a `ServiceOptions` object; set `userScoped: false` for global resources that should not be filtered by user.
+  Pass `userScoped: false` in `ICrudContext` to bypass scoping for a single call (e.g. a public feed or admin action).
 - [CrudService](src/lib/crud/service/crud.service.ts) - Extends BaseService with write operations (`create`, `update`,
-  `delete`, etc.)
+  `delete`, etc.). Automatically injects `userId` from context on create and scopes updates/deletes to the current user.
 
 **Controllers:**
 
-- [BaseController](src/lib/crud/controller/base.controller.ts) - Read-only endpoints (no auth required)
+- [BaseController](src/lib/crud/controller/base.controller.ts) - Read-only endpoints
 - [CrudController](src/lib/crud/controller/crud.controller.ts) - Extends BaseController with write endpoints (auth
   required)
 
@@ -531,7 +540,7 @@ class Controller {
   @Get()
   getHello(@ReqCtx() ctx: IReqCtx) {
     console.log(ctx.traceId) // 0d8df9931b05fbcd2262bc696a1410a6
-    console.log(ctx.user)    // { userId: "sample-user-id" } | undefined
+    console.log(ctx.user)    // { userId: "usr_..." } | undefined
   }
 }
 ```

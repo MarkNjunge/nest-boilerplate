@@ -19,7 +19,8 @@ describe("Nesting", () => {
         select: "username,profile.bio",
         include: "profile",
         filter: `(email,eq,${createDto.email})`
-      });
+      })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);
@@ -46,25 +47,23 @@ describe("Nesting", () => {
     // Create a post
     const postDto = {
       title: `Post ${randomString(6)}`,
-      content: "Full post content here",
-      userId
+      content: "Full post content here"
     };
     const postRes = await request(testApiHost)
       .post("/post")
       .send(postDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${userId}`);
     const postId = postRes.body.id;
 
     // Create a comment on the post
     const commentDto = {
       content: "Great post!",
-      userId,
       postId
     };
     await request(testApiHost)
       .post("/comment")
       .send(commentDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${userId}`);
 
     // Query with deep nested select: post.title, post.content, comments.content, comments.user.username
     const response = await request(testApiHost)
@@ -73,7 +72,8 @@ describe("Nesting", () => {
         select: "title,content,comments.content,comments.user.username",
         include: "comments,comments.user",
         filter: `(id,eq,${postId})`
-      });
+      })
+      .set("Authorization", `Bearer ${userId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);
@@ -123,25 +123,23 @@ describe("Nesting", () => {
     // Create a post
     const postDto = {
       title: `Post ${randomString(6)}`,
-      content: "Post content",
-      userId
+      content: "Post content"
     };
     const postRes = await request(testApiHost)
       .post("/post")
       .send(postDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${userId}`);
     const postId = postRes.body.id;
 
     // Create a comment on the post
     const commentDto = {
       content: "Nice post!",
-      userId,
       postId
     };
     await request(testApiHost)
       .post("/comment")
       .send(commentDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${userId}`);
 
     // Query selecting only relation fields: root id, comments.id, comments.user.username
     const response = await request(testApiHost)
@@ -150,7 +148,8 @@ describe("Nesting", () => {
         select: "id,comments.id,comments.user.username",
         include: "comments,comments.user",
         filter: `(id,eq,${postId})`
-      });
+      })
+      .set("Authorization", `Bearer ${userId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);

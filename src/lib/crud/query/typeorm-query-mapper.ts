@@ -94,10 +94,18 @@ export function parseFilter<T extends Record<string, any> = any>(filter: Filter<
   return where;
 }
 
-export function mapQueryToTypeorm<T extends Record<string, any> = any>(options: Query<T>): typeorm.FindManyOptions {
+export function mapQueryToTypeorm<T extends Record<string, any> = any>(options: Query<T>, userId?: string): typeorm.FindManyOptions {
   let where: typeorm.FindOptionsWhere<T> = {};
   if (options.filter) {
     where = parseFilter(options.filter);
+  }
+
+  if (userId) {
+    if (Array.isArray(where)) {
+      where = (where as any[]).map(w => ({ ...w, userId: typeorm.Equal(userId) })) as any;
+    } else {
+      (where as any).userId = typeorm.Equal(userId);
+    }
   }
 
   const relations: Record<string, any> = {};

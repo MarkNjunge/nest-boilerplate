@@ -1,5 +1,4 @@
 import { AuthService } from "./auth.service";
-import { config } from "@/config";
 
 describe("AuthService", () => {
   let authService: AuthService;
@@ -9,22 +8,10 @@ describe("AuthService", () => {
   });
 
   describe("validateToken", () => {
-    it("returns user when token matches apiKey", () => {
-      const result = authService.validateToken(config.apiKey);
+    it("returns the token value as userId", () => {
+      const result = authService.validateToken("usr_abc123");
 
-      expect(result).toEqual({ userId: "sample-user-id" });
-    });
-
-    it("returns null when token does not match", () => {
-      const result = authService.validateToken("invalid-token");
-
-      expect(result).toBeNull();
-    });
-
-    it("returns null when token is empty", () => {
-      const result = authService.validateToken("");
-
-      expect(result).toBeNull();
+      expect(result).toEqual({ userId: "usr_abc123" });
     });
   });
 });

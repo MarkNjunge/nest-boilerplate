@@ -1,8 +1,21 @@
-import { DataSource } from "typeorm";
-// noinspection ES6PreferShortImport
-import { config } from "../../config"; // Do not use @/ because of TypeORM CLI
+import { DataSource, DefaultNamingStrategy, Table } from "typeorm";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { DataSourceOptions } from "typeorm";
+
+// noinspection ES6PreferShortImport
+import { config } from "../../config"; // Do not use @/ because of TypeORM CLI
+
+export class CustomNamingStrategy extends DefaultNamingStrategy {
+  primaryKeyName(tableOrName: Table | string, columnNames: string[]): string {
+    const table = typeof tableOrName === "string" ? tableOrName : tableOrName.name;
+    return `PK__${table}`;
+  }
+
+  foreignKeyName(tableOrName: Table | string, columnNames: string[]) {
+    const table = typeof tableOrName === "string" ? tableOrName : tableOrName.name;
+    return `FK__${table}__${columnNames.join("_")}`;
+  }
+}
 
 export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
   type: "postgres",
@@ -22,7 +35,8 @@ export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
   verboseRetryLog: true,
   connectTimeoutMS: config.db.connectTimeoutMS,
   retryAttempts: config.db.retryAttempts,
-  retryDelay: config.db.retryDelay
+  retryDelay: config.db.retryDelay,
+  namingStrategy: new CustomNamingStrategy()
 };
 
 export default new DataSource(dbOptions as DataSourceOptions);

@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { CrudService, ICrudContext, TransactionService } from "@/lib/crud";
+import { CrudService, TransactionService } from "@/lib/crud";
 import { Post, PostCreateDto, PostUpdateDto } from "@/models/post/post";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CommentService } from "@/modules/comment/comment.service";
 import { CreatePostWithCommentDto } from "@/models/post/post-with-comment.dto";
+import { IReqCtx } from "@/decorators/request-context.decorator";
 
 @Injectable()
 export class PostService extends CrudService<
@@ -21,7 +22,11 @@ export class PostService extends CrudService<
     super("Post", postRepository);
   }
 
-  async createPostWithComment(ctx: ICrudContext, dto: CreatePostWithCommentDto): Promise<Post> {
+  async feed(ctx: IReqCtx): Promise<Post[]> {
+    return this.list({ ...ctx, userScoped: false }, { limit: 20, sort: { updatedAt: "DESC" } });
+  }
+
+  async createPostWithComment(ctx: IReqCtx, dto: CreatePostWithCommentDto): Promise<Post> {
     return this.transactionService.run(async manager => {
       const txPostService = this.withTransaction(manager);
       const txCommentService = this.commentService.withTransaction(manager);
@@ -29,13 +34,11 @@ export class PostService extends CrudService<
       const post = await txPostService.create(ctx, {
         title: dto.title,
         content: dto.content,
-        userId: dto.userId,
         categoryId: dto.categoryId,
       });
 
       const comment = await txCommentService.create(ctx, {
         content: dto.comment.content,
-        userId: dto.userId,
         postId: post.id,
       });
 

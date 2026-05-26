@@ -5,7 +5,8 @@ describe("Pagination", () => {
   it("GET /users/cursor returns paginated results with pageInfo", async () => {
     const response = await request(testApiHost)
       .get("/users/cursor")
-      .query({ limit: "5" });
+      .query({ limit: "5" })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("data");
@@ -32,14 +33,16 @@ describe("Pagination", () => {
 
     const firstPage = await request(testApiHost)
       .get("/users/cursor")
-      .query({ limit: "1" });
+      .query({ limit: "1" })
+      .set("Authorization", "Bearer api-key");
 
     expect(firstPage.status).toBe(200);
 
     if (firstPage.body.pageInfo.hasNextPage) {
       const secondPage = await request(testApiHost)
         .get("/users/cursor")
-        .query({ limit: "1", after: firstPage.body.pageInfo.endCursor });
+        .query({ limit: "1", after: firstPage.body.pageInfo.endCursor })
+        .set("Authorization", "Bearer api-key");
 
       expect(secondPage.status).toBe(200);
       expect(secondPage.body.data[0].id).not.toBe(firstPage.body.data[0].id);
@@ -62,16 +65,19 @@ describe("Pagination", () => {
 
     const firstPage = await request(testApiHost)
       .get("/users/cursor")
-      .query({ limit: "1" });
+      .query({ limit: "1" })
+      .set("Authorization", "Bearer api-key");
 
     if (firstPage.body.pageInfo.hasNextPage) {
       const secondPage = await request(testApiHost)
         .get("/users/cursor")
-        .query({ limit: "1", after: firstPage.body.pageInfo.endCursor });
+        .query({ limit: "1", after: firstPage.body.pageInfo.endCursor })
+        .set("Authorization", "Bearer api-key");
 
       const previousPage = await request(testApiHost)
         .get("/users/cursor")
-        .query({ limit: "1", before: secondPage.body.pageInfo.startCursor });
+        .query({ limit: "1", before: secondPage.body.pageInfo.startCursor })
+        .set("Authorization", "Bearer api-key");
 
       expect(previousPage.status).toBe(200);
       expect(previousPage.body.data[0].id).toBe(firstPage.body.data[0].id);
@@ -81,7 +87,8 @@ describe("Pagination", () => {
   it("GET /users/cursor rejects both after and before", async () => {
     const response = await request(testApiHost)
       .get("/users/cursor")
-      .query({ after: "cursor1", before: "cursor2" });
+      .query({ after: "cursor1", before: "cursor2" })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(400);
     expect(response.body.message).toContain("Cannot use both");
@@ -100,7 +107,8 @@ describe("Pagination", () => {
 
     const response = await request(testApiHost)
       .get("/users/cursor")
-      .query({ filter: `(email,eq,${uniqueEmail})`, limit: "10" });
+      .query({ filter: `(email,eq,${uniqueEmail})`, limit: "10" })
+      .set("Authorization", "Bearer api-key");
 
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveLength(1);

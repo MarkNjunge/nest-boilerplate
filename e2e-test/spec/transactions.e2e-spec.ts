@@ -21,14 +21,13 @@ describe("Transactions", () => {
     const dto = {
       title: `TX Post ${randomString(6)}`,
       content: "Transaction test content",
-      userId,
       comment: { content: "First comment via transaction" }
     };
 
     const response = await request(testApiHost)
       .post("/post/with-comment")
       .send(dto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${userId}`);
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("id");
@@ -41,7 +40,8 @@ describe("Transactions", () => {
     // Verify both entities persisted
     const postRes = await request(testApiHost)
       .get(`/post/${response.body.id}`)
-      .query({ include: "comments" });
+      .query({ include: "comments" })
+      .set("Authorization", `Bearer ${userId}`);
     expect(postRes.status).toBe(200);
     expect(postRes.body.comments).toHaveLength(1);
   });
@@ -51,7 +51,6 @@ describe("Transactions", () => {
     const dto = {
       title: uniqueTitle,
       content: "Should be rolled back",
-      userId,
       categoryId: "invalid_category_id",
       comment: { content: "Should not exist" }
     };
@@ -59,14 +58,15 @@ describe("Transactions", () => {
     const response = await request(testApiHost)
       .post("/post/with-comment")
       .send(dto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${userId}`);
 
     expect(response.status).toBe(500);
 
     // Verify the post was NOT created (transaction rolled back)
     const postRes = await request(testApiHost)
       .get("/post")
-      .query({ filter: `(title,eq,${uniqueTitle})` });
+      .query({ filter: `(title,eq,${uniqueTitle})` })
+      .set("Authorization", `Bearer ${userId}`);
 
     expect(postRes.status).toBe(200);
     expect(postRes.body).toHaveLength(0);
