@@ -13,8 +13,8 @@ The CRUD layer uses inheritance to separate read and write operations:
 
 ### Controllers
 
-- **BaseController** - Read-only endpoints (no auth required)
-- **CrudController extends BaseController** - Adds write endpoints (auth required)
+- **BaseController** - Read-only endpoints (auth configurable via `options.auth`)
+- **CrudController extends BaseController** - Adds write endpoints (auth configurable via `options.auth`)
 
 Use `BaseService`/`BaseController` for read-only access, `CrudService`/`CrudController` for full CRUD.
 
@@ -216,7 +216,7 @@ export class UserController extends BaseController(User) {
 
 ## CrudController
 
-Extends `BaseController` with write endpoints (requires authentication).
+Extends `BaseController` with write endpoints. Auth is required by default (configurable via `options.auth`).
 
 ### Additional Routes
 
@@ -279,6 +279,36 @@ CrudController(User, CreateUserDto, UpdateUserDto, {
 - `deleteIndexed` - DELETE /
 
 Excluded methods are removed from the controller prototype, so NestJS never registers them as routes.
+
+## Auth Configuration
+
+The `options` object accepts an `auth` field to control how authentication is applied:
+
+| Value                                  | Behaviour                                               |
+|----------------------------------------|---------------------------------------------------------|
+| _(omitted)_                            | All routes require user auth (default)                  |
+| `{ mode: "ADMIN" }`                    | All routes require admin auth                           |
+| `{ publicReads: true }`                | Read routes are public; write routes require user auth  |
+| `{ publicReads: true, mode: "ADMIN" }` | Read routes are public; write routes require admin auth |
+| `false`                                | Auth guard is not applied to any route                  |
+
+```typescript
+// Default — all routes require user auth
+CrudController(Post, CreatePostDto, UpdatePostDto)
+
+// Admin-only (e.g. user management)
+CrudController(User, CreateUserDto, UpdateUserDto, { auth: { mode: "ADMIN" } })
+
+// Public catalogue — anyone can read, only admins can write
+CrudController(Category, CreateCategoryDto, UpdateCategoryDto, {
+  auth: { publicReads: true, mode: "ADMIN" }
+})
+
+// Fully public (no guard at all)
+BaseController(Announcement, { auth: false })
+```
+
+When `publicReads: true` is set on a `CrudController`, read routes (inherited from `BaseController`) have no guard, while write routes have the guard applied at the method level. This means `ctx.user` may be `undefined` on read handlers — design accordingly.
 
 ## Transactions
 
@@ -572,13 +602,14 @@ src/lib/crud/
 6. **Use CrudService for full CRUD** - Get all CRUD operations automatically
 7. **Leverage transactions** - Use `TransactionService` for multi-entity operations
 8. **Exclude unnecessary routes** - Use the `exclude` option to minimize API surface
-9. **Add custom methods** - Extend base classes with domain-specific logic
+9. **Configure auth per controller** - Use `auth: { mode: "ADMIN" }` or `auth: { publicReads: true }` to fit the resource's access model
+10. **Add custom methods** - Extend base classes with domain-specific logic
 
 ## Common Patterns
 
 ### Global (Non-User-Scoped) API
 
-For resources shared across all users (e.g. categories, tags):
+For resources shared across all users (e.g. categories, tags), where reads are public and writes require admin auth:
 
 ```typescript
 // Service — explicitly opt out of user scoping
@@ -588,9 +619,11 @@ export class CategoryService extends CrudService<Category, CreateCategoryDto, Up
   }
 }
 
-// Controller
+// Controller — public reads, admin-only writes
 @Controller("categories")
-export class CategoryController extends CrudController(Category, CreateCategoryDto, UpdateCategoryDto) {
+export class CategoryController extends CrudController(Category, CreateCategoryDto, UpdateCategoryDto, {
+  auth: { publicReads: true, mode: "ADMIN" }
+}) {
   constructor(private readonly categoryService: CategoryService) {
     super(categoryService);
   }

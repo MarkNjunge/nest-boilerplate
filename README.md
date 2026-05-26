@@ -88,13 +88,45 @@ configuration.
 A simple authentication pattern is implemented using a modular service-based approach:
 
 - **AuthModule** (`src/modules/auth/auth.module.ts`) - Global module providing auth services
-- **AuthService** (`src/modules/auth/auth.service.ts`) - Validates the Bearer token and returns an `AuthenticatedUser`
-- **AuthGuard** (`src/guards/auth.guard.ts`) - Applied globally; extracts the Bearer token, validates it via `AuthService`, and stores the authenticated user in the request context (ALS)
+- **AuthService** (`src/modules/auth/auth.service.ts`) - Validates Bearer tokens; implements `validateUser()` for user tokens and `validateAdmin()` for admin tokens
+- **AuthGuard** (`src/guards/auth.guard.ts`) - Applied globally; extracts the Bearer token, validates it via `AuthService`, and stores the result in the request context (ALS)
 
 All routes require a valid Bearer token except `/`, `/ready`, and `/live`.
 
-To implement authentication, extend `AuthValidator` in `AuthService` and return an `AuthenticatedUser` (containing
-`userId`) for valid tokens, or `null` to reject.
+To implement authentication, extend `AuthValidator` in `AuthService`:
+- `validateUser(token)` — return an `AuthenticatedUser` (containing `userId`) for valid user tokens, or `null` to reject
+- `validateAdmin(token)` — return `true` for valid admin tokens, or `false` to reject. By default this checks against `auth.adminKey` in config.
+
+### Auth Modes
+
+The auth mode for a controller can be configured via the `auth` option:
+
+```typescript
+// Default: all routes require user auth
+CrudController(Entity, CreateDto, UpdateDto)
+
+// Admin auth required for all routes (uses validateAdmin instead of validateUser)
+CrudController(Entity, CreateDto, UpdateDto, { auth: { mode: "ADMIN" } })
+
+// Public reads, user auth required for writes
+CrudController(Entity, CreateDto, UpdateDto, { auth: { publicReads: true } })
+
+// Public reads, admin auth required for writes
+CrudController(Entity, CreateDto, UpdateDto, { auth: { publicReads: true, mode: "ADMIN" } })
+
+// Auth disabled entirely (no guard applied)
+CrudController(Entity, CreateDto, UpdateDto, { auth: false })
+```
+
+The `@AuthMode` decorator can also be applied directly to individual controller methods:
+
+```typescript
+import { AuthMode } from "@/guards/auth.validator";
+
+@AuthMode("ADMIN")
+@Delete("/:id")
+deleteById(...) { ... }
+```
 
 ### Accessing the Authenticated User
 
@@ -105,13 +137,15 @@ Use the `@ReqCtx()` decorator to access the authenticated user:
 handler(@ReqCtx() ctx: IReqCtx) {
   console.log(ctx.traceId);  // Request trace ID
   console.log(ctx.user);     // { userId: "usr_..." }
+  console.log(ctx.isAdmin);  // true if authenticated as admin
 }
 ```
 
 The `IReqCtx` interface provides:
 
 - `traceId: string` - Request trace ID for logging/debugging
-- `user?: AuthenticatedUser` - Authenticated user info
+- `user?: AuthenticatedUser` - Authenticated user info (set for user-mode auth)
+- `isAdmin?: boolean` - Set to `true` when the request was authenticated via admin mode
 
 ## Database
 
@@ -207,6 +241,26 @@ CrudController(entityType, CreateDto, UpdateDto, { exclude: ["deleteById", "crea
 ```
 
 Excluded methods are removed from the controller prototype, so NestJS never registers them as routes.
+
+#### Auth Configuration
+
+The `options` parameter also accepts an `auth` field to configure authentication for the controller:
+
+| Value                                  | Behaviour                                               |
+|----------------------------------------|---------------------------------------------------------|
+| _(omitted)_                            | All routes require user auth (default)                  |
+| `{ mode: "ADMIN" }`                    | All routes require admin auth                           |
+| `{ publicReads: true }`                | Read routes are public; write routes require user auth  |
+| `{ publicReads: true, mode: "ADMIN" }` | Read routes are public; write routes require admin auth |
+| `false`                                | Auth guard is not applied to any route                  |
+
+```typescript
+// Admin-only controller
+CrudController(entityType, CreateDto, UpdateDto, { auth: { mode: "ADMIN" } })
+
+// Public read, admin-protected writes
+CrudController(entityType, CreateDto, UpdateDto, { auth: { publicReads: true, mode: "ADMIN" } })
+```
 
 ### Transactions
 
