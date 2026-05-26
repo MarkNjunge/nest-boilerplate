@@ -3,6 +3,9 @@
   "appVersion": "0.1.0",
   "env": "development",
   "port": 3000,
+  "auth": {
+    "adminKey": "api-key"
+  },
   "apiKey": "api-key",
   "db": {
     "url": "postgres://username:password@host:port/database",

@@ -3,7 +3,9 @@
   "appVersion": "APP_VERSION",
   "env": "NODE_ENV",
   "port": "PORT",
-  "apiKey": "API_KEY",
+  "auth": {
+    "adminKey": "ADMIN_KEY"
+  },
   "db": {
     "url": "DB_URL",
     "poolSize": "DB_POOL_SIZE",

@@ -1,11 +1,10 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { FastifyRequest } from "fastify";
-import { AuthValidator } from "@/guards/auth.validator";
-import { AppAlsService, ALS_AUTH_USER } from "@/als/app-als.service";
+import { AuthValidator, AuthModes, AUTH_MODE_KEY } from "@/guards/auth.validator";
+import { AppAlsService, ALS_AUTH_USER, ALS_AUTH_ADMIN } from "@/als/app-als.service";
+import { AuthenticatedUser } from "@/models/auth/auth";
 import { ErrorCodes, HttpException } from "@/utils";
-
-export const AUTH_MODE_KEY = "auth_mode";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,7 +27,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const mode = this.reflector.getAllAndOverride<string | undefined>(AUTH_MODE_KEY, [
+    const mode = this.reflector.getAllAndOverride<AuthModes | undefined>(AUTH_MODE_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -45,9 +44,20 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    const user = this.authValidator.validateToken(token, mode);
+    let valid: boolean;
+    let user: AuthenticatedUser | null = null;
+    let isAdmin = false;
 
-    if (!user) {
+    if (mode === "ADMIN") {
+      valid = this.authValidator.validateAdmin(token);
+      isAdmin = valid;
+    } else {
+      const result = this.authValidator.validateUser(token);
+      valid = result !== null;
+      user = result;
+    }
+
+    if (!valid) {
       throw new HttpException(
         401,
         "Invalid authentication",
@@ -55,7 +65,12 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    this.alsService.set(ALS_AUTH_USER, user);
+    if (user != null) {
+      this.alsService.set(ALS_AUTH_USER, user);
+    }
+    if (isAdmin) {
+      this.alsService.set(ALS_AUTH_ADMIN, true);
+    }
 
     return true;
   }

@@ -5,7 +5,11 @@ import { AuthValidator } from "@/guards/auth.validator";
 
 @Injectable()
 export class AuthService extends AuthValidator {
-  validateToken(token: string, mode?: string): AuthenticatedUser | null {
+  validateUser(token: string): AuthenticatedUser | null {
     return { userId: token };
+  }
+
+  validateAdmin(token: string): boolean {
+    return token === config.auth.adminKey;
   }
 }

@@ -8,7 +8,9 @@ export interface Config {
   appVersion: string;
   env: string;
   port: number;
-  apiKey: string;
+  auth: {
+    adminKey: string;
+  };
   db: Db;
   swagger: Swagger;
   rateLimit: RateLimit;

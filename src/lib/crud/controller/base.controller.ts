@@ -20,7 +20,8 @@ import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagina
 import { HttpException } from "@/utils";
 import { ReqCtx } from "@/decorators/request-context.decorator";
 import { ICrudContext } from "@/lib/crud/utils/context";
-import { AUTH_MODE_KEY, AuthGuard } from "@/guards/auth.guard";
+import { AuthGuard } from "@/guards/auth.guard";
+import { AUTH_MODE_KEY } from "@/guards/auth.validator";
 
 export type BaseRouteNames = "count" | "list" | "get" | "listCursor" | "getById";
 

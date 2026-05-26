@@ -21,7 +21,8 @@ import {
   ApiSecurity
 } from "@nestjs/swagger";
 import { parseRawFilter } from "@/lib/crud/query/query";
-import { AUTH_MODE_KEY, AuthGuard } from "@/guards/auth.guard";
+import { AuthGuard } from "@/guards/auth.guard";
+import { AUTH_MODE_KEY } from "@/guards/auth.validator";
 import { ErrorCodes, HttpException } from "@/utils";
 import { BaseController, BaseRouteNames, ControllerOptions } from "@/lib/crud/controller/base.controller";
 import { BaseEntity } from "@/lib/crud";

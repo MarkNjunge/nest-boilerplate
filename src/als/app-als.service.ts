@@ -4,11 +4,13 @@ import { AuthenticatedUser } from "@/models/auth/auth";
 
 export const ALS_REQ_TIME = "requestTime";
 export const ALS_AUTH_USER = "authUser";
+export const ALS_AUTH_ADMIN = "authAdmin";
 
 export interface AppAlsStore {
   id: string;
   [ALS_REQ_TIME]?: number;
   [ALS_AUTH_USER]?: AuthenticatedUser;
+  [ALS_AUTH_ADMIN]?: boolean;
 }
 
 export const appAls = new AsyncLocalStorage<AppAlsStore>();
