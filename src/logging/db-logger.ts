@@ -17,7 +17,8 @@ export class DbLogger extends AbstractLogger {
       if (typeof msg === "string" || typeof msg === "number") {
         this.logger.debug(msg as string);
       } else {
-        const logStr = this.fillBindings(msg.message as string, msg.parameters);
+        const params = Array.isArray(msg.parameters) ? msg.parameters : undefined;
+        const logStr = this.fillBindings(msg.message as string, params);
         if (msg.type === "error" || msg.type === "query-error") {
           this.logger.error(logStr);
         } else if (level === "warn" || msg.type === "query-slow") {
