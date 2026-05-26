@@ -2,32 +2,47 @@ import request from "supertest";
 import { testApiHost, randomString } from "../util";
 
 describe("Nesting", () => {
-  it("GET /users with select and include", async () => {
-    const createDto = {
-      username: randomString(6),
-      email: `${randomString(6)}@mail.com`,
-      profile: { bio: "lorem" }
-    };
-    await request(testApiHost)
+  it("GET /posts with select and include", async () => {
+    const userRes = await request(testApiHost)
       .post("/users")
-      .send(createDto)
-      .set("Authorization", "Bearer api-key");
-
-    const response = await request(testApiHost)
-      .get("/users")
-      .query({
-        select: "username,profile.bio",
-        include: "profile",
-        filter: `(email,eq,${createDto.email})`
+      .send({
+        username: randomString(6),
+        email: `${randomString(6)}@mail.com`,
+        profile: { bio: "nesting-test" }
       })
       .set("Authorization", "Bearer api-key");
+    const userId = userRes.body.id;
+
+    const postDto = {
+      title: randomString(6),
+      content: "Post content for nesting test"
+    };
+    const postRes = await request(testApiHost)
+      .post("/posts")
+      .send(postDto)
+      .set("Authorization", `Bearer ${userId}`);
+    const postId = postRes.body.id;
+
+    await request(testApiHost)
+      .post("/comments")
+      .send({ content: "Nesting comment", postId })
+      .set("Authorization", `Bearer ${userId}`);
+
+    const response = await request(testApiHost)
+      .get("/posts")
+      .query({
+        select: "title,comments.content",
+        include: "comments",
+        filter: `(id,eq,${postId})`
+      })
+      .set("Authorization", `Bearer ${userId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);
-    expect(response.body[0].username).toBe(createDto.username);
-    expect(response.body[0].profile).toBeDefined();
-    expect(response.body[0].profile.bio).toBe("lorem");
-    expect(response.body[0]).not.toHaveProperty("email");
+    expect(response.body[0].title).toBe(postDto.title);
+    expect(response.body[0].comments).toBeDefined();
+    expect(response.body[0].comments[0].content).toBe("Nesting comment");
+    expect(response.body[0]).not.toHaveProperty("content");
     expect(response.body[0]).not.toHaveProperty("createdAt");
   });
 
