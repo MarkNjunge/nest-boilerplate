@@ -3,9 +3,18 @@ import { validate, ValidationError } from "class-validator";
 import { plainToInstance } from "class-transformer";
 import { config } from "@/config";
 import { ErrorCodes, HttpException } from "@/utils";
+import { BaseRawQuery, CursorRawQuery, ListRawQuery, PagingCursorRawQuery } from "@/lib/crud";
 
 // https://github.com/nestjs/nest/blob/d295f1c572f64aa8239d3fab4cfa59df220c3ebb/packages/common/interfaces/type.interface.ts
 export type Type<T = any> = new (...args: any[]) => T;
+
+/**
+ * Classes for which unknown values should be allowed even when `config.validator.forbidUnknown` is `true`.
+ */
+const ALLOW_UNKNOWN_TYPES: Type[] = [];
+if (config.validator.nonStrictQuery) {
+  ALLOW_UNKNOWN_TYPES.push(BaseRawQuery, ListRawQuery, CursorRawQuery, PagingCursorRawQuery);
+}
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
@@ -59,10 +68,11 @@ export class ValidationPipe implements PipeTransform {
 
   private static async validateSingle(value: any, metatype: Type): Promise<ValidationErrorDto[]> {
     const object = plainToInstance(metatype, value);
+    const strict = config.validator.forbidUnknown && !ALLOW_UNKNOWN_TYPES.includes(metatype);
     const errors = await validate(object, {
-      forbidUnknownValues: config.validator.forbidUnknown,
-      whitelist: config.validator.forbidUnknown,
-      forbidNonWhitelisted: config.validator.forbidUnknown,
+      forbidUnknownValues: strict,
+      whitelist: strict,
+      forbidNonWhitelisted: strict,
     });
 
     if (errors.length === 0) {

@@ -15,7 +15,10 @@ export interface Config {
   swagger: Swagger;
   rateLimit: RateLimit;
   cors: Cors;
-  validator: Validator;
+  validator: {
+    forbidUnknown: boolean;
+    nonStrictQuery: boolean;
+  };
   logging: Logging;
   fileUpload: {
     maxSize: number;
@@ -74,10 +77,6 @@ interface Cors {
   origins: string;
   methods: string;
   allowedHeaders: string;
-}
-
-interface Validator {
-  forbidUnknown: true;
 }
 
 interface Logging {

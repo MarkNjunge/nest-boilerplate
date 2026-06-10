@@ -32,7 +32,8 @@
     "allowedHeaders": "*"
   },
   "validator": {
-    "forbidUnknown": true
+    "forbidUnknown": true,
+    "nonStrictQuery": true
   },
   "logging": {
     "logDataConsole": false
