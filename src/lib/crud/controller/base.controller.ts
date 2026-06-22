@@ -24,11 +24,36 @@ import { AuthGuard } from "@/guards/auth.guard";
 import { AUTH_MODE_KEY } from "@/guards/auth.validator";
 
 export type BaseRouteNames = "count" | "list" | "get" | "listCursor" | "getById";
+export const BaseRoutesNamesArr: BaseRouteNames[] = ["count", "list", "get", "listCursor", "getById"];
 
+/**
+ * @example
+ * Disable all authentication
+ * ```
+ * false
+ * ```
+ * @example
+ * READ routes will not require authentication
+ * ```
+ * { publicReads: true }
+ * ```
+ * @example
+ * Adds a metadata value that can be read by an authentication guard.
+ * ```
+ * { mode: 'ADMIN' }
+ * ```
+ */
 export type AuthConfig = false | { mode?: string; publicReads?: boolean };
 
 export interface ControllerOptions<T extends string> {
+  /**
+   * Routes to exclude
+   */
   exclude?: T[];
+
+  /**
+   * Authentication configuration
+   */
   auth?: AuthConfig;
 }
 
@@ -39,10 +64,8 @@ export function BaseController<
   entityType: new () => Entity,
   options?: ControllerOptions<BaseRouteNames>
 ) {
-  class BaseControllerHost {
-    constructor(
-      readonly service: TService
-    ) {}
+  abstract class BaseControllerHost {
+    abstract readonly service: TService;
 
     @Get("/count")
     @ApiOperation({ summary: "Count entities matching the query" })
@@ -111,11 +134,9 @@ export function BaseController<
   }
 
   const authConfig = options?.auth;
-  const publicReads = authConfig !== false && authConfig?.publicReads;
+  const requiresAuth = authConfig == null || authConfig !== false && authConfig.publicReads !== true;
 
-  if (publicReads) {
-    // Empty guard list
-  } else if (authConfig !== false) {
+  if (requiresAuth) {
     UseGuards(AuthGuard)(BaseControllerHost);
     ApiSecurity("api-key")(BaseControllerHost);
 

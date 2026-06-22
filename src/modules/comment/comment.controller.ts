@@ -11,9 +11,14 @@ import { CommentService } from "@/modules/comment/comment.service";
 export class CommentController extends CrudController(
   Comment,
   CommentCreateDto,
-  CommentUpdateDto
-)<CommentCreateDto, CommentUpdateDto> {
+  CommentUpdateDto,
+  { exclude: ["list", "listCursor"] }
+) {
   constructor(protected readonly commentService: CommentService) {
-    super(commentService);
+    super();
+  }
+
+  get service() {
+    return this.commentService;
   }
 }

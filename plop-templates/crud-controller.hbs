@@ -9,13 +9,18 @@ import { {{pascalCase name}}Service } from "@/modules/{{kebabCase name}}/{{kebab
 import { ApiTags } from "@nestjs/swagger";
 
 @Controller("{{pluralize (kebabCase name)}}")
-@ApiTags("{{pascalCase name}}")
 export class {{pascalCase name}}Controller extends CrudController(
   {{pascalCase name}},
   {{pascalCase name}}CreateDto,
   {{pascalCase name}}UpdateDto
-)<{{pascalCase name}}CreateDto, {{pascalCase name}}UpdateDto> {
-  constructor(protected readonly {{camelCase name}}Service: {{pascalCase name}}Service) {
-    super({{camelCase name}}Service);
+) {
+  constructor(
+    protected readonly {{camelCase name}}Service: {{pascalCase name}}Service
+  ) {
+    super();
+  }
+
+  get service() {
+    return this.{{camelCase name}}Service;
   }
 }

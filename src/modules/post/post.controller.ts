@@ -12,9 +12,13 @@ export class PostController extends CrudController(
   Post,
   PostCreateDto,
   PostUpdateDto
-)<PostCreateDto, PostUpdateDto> {
+) {
   constructor(protected readonly postService: PostService) {
-    super(postService);
+    super();
+  }
+
+  get service() {
+    return this.postService;
   }
 
   @Get("/feed")

@@ -24,7 +24,12 @@ import { parseRawFilter } from "@/lib/crud/query/query";
 import { AuthGuard } from "@/guards/auth.guard";
 import { AUTH_MODE_KEY } from "@/guards/auth.validator";
 import { ErrorCodes, HttpException } from "@/utils";
-import { BaseController, BaseRouteNames, ControllerOptions } from "@/lib/crud/controller/base.controller";
+import {
+  BaseController,
+  BaseRouteNames,
+  BaseRoutesNamesArr,
+  ControllerOptions
+} from "@/lib/crud/controller/base.controller";
 import { BaseEntity } from "@/lib/crud";
 import { ReqCtx } from "@/decorators/request-context.decorator";
 import { ICrudContext } from "@/lib/crud/utils/context";
@@ -32,29 +37,33 @@ import { DeletedDto } from "@/lib/crud/utils/deleted.dto";
 
 export type CrudRouteNames = "create" | "createBulk" | "upsert" | "upsertBulk" | "updateIndexed" | "update" | "deleteIndexed" | "deleteById";
 
-export function CrudController<Entity extends BaseEntity>(
+export function CrudController<
+  Entity extends BaseEntity,
+  Create extends DeepPartial<Entity> = DeepPartial<Entity>,
+  Update extends DeepPartial<Entity> = DeepPartial<Entity>,
+  TService extends CrudService<Entity> = CrudService<Entity>
+>(
   entityType: new () => Entity,
-  createDtoType?: new () => any,
-  updateDtoType?: new () => any,
+  createDtoType: new () => Create,
+  updateDtoType: new () => Update,
   options?: ControllerOptions<BaseRouteNames | CrudRouteNames>
 ) {
   const baseExclude = options?.exclude?.filter(
-    (m): m is BaseRouteNames => ["count", "list", "get", "listCursor", "getById"].includes(m)
+    (m): m is BaseRouteNames => (BaseRoutesNamesArr as string[]).includes(m)
   );
-  const authOption = options?.auth;
   const BaseControllerClass = BaseController<Entity>(
     entityType,
     {
-      ...(baseExclude?.length ? { exclude: baseExclude } : {}),
-      auth: authOption
+      exclude: baseExclude,
+      auth: options?.auth
     }
   );
 
-  class CrudControllerHost<
+  abstract class CrudControllerHost<
     Create extends DeepPartial<Entity> = DeepPartial<Entity>,
     Update extends DeepPartial<Entity> = DeepPartial<Entity>
   > extends BaseControllerClass {
-    declare readonly service: CrudService<Entity, Create, Update>;
+    abstract readonly service: TService;
 
     @Post("/")
     @ApiOperation({ summary: "Create an entity" })
@@ -159,21 +168,15 @@ export function CrudController<Entity extends BaseEntity>(
 
   const excluded = new Set(options?.exclude);
 
-  // Override metadata after class creation
-  if (createDtoType) {
-    for (const method of ["create", "createBulk", "upsert", "upsertBulk"] as const) {
-      if (!excluded.has(method)) {
-        Reflect.defineMetadata("design:paramtypes", [Object, createDtoType], CrudControllerHost.prototype, method);
-      }
+  // Override metadata for validation after class creation
+  for (const method of ["create", "createBulk", "upsert", "upsertBulk"] as const) {
+    if (!excluded.has(method)) {
+      Reflect.defineMetadata("design:paramtypes", [Object, createDtoType], CrudControllerHost.prototype, method);
     }
   }
-
-  if (updateDtoType) {
-    if (!excluded.has("update")) {
-      Reflect.defineMetadata("design:paramtypes", [Object, String, updateDtoType], CrudControllerHost.prototype, "update");
-    }
-    if (!excluded.has("updateIndexed")) {
-      Reflect.defineMetadata("design:paramtypes", [Object, String, updateDtoType], CrudControllerHost.prototype, "updateIndexed");
+  for (const method of ["update", "updateIndexed"] as const) {
+    if (!excluded.has(method)) {
+      Reflect.defineMetadata("design:paramtypes", [Object, String, updateDtoType], CrudControllerHost.prototype, method);
     }
   }
 
@@ -186,10 +189,8 @@ export function CrudController<Entity extends BaseEntity>(
   }
 
   const authConfig = options?.auth;
-  const publicReads = authConfig !== false && authConfig?.publicReads;
-  const mode = authConfig !== false ? authConfig?.mode : undefined;
 
-  if (publicReads) {
+  if (authConfig !== false) {
     const writeMethods: CrudRouteNames[] = [
       "create", "createBulk", "upsert", "upsertBulk",
       "updateIndexed", "update", "deleteIndexed", "deleteById",
@@ -201,15 +202,10 @@ export function CrudController<Entity extends BaseEntity>(
       const descriptor = Object.getOwnPropertyDescriptor(CrudControllerHost.prototype, method)!;
       UseGuards(AuthGuard)(CrudControllerHost.prototype, method, descriptor);
       ApiSecurity("api-key")(CrudControllerHost.prototype, method, descriptor);
-      if (mode) {
-        SetMetadata(AUTH_MODE_KEY, mode)(CrudControllerHost.prototype, method, descriptor);
+
+      if (authConfig?.mode) {
+        SetMetadata(AUTH_MODE_KEY, authConfig.mode)(CrudControllerHost.prototype, method, descriptor);
       }
-    }
-  } else if (authConfig !== false) {
-    UseGuards(AuthGuard)(CrudControllerHost);
-    ApiSecurity("api-key")(CrudControllerHost);
-    if (mode) {
-      SetMetadata(AUTH_MODE_KEY, mode)(CrudControllerHost);
     }
   }
 

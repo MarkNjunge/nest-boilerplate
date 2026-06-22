@@ -10,10 +10,19 @@ import { ValidationPipe } from "@/pipes/validation.pipe";
 
 @Controller("user-profiles")
 @UsePipes(ValidationPipe)
-export class UserProfileController extends CrudController(UserProfile, UserProfileCreateDto, UserProfileUpdateDto, { auth: { mode:"ADMIN" } })<UserProfileCreateDto, UserProfileUpdateDto> {
+export class UserProfileController extends CrudController(
+  UserProfile,
+  UserProfileCreateDto,
+  UserProfileUpdateDto,
+  { auth: { mode: "ADMIN" } }
+) {
   constructor(
     protected readonly userProfileService: UserProfileService
   ) {
-    super(userProfileService);
+    super();
+  }
+
+  get service() {
+    return this.userProfileService;
   }
 }

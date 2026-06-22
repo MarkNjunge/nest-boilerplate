@@ -5,9 +5,14 @@ import { {{pascalCase name}}Service } from "@/modules/{{kebabCase name}}/{{kebab
 import { ApiTags } from "@nestjs/swagger";
 
 @Controller("{{pluralize (kebabCase name)}}")
-@ApiTags("{{pascalCase name}}")
-export class {{pascalCase name}}Controller extends BaseController<{{pascalCase name}}, {{pascalCase name}}Service>({{pascalCase name}}) {
-  constructor(protected readonly {{camelCase name}}Service: {{pascalCase name}}Service) {
-    super({{camelCase name}}Service);
+export class {{pascalCase name}}Controller extends BaseController({{pascalCase name}}) {
+  constructor(
+    protected readonly {{camelCase name}}Service: {{pascalCase name}}Service
+  ) {
+    super();
+  }
+
+  get service() {
+    return this.{{camelCase name}}Service;
   }
 }

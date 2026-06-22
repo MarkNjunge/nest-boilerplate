@@ -10,6 +10,8 @@ class FakeEntity extends BaseEntity {
   }
 }
 
+class FakeEntityDto {}
+
 describe("BaseController exclude", () => {
   const allBaseMethods: BaseRouteNames[] = ["count", "list", "get", "listCursor", "getById"];
 
@@ -38,14 +40,14 @@ describe("CrudController exclude", () => {
   const allBaseMethods: BaseRouteNames[] = ["count", "list", "get", "listCursor", "getById"];
 
   it("should have all methods when no exclusions", () => {
-    const Ctrl = CrudController(FakeEntity);
+    const Ctrl = CrudController(FakeEntity, FakeEntityDto, FakeEntityDto);
     for (const method of [...allBaseMethods, ...allCrudMethods]) {
       expect(Ctrl.prototype[method]).toBeDefined();
     }
   });
 
   it("should remove excluded crud methods", () => {
-    const Ctrl = CrudController(FakeEntity, undefined, undefined, {
+    const Ctrl = CrudController(FakeEntity, FakeEntityDto, FakeEntityDto, {
       exclude: ["create", "deleteById"],
     });
     expect(Ctrl.prototype["create"]).toBeUndefined();
@@ -55,7 +57,7 @@ describe("CrudController exclude", () => {
   });
 
   it("should remove excluded base methods via CrudController", () => {
-    const Ctrl = CrudController(FakeEntity, undefined, undefined, {
+    const Ctrl = CrudController(FakeEntity, FakeEntityDto, FakeEntityDto, {
       exclude: ["listCursor", "getById"],
     });
     expect(Ctrl.prototype["listCursor"]).toBeUndefined();
@@ -65,7 +67,7 @@ describe("CrudController exclude", () => {
   });
 
   it("should handle mixed base and crud exclusions", () => {
-    const Ctrl = CrudController(FakeEntity, undefined, undefined, {
+    const Ctrl = CrudController(FakeEntity, FakeEntityDto, FakeEntityDto, {
       exclude: ["count", "createBulk", "upsertBulk", "deleteIndexed"],
     });
     expect(Ctrl.prototype["count"]).toBeUndefined();
