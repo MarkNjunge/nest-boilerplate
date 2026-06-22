@@ -114,5 +114,10 @@ describe("Query", () => {
       const actual = validateFilter("(salePrice,gt,120):(price,lt,170");
       expect(actual).toBe(false);
     });
+
+    it("will fail with raw", () => {
+      const actual = validateFilter("(salePrice,raw,120)");
+      expect(actual).toBe(false);
+    });
   });
 });

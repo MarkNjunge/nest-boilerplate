@@ -30,7 +30,8 @@ export type FilterOp = "eq"
 export const filterOpArr: readonly FilterOp[] = [
   "eq", "ne", "like", "ilike", "gt", "lt", "gte", "lte",
   "in", "notin", "isnull", "isnotnull", "between", "notbetween",
-  "any", "none", "contains", "containedby", "raw"
+  "any", "none", "contains", "containedby",
+  // "raw" // raw is intentionally excluded to prevent arbitrary SQL
 ] as const;
 
 export interface KeyValuePair<T extends Record<string, any> = any> {
