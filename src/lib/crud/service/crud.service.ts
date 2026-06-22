@@ -142,13 +142,11 @@ export class CrudService<
           filterConditions = { ...filterConditions, userId: Equal(userId) };
         }
       }
-      const entities = await this.repository.find({ where: filterConditions });
-      if (entities.length === 0) {
-        return [];
-      }
-      const ids = entities.map(e => e.id);
+
       const updateData = options?.silent ? { ...data } : { ...data, updatedAt: new Date() };
-      await this.repository.update(ids, updateData);
+      const updateRes = await this.repository.update(filterConditions, updateData, { returning: ["id"] });
+
+      const ids: string[] = updateRes.raw.map((r: Partial<Entity>) => r.id);
       return this.list(ctx, {
         ...query,
         filter: { in: [{ key: "id", value: ids as any }] }
