@@ -175,7 +175,7 @@ describe("CRUD Service", () => {
       const originalUpdatedAt = user.updatedAt;
 
       await new Promise(resolve => setTimeout(resolve, 5));
-      const result = await service.update(ctx,user.id, { username: "john_updated" }, { silent: true });
+      const result = await service.update(ctx,user.id, { username: "john_updated" }, {}, { silent: true });
 
       expect(result?.updatedAt.getTime()).toBe(originalUpdatedAt.getTime());
     });
@@ -237,6 +237,7 @@ describe("CRUD Service", () => {
       const result = await service.updateIndexed(ctx,
         { eq: [{ key: "id", value: user.id }] },
         { username: "john_updated" },
+        {},
         { silent: true }
       );
 

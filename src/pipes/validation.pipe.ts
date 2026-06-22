@@ -3,7 +3,14 @@ import { validate, ValidationError } from "class-validator";
 import { plainToInstance } from "class-transformer";
 import { config } from "@/config";
 import { ErrorCodes, HttpException } from "@/utils";
-import { BaseRawQuery, CursorRawQuery, ListRawQuery, PagingCursorRawQuery } from "@/lib/crud";
+import {
+  BaseRawQuery,
+  CursorRawQuery,
+  FilteredOnlyRawQuery,
+  FilteredRawQuery,
+  ListRawQuery,
+  RestrictedCursorRawQuery
+} from "@/lib/crud";
 
 // https://github.com/nestjs/nest/blob/d295f1c572f64aa8239d3fab4cfa59df220c3ebb/packages/common/interfaces/type.interface.ts
 export type Type<T = any> = new (...args: any[]) => T;
@@ -13,7 +20,7 @@ export type Type<T = any> = new (...args: any[]) => T;
  */
 const ALLOW_UNKNOWN_TYPES: Type[] = [];
 if (config.validator.nonStrictQuery) {
-  ALLOW_UNKNOWN_TYPES.push(BaseRawQuery, ListRawQuery, CursorRawQuery, PagingCursorRawQuery);
+  ALLOW_UNKNOWN_TYPES.push(BaseRawQuery, FilteredOnlyRawQuery, FilteredRawQuery, ListRawQuery, CursorRawQuery, RestrictedCursorRawQuery);
 }
 
 @Injectable()

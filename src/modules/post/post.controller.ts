@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post as HttpPost, Query, UseGuards } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiResponse, ApiSecurity } from "@nestjs/swagger";
-import { CrudController, CursorRawQuery, PagingCursorRawQuery, parseRawQuery } from "@/lib/crud";
+import { CrudController, CursorRawQuery, RestrictedCursorRawQuery, parseRawQuery } from "@/lib/crud";
 import { Post, PostCreateDto, PostUpdateDto } from "@/models/post/post";
 import { PostService } from "@/modules/post/post.service";
 import { CreatePostWithCommentDto } from "@/models/post/post-with-comment.dto";
@@ -24,7 +24,7 @@ export class PostController extends CrudController(
   @Get("/feed")
   @ApiOperation({ summary: "Get posts feed" })
   @ApiResponse({ status: 200, type: Post, isArray: true })
-  async feed(@ReqCtx() ctx: IReqCtx, @Query() query: PagingCursorRawQuery) {
+  async feed(@ReqCtx() ctx: IReqCtx, @Query() query: RestrictedCursorRawQuery) {
     const fullQuery: CursorRawQuery = {
       // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...query,

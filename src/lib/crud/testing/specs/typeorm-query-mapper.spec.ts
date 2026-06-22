@@ -533,19 +533,11 @@ describe("TypeORM Query Mapper", () => {
   });
 
   describe("nested select", () => {
-    it("injects id into select when relations are present", () => {
+    it("always injects id into select", () => {
       const options = mapQueryToTypeorm<SelectChild>({
-        select: { title: true },
-        include: ["parent"],
+        select: { title: true }
       });
       expect(options.select).toEqual({ id: true, title: true });
-    });
-
-    it("does not inject id into select when no relations", () => {
-      const options = mapQueryToTypeorm<SelectChild>({
-        select: { title: true },
-      });
-      expect(options.select).toEqual({ title: true });
     });
 
     it("can select nested relation fields", async () => {

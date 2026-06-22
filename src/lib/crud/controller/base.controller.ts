@@ -15,7 +15,14 @@ import {
   ApiSecurity,
   getSchemaPath
 } from "@nestjs/swagger";
-import { parseRawQuery, ListRawQuery, CursorRawQuery } from "@/lib/crud/query/query";
+import {
+  parseRawQuery,
+  ListRawQuery,
+  CursorRawQuery,
+  BaseRawQuery,
+  FilteredOnlyRawQuery,
+  FilteredRawQuery
+} from "@/lib/crud/query/query";
 import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagination";
 import { HttpException } from "@/utils";
 import { ReqCtx } from "@/decorators/request-context.decorator";
@@ -70,7 +77,7 @@ export function BaseController<
     @Get("/count")
     @ApiOperation({ summary: "Count entities matching the query" })
     @ApiResponse({ status: 200, type: Number })
-    async count(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<number> {
+    async count(@ReqCtx() ctx: ICrudContext, @Query() query: FilteredOnlyRawQuery): Promise<number> {
       return this.service.count(ctx, parseRawQuery(query));
     }
 
@@ -84,7 +91,7 @@ export function BaseController<
     @Get("/first")
     @ApiOperation({ summary: "Get the first entity matching the query" })
     @ApiResponse({ status: 200, type: entityType })
-    async get(@ReqCtx() ctx: ICrudContext, @Query() query: ListRawQuery): Promise<Entity | null> {
+    async get(@ReqCtx() ctx: ICrudContext, @Query() query: FilteredRawQuery): Promise<Entity | null> {
       const result = await this.service.get(ctx, parseRawQuery(query));
       if (!result) {
         throw new HttpException(404, "Entity not found");
@@ -116,7 +123,7 @@ export function BaseController<
     async getById(
       @ReqCtx() ctx: ICrudContext,
       @Param("id") id: string,
-      @Query() query: ListRawQuery
+      @Query() query: BaseRawQuery
     ): Promise<Entity | null> {
       const result = await this.service.getById(ctx, id, parseRawQuery(query));
       if (!result) {

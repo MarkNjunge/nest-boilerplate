@@ -126,9 +126,10 @@ export function mapQueryToTypeorm<T extends Record<string, any> = any>(options: 
     });
   });
 
-  // Inject id if relations are loaded
+  // TODO Inject in nested relations
+  // Always inject id
   let select = options.select;
-  if (select && Object.keys(relations).length > 0) {
+  if (select) {
     select = { id: true, ...select };
   }
 

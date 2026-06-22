@@ -151,18 +151,27 @@ export class BaseRawQuery {
   @ApiProperty({ required: false, description: "Example: comments" })
   @IsOptional()
   include?: string;
+}
 
+export class FilteredOnlyRawQuery {
   @ApiProperty({ required: false, description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)" })
   @IsOptional()
   @IsValidFilter()
   filter?: string;
+}
 
+export class FilteredRawQuery extends BaseRawQuery {
+  @ApiProperty({ required: false, description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)" })
+  @IsOptional()
+  @IsValidFilter()
+  filter?: string;
+}
+
+export class ListRawQuery extends FilteredRawQuery {
   @ApiProperty({ required: false, description: "Example: 10" })
   @IsOptional()
   limit?: string;
-}
 
-export class ListRawQuery extends BaseRawQuery {
   @ApiProperty({ required: false, description: "Example: 20" })
   @IsOptional()
   offset?: string;
@@ -173,7 +182,11 @@ export class ListRawQuery extends BaseRawQuery {
   sort?: string;
 }
 
-export class CursorRawQuery extends BaseRawQuery {
+export class CursorRawQuery extends FilteredRawQuery {
+  @ApiProperty({ required: false, description: "Example: 10" })
+  @IsOptional()
+  limit?: string;
+
   @ApiProperty({ required: false, description: "Fetch items greater than this cursor" })
   @IsOptional()
   after?: string;
@@ -191,7 +204,7 @@ export class CursorRawQuery extends BaseRawQuery {
   sortDir?: "ASC" | "DESC";
 }
 
-export class PagingCursorRawQuery extends BaseRawQuery {
+export class RestrictedCursorRawQuery extends BaseRawQuery {
   @ApiProperty({ required: false, description: "Fetch items greater than this cursor" })
   @IsOptional()
   after?: string;

@@ -373,4 +373,222 @@ describe("CRUD", () => {
 
     expect(response.status).toBe(401);
   });
+
+  describe("Write operations with select/include query params", () => {
+    it("POST /posts with select returns only specified fields", async () => {
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      };
+      const response = await request(testApiHost)
+        .post("/posts")
+        .query({ select: "title,content" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(201);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(response.body.title).toBe(createDto.title);
+      expect(response.body.content).toBe(createDto.content);
+      // Should not have other fields like categoryId
+      expect(response.body).not.toHaveProperty("categoryId");
+    });
+
+    it("POST /posts with include returns relations", async () => {
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      };
+      const response = await request(testApiHost)
+        .post("/posts")
+        .query({ include: "user" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(201);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(response.body.title).toBe(createDto.title);
+      expect(response.body.user).toBeDefined();
+      expect(response.body.user.id).toBe(userId);
+    });
+
+    it("POST /posts/bulk with select returns only specified fields", async () => {
+      const createDto = [
+        { title: randomString(6), content: `${randomString(6)} content` },
+        { title: randomString(6), content: `${randomString(6)} content` }
+      ];
+      const response = await request(testApiHost)
+        .post("/posts/bulk")
+        .query({ select: "title" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(201);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0].title).toBe(createDto[0].title);
+      expect(response.body[0]).not.toHaveProperty("content");
+      expect(response.body[1].title).toBe(createDto[1].title);
+      expect(response.body[1]).not.toHaveProperty("content");
+    });
+
+    it("POST /posts/bulk with include returns relations", async () => {
+      const createDto = [
+        { title: randomString(6), content: `${randomString(6)} content` },
+        { title: randomString(6), content: `${randomString(6)} content` }
+      ];
+      const response = await request(testApiHost)
+        .post("/posts/bulk")
+        .query({ include: "user" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(201);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0].user).toBeDefined();
+      expect(response.body[0].user.id).toBe(userId);
+      expect(response.body[1].user).toBeDefined();
+    });
+
+    it("PUT /posts (upsert) with select returns only specified fields", async () => {
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      };
+      const response = await request(testApiHost)
+        .put("/posts")
+        .query({ select: "title" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(response.body.title).toBe(createDto.title);
+      expect(response.body).not.toHaveProperty("content");
+    });
+
+    it("PUT /posts (upsert) with include returns relations", async () => {
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      };
+      const response = await request(testApiHost)
+        .put("/posts")
+        .query({ include: "user" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(response.body.user).toBeDefined();
+      expect(response.body.user.id).toBe(userId);
+    });
+
+    it("PUT /posts/bulk with select returns only specified fields", async () => {
+      const createDto = [
+        { title: randomString(6), content: `${randomString(6)} content` },
+        { title: randomString(6), content: `${randomString(6)} content` }
+      ];
+      const response = await request(testApiHost)
+        .put("/posts/bulk")
+        .query({ select: "title" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0].title).toBe(createDto[0].title);
+      expect(response.body[0]).not.toHaveProperty("content");
+    });
+
+    it("PUT /posts/bulk with include returns relations", async () => {
+      const createDto = [
+        { title: randomString(6), content: `${randomString(6)} content` },
+        { title: randomString(6), content: `${randomString(6)} content` }
+      ];
+      const response = await request(testApiHost)
+        .put("/posts/bulk")
+        .query({ include: "user" })
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0].user).toBeDefined();
+    });
+
+    it("PATCH /posts/:id with select returns only specified fields", async () => {
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      };
+      const createResult = await request(testApiHost)
+        .post("/posts")
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      const updateDto = { title: `updated_${randomString(6)}` };
+      const response = await request(testApiHost)
+        .patch(`/posts/${createResult.body.id}`)
+        .query({ select: "title" })
+        .send(updateDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(response.body.id).toBe(createResult.body.id);
+      expect(response.body.title).toBe(updateDto.title);
+      expect(response.body).not.toHaveProperty("content");
+    });
+
+    it("PATCH /posts/:id with include returns relations", async () => {
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      };
+      const createResult = await request(testApiHost)
+        .post("/posts")
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      const updateDto = { content: `${randomString(6)} content` };
+      const response = await request(testApiHost)
+        .patch(`/posts/${createResult.body.id}`)
+        .query({ include: "user" })
+        .send(updateDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers["content-type"]).toMatch(/json/);
+      expect(response.body.id).toBe(createResult.body.id);
+      expect(response.body.content).toBe(updateDto.content);
+      expect(response.body.user).toBeDefined();
+      expect(response.body.user.id).toBe(userId);
+    });
+
+    it("POST /posts without select/include returns all fields by default", async () => {
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      };
+      const response = await request(testApiHost)
+        .post("/posts")
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("id");
+      expect(response.body).toHaveProperty("title");
+      expect(response.body).toHaveProperty("content");
+      expect(response.body).toHaveProperty("createdAt");
+      expect(response.body).toHaveProperty("updatedAt");
+    });
+  });
 });

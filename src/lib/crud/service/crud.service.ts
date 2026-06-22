@@ -1,6 +1,6 @@
 import { Equal, ObjectLiteral, Repository } from "typeorm";
 import { parseFilter } from "@/lib/crud/query/typeorm-query-mapper";
-import { Filter } from "@/lib/crud/query/query";
+import { Filter, Query } from "@/lib/crud/query/query";
 import { BaseService, ServiceOptions } from "@/lib/crud/service/base.service";
 import { BaseEntity } from "@/lib/crud/entity/base.entity";
 import { genId } from "@/lib/crud/entity/id";
@@ -30,7 +30,18 @@ export class CrudService<
     entity.updatedAt = entity.updatedAt ?? now;
   }
 
-  async create(ctx: ICrudContext, data: Create): Promise<Entity> {
+  // Re-fetch entities if select/include options are supplied
+  private async refetchWithQuery(ctx: ICrudContext, ids: string[], query?: Query<Entity>): Promise<Entity[] | null> {
+    if (!query || (!query.select && (!query.include || query.include.length === 0))) {
+      return null;
+    }
+    return this.list(ctx, {
+      ...query,
+      filter: { in: [{ key: "id", value: ids as any }] }
+    });
+  }
+
+  async create(ctx: ICrudContext, data: Create, query?: Query<Entity>): Promise<Entity> {
     return this.track("create", { data }, async () => {
       const entity = this.repository.create(data as any) as unknown as Entity;
       const userId = this.getUserId(ctx);
@@ -38,11 +49,14 @@ export class CrudService<
         (entity as any).userId = userId;
       }
       this.prepareEntity(entity, new Date());
-      return this.repository.save(entity);
+      const saved = await this.repository.save(entity);
+
+      const refetched = await this.refetchWithQuery(ctx, [saved.id], query);
+      return refetched?.[0] ?? saved;
     });
   }
 
-  async createBulk(ctx: ICrudContext, data: Create[]): Promise<Entity[]> {
+  async createBulk(ctx: ICrudContext, data: Create[], query?: Query<Entity>): Promise<Entity[]> {
     return this.track("createBulk", { data }, async () => {
       const now = new Date();
       const userId = this.getUserId(ctx);
@@ -53,11 +67,15 @@ export class CrudService<
         this.prepareEntity(entity, now);
         return entity;
       });
-      return this.repository.save(entities);
+      const saved = await this.repository.save(entities);
+
+      const ids = saved.map(e => e.id);
+      const refetched = await this.refetchWithQuery(ctx, ids, query);
+      return refetched ?? saved;
     });
   }
 
-  async upsert(ctx: ICrudContext, data: Create): Promise<Entity> {
+  async upsert(ctx: ICrudContext, data: Create, query?: Query<Entity>): Promise<Entity> {
     return this.track("upsert", { data }, async () => {
       const now = new Date();
       const entity = this.repository.create(data as any) as unknown as Entity;
@@ -68,11 +86,12 @@ export class CrudService<
       this.prepareEntity(entity, now);
       entity.updatedAt = now;
       await this.repository.upsert(entity as any, { conflictPaths: ["id"] });
-      return entity;
+      const refetched = await this.refetchWithQuery(ctx, [entity.id], query);
+      return refetched?.[0] ?? entity;
     });
   }
 
-  async upsertBulk(ctx: ICrudContext, data: Create[]): Promise<Entity[]> {
+  async upsertBulk(ctx: ICrudContext, data: Create[], query?: Query<Entity>): Promise<Entity[]> {
     return this.track("upsertBulk", { data }, async () => {
       const now = new Date();
       const userId = this.getUserId(ctx);
@@ -84,12 +103,16 @@ export class CrudService<
         entity.updatedAt = now;
         return entity;
       });
-      await this.repository.upsert(entities as any[], { conflictPaths: ["id"] });
-      return entities;
+      const upsertRes = await this.repository.upsert(entities as any[], { conflictPaths: ["id"] });
+
+      return this.list(ctx, {
+        ...query,
+        filter: { in: [{ key: "id", value: upsertRes.identifiers.map(i => i.id) as any }] }
+      });
     });
   }
 
-  async update(ctx: ICrudContext, id: string, data: Update, options?: { silent?: boolean }): Promise<Entity | null> {
+  async update(ctx: ICrudContext, id: string, data: Update, query?: Query<Entity>, options?: { silent?: boolean }): Promise<Entity | null> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (id == null) {
       throw new Error("null id passed in update");
@@ -102,11 +125,13 @@ export class CrudService<
         updateData.updatedAt = new Date();
       }
       await this.repository.update(whereClause, updateData);
-      return this.repository.findOne({ where: whereClause });
+
+      const refetched = await this.refetchWithQuery(ctx, [id], query);
+      return refetched?.[0] ?? await this.getById(ctx, id);
     });
   }
 
-  async updateIndexed(ctx: ICrudContext, filter: Filter<Entity>, data: Update, options?: { silent?: boolean }): Promise<Entity[]> {
+  async updateIndexed(ctx: ICrudContext, filter: Filter<Entity>, data: Update, query?: Query<Entity>, options?: { silent?: boolean }): Promise<Entity[]> {
     return this.track("updateIndexed", { filter: data }, async () => {
       const userId = this.getUserId(ctx);
       let filterConditions = parseFilter(filter);
@@ -124,7 +149,10 @@ export class CrudService<
       const ids = entities.map(e => e.id);
       const updateData = options?.silent ? { ...data } : { ...data, updatedAt: new Date() };
       await this.repository.update(ids, updateData);
-      return entities.map(entity => Object.assign({}, entity, updateData) as Entity);
+      return this.list(ctx, {
+        ...query,
+        filter: { in: [{ key: "id", value: ids as any }] }
+      });
     });
   }
 

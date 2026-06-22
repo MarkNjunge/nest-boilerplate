@@ -16,11 +16,16 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiSecurity
 } from "@nestjs/swagger";
-import { parseRawFilter } from "@/lib/crud/query/query";
+import {
+  FilteredOnlyRawQuery,
+  parseRawFilter,
+  parseRawQuery,
+  BaseRawQuery,
+  FilteredRawQuery
+} from "@/lib/crud/query/query";
 import { AuthGuard } from "@/guards/auth.guard";
 import { AUTH_MODE_KEY } from "@/guards/auth.validator";
 import { ErrorCodes, HttpException } from "@/utils";
@@ -69,52 +74,64 @@ export function CrudController<
     @ApiOperation({ summary: "Create an entity" })
     @ApiBody({ type: createDtoType })
     @ApiResponse({ status: 201, type: entityType })
-    async create(@ReqCtx() ctx: ICrudContext, @Body() dto: Create): Promise<Entity> {
-      return this.service.create(ctx, dto);
+    async create(
+      @ReqCtx() ctx: ICrudContext,
+      @Body() dto: Create,
+      @Query() query: BaseRawQuery
+    ): Promise<Entity> {
+      return this.service.create(ctx, dto, parseRawQuery(query));
     }
 
     @Post("/bulk")
     @ApiOperation({ summary: "Create entities in bulk" })
     @ApiBody({ type: createDtoType, isArray: true })
     @ApiResponse({ status: 201, type: entityType, isArray: true })
-    async createBulk(@ReqCtx() ctx: ICrudContext, @Body() dto: Create[]): Promise<Entity[]> {
-      return this.service.createBulk(ctx, dto);
+    async createBulk(
+      @ReqCtx() ctx: ICrudContext,
+      @Body() dto: Create[],
+      @Query() query: BaseRawQuery
+    ): Promise<Entity[]> {
+      return this.service.createBulk(ctx, dto, parseRawQuery(query));
     }
 
     @Put("/")
     @ApiOperation({ summary: "Create or update entity (upsert)" })
     @ApiBody({ type: createDtoType })
     @ApiResponse({ status: 200, type: entityType })
-    async upsert(@ReqCtx() ctx: ICrudContext, @Body() dto: Create): Promise<Entity> {
-      return this.service.upsert(ctx, dto);
+    async upsert(
+      @ReqCtx() ctx: ICrudContext,
+      @Body() dto: Create,
+      @Query() query: BaseRawQuery
+    ): Promise<Entity> {
+      return this.service.upsert(ctx, dto, parseRawQuery(query));
     }
 
     @Put("/bulk")
     @ApiOperation({ summary: "Create or update multiple entities (upsert)" })
     @ApiBody({ type: createDtoType, isArray: true })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
-    async upsertBulk(@ReqCtx() ctx: ICrudContext, @Body() dto: Create[]): Promise<Entity[]> {
-      return this.service.upsertBulk(ctx, dto);
+    async upsertBulk(
+      @ReqCtx() ctx: ICrudContext,
+      @Body() dto: Create[],
+      @Query() query: BaseRawQuery
+    ): Promise<Entity[]> {
+      return this.service.upsertBulk(ctx, dto, parseRawQuery(query));
     }
 
     @Patch("/")
     @ApiOperation({ summary: "Update multiple entities by filter" })
-    @ApiQuery({
-      name: "filter",
-      description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)"
-    })
     @ApiBody({ type: updateDtoType })
     @ApiResponse({ status: 200, type: entityType, isArray: true })
     async updateIndexed(
       @ReqCtx() ctx: ICrudContext,
-      @Query("filter") filter: string,
+      @Query() query: FilteredRawQuery,
       @Body() dto: Update
     ): Promise<Entity[]> {
-      if (!filter) {
+      if (!query.filter) {
         throw new HttpException(400, "filter query is required", ErrorCodes.CLIENT_ERROR);
       }
 
-      return this.service.updateIndexed(ctx, parseRawFilter(filter), dto);
+      return this.service.updateIndexed(ctx, parseRawFilter(query.filter), dto, parseRawQuery(query));
     }
 
     @Patch("/:id")
@@ -125,9 +142,10 @@ export function CrudController<
     async update(
       @ReqCtx() ctx: ICrudContext,
       @Param("id") id: string,
-      @Body() dto: Update
+      @Body() dto: Update,
+      @Query() query: BaseRawQuery
     ): Promise<Entity> {
-      const result = await this.service.update(ctx, id, dto);
+      const result = await this.service.update(ctx, id, dto, parseRawQuery(query));
       if (!result) {
         throw new HttpException(404, `Entity ${id} not found`);
       }
@@ -136,18 +154,14 @@ export function CrudController<
 
     @Delete("/")
     @ApiOperation({ summary: "Delete multiple entities by filter" })
-    @ApiQuery({
-      name: "filter",
-      description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)"
-    })
     @HttpCode(200)
     @ApiResponse({ status: 200, type: DeletedDto })
-    async deleteIndexed(@ReqCtx() ctx: ICrudContext, @Query("filter") filter: string): Promise<DeletedDto> {
-      if (!filter) {
+    async deleteIndexed(@ReqCtx() ctx: ICrudContext, @Query() query: FilteredOnlyRawQuery,): Promise<DeletedDto> {
+      if (!query.filter) {
         throw new HttpException(400, "filter query is required", ErrorCodes.CLIENT_ERROR);
       }
 
-      const affected = await this.service.deleteIndexed(ctx, parseRawFilter(filter));
+      const affected = await this.service.deleteIndexed(ctx, parseRawFilter(query.filter));
       return {
         affected
       };
@@ -171,12 +185,17 @@ export function CrudController<
   // Override metadata for validation after class creation
   for (const method of ["create", "createBulk", "upsert", "upsertBulk"] as const) {
     if (!excluded.has(method)) {
-      Reflect.defineMetadata("design:paramtypes", [Object, createDtoType], CrudControllerHost.prototype, method);
+      Reflect.defineMetadata("design:paramtypes", [Object, createDtoType, BaseRawQuery], CrudControllerHost.prototype, method);
     }
   }
-  for (const method of ["update", "updateIndexed"] as const) {
+  for (const method of ["update"] as const) {
     if (!excluded.has(method)) {
-      Reflect.defineMetadata("design:paramtypes", [Object, String, updateDtoType], CrudControllerHost.prototype, method);
+      Reflect.defineMetadata("design:paramtypes", [Object, String, updateDtoType, BaseRawQuery], CrudControllerHost.prototype, method);
+    }
+  }
+  for (const method of ["updateIndexed"] as const) {
+    if (!excluded.has(method)) {
+      Reflect.defineMetadata("design:paramtypes", [Object, FilteredOnlyRawQuery, updateDtoType], CrudControllerHost.prototype, method);
     }
   }
 
