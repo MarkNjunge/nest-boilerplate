@@ -146,5 +146,14 @@ function initializeSwagger(app: NestFastifyApplication): void {
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup(config.swagger.endpoint, app, document);
+  SwaggerModule.setup(config.swagger.endpoint, app, document, {
+    swaggerOptions: {
+      operationsSorter: (a: Map<string, string>, b: Map<string, string>) => {
+        const methodOrder = ["get", "post", "put", "patch", "delete"];
+        const methodA = methodOrder.indexOf(a.get("method")!);
+        const methodB = methodOrder.indexOf(b.get("method")!);
+        return methodA - methodB;
+      },
+    },
+  });
 }
