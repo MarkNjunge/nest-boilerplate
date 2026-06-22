@@ -12,7 +12,7 @@ describe("Query", () => {
       const reqQuery: RawQuery = {
         select: "title,comments.content,comments.user.username",
         include: "stock",
-        filter: "(postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)",
+        filter: "(postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200):(tags,in,tagA|tagB|tagC)",
         limit: "10",
         offset: "20",
         sort: "(averageRating,ASC):(price,DESC)"
@@ -32,7 +32,8 @@ describe("Query", () => {
         filter: {
           eq: [{ key: "postId", value: "post_" }],
           lt: [{ key: "createdAt", value: "2025-11-04T06:55:40.549Z" }],
-          between: [{ key: "price", value: "120", secondValue: "200" }]
+          between: [{ key: "price", value: "120", secondValue: "200" }],
+          in: [{ key: "tags", value: ["tagA", "tagB", "tagC"] }]
         },
         sort: { averageRating: "ASC", price: "DESC" },
         limit: 10,

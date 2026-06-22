@@ -243,8 +243,13 @@ export function parseRawFilter(filterStr: string | undefined): Filter {
   }
 
   match.map(s => {
-    const { 0: key, 1: op, 2: value, 3: secondValue } = s.slice(1, -1).split(",");
+    const { 0: key, 1: op, 3: secondValue } = s.slice(1, -1).split(",");
+    let value: string | string[] = s.slice(1, -1).split(",")[2];
     filter[op as FilterOp] ??= [];
+
+    if (value.includes("|")) {
+      value = value.split("|");
+    }
 
     const kv: KeyValuePair = { key, value };
     if (secondValue) {

@@ -78,6 +78,38 @@ describe("CRUD", () => {
     }
   });
 
+  it("GET /posts with 'in' filter", async () => {
+    const createDtos = [
+      {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      },
+      {
+        title: randomString(6),
+        content: `${randomString(6)} content`
+      }
+    ];
+    const createdIds: string[] = [];
+    for (const dto of createDtos) {
+      const r = await request(testApiHost)
+        .post("/posts")
+        .send(dto)
+        .set("Authorization", `Bearer ${userId}`);
+      createdIds.push(r.body.id);
+    }
+
+    const response = await request(testApiHost)
+      .get(`/posts?filter=(id,in,${createdIds.join("|")})`)
+      .query({ select: "title,content" })
+      .set("Authorization", `Bearer ${userId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers["content-type"]).toMatch(/json/);
+    expect(response.body.length).toBe(2);
+    expect(response.body[0].title).toEqual(createDtos[0].title);
+    expect(response.body[1].title).toEqual(createDtos[1].title);
+  });
+
   it("GET /posts/first", async () => {
     const createDto = {
       title: randomString(6),
