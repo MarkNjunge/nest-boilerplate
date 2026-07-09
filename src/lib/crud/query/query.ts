@@ -124,6 +124,35 @@ export type Sort<T = any> = {
   [P in keyof T]?: SortValue<T[P]>
 };
 
+/**
+ * Resolves to a selectable type for a single property value type.
+ * Uses a bare type parameter to force distributive conditional evaluation
+ * over union types (e.g., Entity | undefined).
+ *
+ * - Functions → `never` (excluded, e.g. class methods like `toString`)
+ * - Promises → unwrap and recurse (handles lazy-loaded relations)
+ * - Arrays → unwrap element type and recurse
+ * - Date, Uint8Array → `boolean` (treated as scalars)
+ * - Other objects → nested `Select<V>` | `boolean`
+ * - Primitives → `boolean`
+ */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+type SelectValue<V> = V extends Function ?
+  never :
+  V extends Promise<infer I> ?
+    SelectValue<I> | boolean :
+    V extends readonly (infer I)[] ?
+      SelectValue<I> | boolean :
+      V extends Date | Uint8Array ?
+        boolean :
+        V extends object ?
+          Select<V> | boolean :
+          boolean;
+
+export type Select<T = any> = {
+  [P in keyof T]?: P extends "toString" ? unknown : SelectValue<NonNullable<T[P]>>
+};
+
 export function IsValidSort(validationOptions?: ValidationOptions) {
   return function(object: object, propertyName: string) {
     registerDecorator({
@@ -229,7 +258,7 @@ export class RestrictedCursorRawQuery extends BaseRawQuery {
 export type RawQuery = ListRawQuery;
 
 export interface Query<T extends Record<string, any> = any> {
-  select?: typeorm.FindOptionsSelect<T>;
+  select?: Select<T>;
   include?: string[] | (keyof T)[];
   filter?: Filter<T>;
   sort?: Sort<T>;

@@ -128,7 +128,7 @@ export function mapQueryToTypeorm<T extends Record<string, any> = any>(options: 
 
   // TODO Inject in nested relations
   // Always inject id
-  let select = options.select;
+  let select = options.select as typeorm.FindOptionsSelect<any> | undefined;
   if (select) {
     select = { id: true, ...select };
   }
