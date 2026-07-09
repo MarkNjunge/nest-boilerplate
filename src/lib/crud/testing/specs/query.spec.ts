@@ -1,5 +1,6 @@
 import {
   parseRawQuery,
+  parseRawSort,
   Query,
   RawQuery,
   validateFilter,
@@ -15,7 +16,7 @@ describe("Query", () => {
         filter: "(postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200):(tags,in,tagA|tagB|tagC)",
         limit: "10",
         offset: "20",
-        sort: "(averageRating,ASC):(price,DESC)"
+        sort: "(user.name,ASC):(user.email,DESC):(averageRating,ASC):(price,DESC)"
       };
 
       const expected: Query = {
@@ -35,7 +36,7 @@ describe("Query", () => {
           between: [{ key: "price", value: "120", secondValue: "200" }],
           in: [{ key: "tags", value: ["tagA", "tagB", "tagC"] }]
         },
-        sort: { averageRating: "ASC", price: "DESC" },
+        sort: { user: { name:"ASC", email: "DESC" }, averageRating: "ASC", price: "DESC" },
         limit: 10,
         offset: 20
       };
@@ -52,7 +53,7 @@ describe("Query", () => {
     });
   });
 
-  describe("validateOrderBy", () => {
+  describe("validateSort", () => {
     it("can validate empty", () => {
       const actual = validateSort("");
       expect(actual).toBe(true);
@@ -63,9 +64,9 @@ describe("Query", () => {
       expect(actual).toBe(true);
     });
 
-    it("can validate direction", () => {
-      const actual = validateSort("(averageRating,up)");
-      expect(actual).toBe(false);
+    it("can validate nested key", () => {
+      const actual = validateSort("(user.name,ASC)");
+      expect(actual).toBe(true);
     });
 
     it("can validate multiple", () => {
@@ -73,9 +74,51 @@ describe("Query", () => {
       expect(actual).toBe(true);
     });
 
+    it("can validate multiple nested", () => {
+      const actual = validateSort("(user.name,ASC):(user.email,DESC)");
+      expect(actual).toBe(true);
+    });
+
+    it("can validate direction", () => {
+      const actual = validateSort("(averageRating,up)");
+      expect(actual).toBe(false);
+    });
+
     it("can fail invalid", () => {
       const actual = validateSort("(averageRating,ASC):(price1,DESC");
       expect(actual).toBe(false);
+    });
+  });
+
+  describe("parseRawSort", () => {
+    it("parses single flat key", () => {
+      const actual = parseRawSort("(name,ASC)");
+      expect(actual).toEqual({ name: "ASC" });
+    });
+
+    it("parses multiple flat keys", () => {
+      const actual = parseRawSort("(name,ASC):(email,DESC)");
+      expect(actual).toEqual({ name: "ASC", email: "DESC" });
+    });
+
+    it("parses nested key", () => {
+      const actual = parseRawSort("(user.name,ASC)");
+      expect(actual).toEqual({ user: { name: "ASC" } });
+    });
+
+    it("parses multiple nested keys on same parent", () => {
+      const actual = parseRawSort("(user.name,ASC):(user.email,DESC)");
+      expect(actual).toEqual({ user: { name: "ASC", email: "DESC" } });
+    });
+
+    it("parses mixed flat and nested keys", () => {
+      const actual = parseRawSort("(id,ASC):(user.email,DESC)");
+      expect(actual).toEqual({ id: "ASC", user: { email: "DESC" } });
+    });
+
+    it("parses deeply nested key", () => {
+      const actual = parseRawSort("(a.b.c,ASC)");
+      expect(actual).toEqual({ a: { b: { c: "ASC" } } });
     });
   });
 

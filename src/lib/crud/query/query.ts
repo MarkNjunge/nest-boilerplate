@@ -109,9 +109,20 @@ export function validateFilter(s: string): boolean {
   });
 }
 
-export type Sort<T extends Record<string, any> = any> = Partial<{
-  [P in keyof T]: "ASC" | "DESC"
-}>;
+/**
+ * Resolves to a sortable type for a single property value type.
+ * Uses a bare type parameter to force distributive conditional evaluation
+ * over union types (e.g., Entity | undefined).
+ */
+type SortValue<V> = V extends object ?
+  V extends readonly any[] ?
+    "ASC" | "DESC" :
+    "ASC" | "DESC" | Sort<V> :
+  "ASC" | "DESC";
+
+export type Sort<T = any> = {
+  [P in keyof T]?: SortValue<T[P]>
+};
 
 export function IsValidSort(validationOptions?: ValidationOptions) {
   return function(object: object, propertyName: string) {
@@ -126,7 +137,7 @@ export function IsValidSort(validationOptions?: ValidationOptions) {
           return validateSort(value);
         },
         defaultMessage(validationArguments?: ValidationArguments): string {
-          return `${propertyName} must match '(key,direction)'`;
+          return `${propertyName} must match '(key.subkey,direction)'`;
         }
       }
     });
@@ -140,7 +151,7 @@ export function validateSort(s: string): boolean {
 
   return s.split(":").every(s => {
     const { 0: key, 1: direction } = s.slice(1, -1).split(",");
-    return s.startsWith("(") && s.endsWith(")") && ["ASC", "DESC"].includes(direction);
+    return s.startsWith("(") && s.endsWith(")") && ["ASC", "DESC"].includes(direction) && key?.length > 0;
   });
 }
 
@@ -263,6 +274,31 @@ export function parseRawFilter(filterStr: string | undefined): Filter {
   return filter;
 }
 
+export function parseRawSort(sortStr: string): Sort {
+  const sort: Sort = {};
+  const match = sortStr.match(/\([^)]+\)/g);
+  if (match) {
+    match.map((s: string) => {
+      const { 0: key, 1: direction } = s.slice(1, -1).split(",");
+      setNestedSort(sort, key, direction as "ASC" | "DESC");
+    });
+  }
+  return sort;
+}
+
+function setNestedSort(sort: Sort, keyPath: string, direction: "ASC" | "DESC"): void {
+  const parts = keyPath.split(".");
+  let current: Record<string, any> = sort;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i];
+    if (!current[part] || typeof current[part] !== "object" || Array.isArray(current[part])) {
+      current[part] = {};
+    }
+    current = current[part];
+  }
+  current[parts[parts.length - 1]] = direction;
+}
+
 export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = false): Query {
   const query: Query = {};
 
@@ -302,15 +338,7 @@ export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = 
   if (!cursor) {
     const listQuery = rawQuery as ListRawQuery;
     if (listQuery.sort) {
-      const sort: Sort = {};
-      const match = listQuery.sort.match(/\([^)]+\)/g);
-      if (match) {
-        match.map((s: string) => {
-          const { 0: key, 1: direction } = s.slice(1, -1).split(",");
-          sort[key] = direction as "ASC" | "DESC";
-        });
-      }
-      query.sort = sort;
+      query.sort = parseRawSort(listQuery.sort);
     }
 
     if (listQuery.offset) {

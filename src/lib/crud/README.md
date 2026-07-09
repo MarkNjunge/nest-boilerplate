@@ -408,7 +408,7 @@ The CRUD layer includes a powerful query parsing system that converts URL parame
 - `select=field1,field2` - Field selection
 - `include=relation1,relation2` - Eager load relations
 - `filter=(field,operator,value):(field2,operator,value2)` - Filtering
-- `sort=(field,ASC):(field2,DESC)` - Sorting
+- `sort=(field,ASC):(field2,DESC)` - Sorting. Supports dot-notation for nested relation fields, e.g. `(user.name,ASC)`
 - `limit=10&offset=0` - Pagination
 
 ### Filter Operators
@@ -480,6 +480,11 @@ GET /products?filter=(price,between,100,500)
 **Sort and paginate:**
 ```
 GET /posts?sort=(createdAt,DESC)&limit=20&offset=40
+```
+
+**Sort by nested relation field:**
+```
+GET /posts?sort=(author.name,ASC):(author.email,DESC)
 ```
 
 **Complex query:**
