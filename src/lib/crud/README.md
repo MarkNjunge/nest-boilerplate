@@ -1,6 +1,7 @@
 # CRUD Layer
 
-This directory contains the core CRUD (Create, Read, Update, Delete) abstractions for the NestJS boilerplate. It provides base classes for entities, services, and controllers that enable rapid development of REST APIs with minimal boilerplate.
+This directory contains the core CRUD (Create, Read, Update, Delete) abstractions for the NestJS boilerplate. 
+It provides base classes for entities, services, and controllers that enable rapid development of REST APIs with minimal boilerplate.
 
 ## Architecture
 
@@ -50,14 +51,24 @@ export class User extends BaseEntity {
 ## UserScopedEntity
 
 Extends `BaseEntity` for resources that belong to a specific user. Adds a `userId` column and a `@ManyToOne` relation
-to `User`. Services automatically filter all queries by the authenticated user's ID and inject it on create.
+to the project's `User` model. Services automatically filter all queries by the authenticated user's ID and inject it on create.
+
+The relation target is resolved lazily via a static `_userType` field so the library has no hard import on the project's `User`.
+Subclasses must provide `_userType` in a static block and implement `getUserType()`.
 
 ```typescript
 import { Entity, Column } from "typeorm";
 import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
+import { User } from "@/models/user/user";
 
 @Entity("posts")
-export class Post extends UserScopedEntity {
+export class Post extends UserScopedEntity<User> {
+  static { UserScopedEntity._userType = User; }
+
+  getUserType() {
+    return User;
+  }
+
   idPrefix(): string {
     return "post_";
   }
@@ -71,7 +82,7 @@ The corresponding service requires no extra configuration — user scoping is on
 
 ```typescript
 @Injectable()
-export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto> {
+export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
   constructor(@InjectRepository(Post) repo: Repository<Post>) {
     super("Post", repo); // userScoped: true by default
   }
@@ -175,10 +186,10 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CrudService } from "@/lib/crud";
 import { Post } from "@/models/post/post";
-import { CreatePostDto, UpdatePostDto } from "@/models/post/post";
+import { Post, PostCreateDto, PostUpdateDto } from "@/models/post/post";
 
 @Injectable()
-export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto> {
+export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
   constructor(@InjectRepository(Post) repo: Repository<Post>) {
     super("Post", repo); // userScoped: true by default
   }
@@ -200,23 +211,29 @@ Provides read-only HTTP endpoints.
 
 ```typescript
 import { Controller } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
 import { BaseController } from "@/lib/crud";
 import { User } from "@/models/user/user.entity";
 import { UserService } from "./user.service";
 
-@ApiTags("Users")
 @Controller("users")
 export class UserController extends BaseController(User) {
   constructor(private readonly userService: UserService) {
-    super(userService);
+    super();
+  }
+
+  get service() {
+    return this.userService;
   }
 }
 ```
 
+The `service` getter is required — the base controller accesses `this.service` to delegate to the service layer. The `super()` call takes no arguments.
+
 ## CrudController
 
 Extends `BaseController` with write endpoints. Auth is required by default (configurable via `options.auth`).
+
+`createDtoType` and `updateDtoType` are **required** — they are used for Swagger documentation and request validation.
 
 ### Additional Routes
 
@@ -230,17 +247,18 @@ Extends `BaseController` with write endpoints. Auth is required by default (conf
 
 ```typescript
 import { Controller } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
 import { CrudController } from "@/lib/crud";
-import { User } from "@/models/user/user.entity";
-import { CreateUserDto, UpdateUserDto } from "@/models/user/user.dto";
+import { User, UserCreateDto, UserUpdateDto } from "@/models/user/user";
 import { UserService } from "./user.service";
 
-@ApiTags("Users")
 @Controller("users")
-export class UserController extends CrudController(User, CreateUserDto, UpdateUserDto) {
+export class UserController extends CrudController(User, UserCreateDto, UserUpdateDto) {
   constructor(private readonly userService: UserService) {
-    super(userService);
+    super();
+  }
+
+  get service() {
+    return this.userService;
   }
 }
 ```
@@ -254,7 +272,7 @@ Both `BaseController` and `CrudController` accept an optional `options` paramete
 BaseController(User, { exclude: ["listCursor"] })
 
 // CrudController — exclude any base or crud route
-CrudController(User, CreateUserDto, UpdateUserDto, {
+CrudController(User, UserCreateDto, UserUpdateDto, {
   exclude: ["deleteById", "createBulk"]
 })
 ```
@@ -294,13 +312,13 @@ The `options` object accepts an `auth` field to control how authentication is ap
 
 ```typescript
 // Default — all routes require user auth
-CrudController(Post, CreatePostDto, UpdatePostDto)
+CrudController(Post, PostCreateDto, PostUpdateDto)
 
 // Admin-only (e.g. user management)
-CrudController(User, CreateUserDto, UpdateUserDto, { auth: { mode: "ADMIN" } })
+CrudController(User, UserCreateDto, UserUpdateDto, { auth: { mode: "ADMIN" } })
 
 // Public catalogue — anyone can read, only admins can write
-CrudController(Category, CreateCategoryDto, UpdateCategoryDto, {
+CrudController(Category, CategoryCreateDto, CategoryUpdateDto, {
   auth: { publicReads: true, mode: "ADMIN" }
 })
 
@@ -327,12 +345,11 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CrudService, TransactionService } from "@/lib/crud";
-import { Post } from "@/models/post/post.entity";
-import { CreatePostDto, UpdatePostDto } from "@/models/post/post.dto";
+import { Post, PostCreateDto, PostUpdateDto } from "@/models/post/post";
 import { CommentService } from "@/modules/comment/comment.service";
 
 @Injectable()
-export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto> {
+export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
   constructor(
     @InjectRepository(Post) repo: Repository<Post>,
     private readonly transactionService: TransactionService,
@@ -362,7 +379,7 @@ export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto>
     });
   }
 
-  async createWithIsolation(dto: CreatePostDto): Promise<Post> {
+  async createWithIsolation(dto: PostCreateDto): Promise<Post> {
     // Specify custom isolation level
     return this.transactionService.run(
       async manager => {
@@ -443,6 +460,11 @@ GET /posts?select=id,comments.id,comments.user.username&include=comments,comment
 **Filter by field:**
 ```
 GET /users?filter=(username,eq,john)
+```
+
+**Filter using 'in' operator:**
+```
+GET /users?filter=(username,in,john|paul)
 ```
 
 **Multiple filters:**
@@ -594,7 +616,7 @@ src/lib/crud/
 
 ## Best Practices
 
-1. **Extend UserScopedEntity for user-owned resources** - Gives automatic userId injection and per-user filtering
+1. **Extend UserScopedEntity<User> for user-owned resources** — Add `static { UserScopedEntity._userType = User; }` and `getUserType()` to wire the relation lazily
 2. **Extend BaseEntity for global resources** - Use with `{ userScoped: false }` in the service constructor
 3. **Never put userId in Create DTOs** - For user-scoped entities it is injected from context automatically
 4. **Implement idPrefix()** - Required for all entities (3-4 characters)
@@ -613,7 +635,7 @@ For resources shared across all users (e.g. categories, tags), where reads are p
 
 ```typescript
 // Service — explicitly opt out of user scoping
-export class CategoryService extends CrudService<Category, CreateCategoryDto, UpdateCategoryDto> {
+export class CategoryService extends CrudService<Category, CategoryCreateDto, CategoryUpdateDto> {
   constructor(@InjectRepository(Category) repo: Repository<Category>) {
     super("Category", repo, { userScoped: false });
   }
@@ -621,23 +643,33 @@ export class CategoryService extends CrudService<Category, CreateCategoryDto, Up
 
 // Controller — public reads, admin-only writes
 @Controller("categories")
-export class CategoryController extends CrudController(Category, CreateCategoryDto, UpdateCategoryDto, {
+export class CategoryController extends CrudController(Category, CategoryCreateDto, CategoryUpdateDto, {
   auth: { publicReads: true, mode: "ADMIN" }
 }) {
   constructor(private readonly categoryService: CategoryService) {
-    super(categoryService);
+    super();
+  }
+
+  get service() {
+    return this.categoryService;
   }
 }
 ```
 
 ### User-Scoped API
 
-For resources owned by a user (e.g. posts, orders). Extends `UserScopedEntity` and uses the default `userScoped: true`:
+For resources owned by a user (e.g. posts, orders). Extends `UserScopedEntity<User>` and uses the default `userScoped: true`:
 
 ```typescript
 // Entity
+import { User } from "@/models/user/user";
+import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
+
 @Entity("posts")
-export class Post extends UserScopedEntity {
+export class Post extends UserScopedEntity<User> {
+  static { UserScopedEntity._userType = User; }
+
+  getUserType() { return User; }
   idPrefix() { return "post_"; }
 
   @Column()
@@ -645,7 +677,7 @@ export class Post extends UserScopedEntity {
 }
 
 // Service — user scoping is on by default
-export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto> {
+export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
   constructor(@InjectRepository(Post) repo: Repository<Post>) {
     super("Post", repo);
   }
@@ -653,9 +685,13 @@ export class PostService extends CrudService<Post, CreatePostDto, UpdatePostDto>
 
 // Controller
 @Controller("posts")
-export class PostController extends CrudController(Post, CreatePostDto, UpdatePostDto) {
+export class PostController extends CrudController(Post, PostCreateDto, PostUpdateDto) {
   constructor(private readonly postService: PostService) {
-    super(postService);
+    super();
+  }
+
+  get service() {
+    return this.postService;
   }
 }
 ```
@@ -663,7 +699,7 @@ export class PostController extends CrudController(Post, CreatePostDto, UpdatePo
 The Create DTO must **not** include `userId`:
 
 ```typescript
-export class CreatePostDto {
+export class PostCreateDto {
   @IsNotEmpty()
   title: string;
   // no userId — it is injected from the authenticated user's context
@@ -674,9 +710,13 @@ export class CreatePostDto {
 
 ```typescript
 @Controller("users")
-export class UserController extends CrudController(User, CreateUserDto, UpdateUserDto) {
+export class UserController extends CrudController(User, UserCreateDto, UserUpdateDto) {
   constructor(private readonly userService: UserService) {
-    super(userService);
+    super();
+  }
+
+  get service() {
+    return this.userService;
   }
 
   @Get("search")

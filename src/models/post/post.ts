@@ -3,10 +3,19 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional } from "class-validator";
 import { Category } from "../category/category";
 import { Comment } from "../comment/comment";
+import { User } from "../user/user";
 import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
 
 @Entity({ name: "posts" })
-export class Post extends UserScopedEntity {
+export class Post extends UserScopedEntity<User> {
+  static {
+    UserScopedEntity._userType = User;
+  }
+
+  getUserType() {
+    return User;
+  }
+
   @ApiProperty()
   @Column()
   title: string;

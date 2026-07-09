@@ -1,6 +1,7 @@
 export * from "./utils/context";
 export * from "./entity/id";
 export * from "./entity/base.entity";
+export * from "./entity/user-scoped.entity";
 export * from "./query/query";
 export * from "./query/typeorm-query-mapper";
 export * from "./query/cursor-pagination";

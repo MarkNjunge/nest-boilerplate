@@ -1,13 +1,20 @@
-import { BaseEntity } from "@/lib/crud";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsOptional } from "class-validator";
-import type { User } from "../user/user";
+import { User } from "../user/user";
 import type { Post } from "../post/post";
 import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
 
 @Entity({ name: "comments" })
-export class Comment extends UserScopedEntity {
+export class Comment extends UserScopedEntity<User> {
+  static {
+    UserScopedEntity._userType = User;
+  }
+
+  getUserType() {
+    return User;
+  }
+
   @ApiProperty()
   @Column({ type: "text" })
   content: string;

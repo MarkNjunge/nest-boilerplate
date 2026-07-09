@@ -1,8 +1,23 @@
-import { BaseEntity } from "@/lib/crud";
+import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
 import { Entity } from "typeorm";
+import { User } from "@/models/user/user";
+
+// To remove user scoping, replace UserScopedEntity<User> with BaseEntity,
+// drop the static block, and remove getUserType():
+//
+//   import { BaseEntity } from "@/lib/crud";
+//   ...
+//   export class {{pascalCase name}} extends BaseEntity {
 
 @Entity({ name: "{{pluralize (snakeCase name)}}" })
-export class {{pascalCase name}} extends BaseEntity {
+export class {{pascalCase name}} extends UserScopedEntity<User> {
+  static {
+    UserScopedEntity._userType = User;
+  }
+
+  getUserType() {
+    return User;
+  }
 
   idPrefix(): string {
     return "{{dbPrefix name}}";
