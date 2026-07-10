@@ -7,6 +7,7 @@ import {
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { ErrorCodes, HttpException } from "@/utils";
+import { DEFAULT_ROW_LIMIT, MAX_ROW_LIMIT } from "@/lib/crud/utils/crud-consts";
 
 export type FilterOp = "eq"
   | "ne"
@@ -223,7 +224,7 @@ export class ListRawQuery extends FilteredRawQuery {
 }
 
 export class CursorRawQuery extends FilteredRawQuery {
-  @ApiProperty({ required: false, description: "Example: 10" })
+  @ApiProperty({ required: false, description: `Example: 10. Default = ${DEFAULT_ROW_LIMIT}, Max = ${MAX_ROW_LIMIT}` })
   @IsOptional()
   limit?: string;
 
@@ -439,11 +440,10 @@ export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = 
       throw new HttpException(400, `${rawQuery.limit} is not a valid number`, ErrorCodes.CLIENT_ERROR);
     }
   } else {
-    query.limit = 20;
+    query.limit = DEFAULT_ROW_LIMIT;
   }
-  const maxQueryLimit = 99;
-  if (query.limit > maxQueryLimit) {
-    throw new HttpException(400, `Max query limit exceeded: ${query.limit} vs ${maxQueryLimit}`, ErrorCodes.CLIENT_ERROR);
+  if (query.limit > MAX_ROW_LIMIT) {
+    throw new HttpException(400, `Max query limit exceeded: ${query.limit} vs ${MAX_ROW_LIMIT}`, ErrorCodes.CLIENT_ERROR);
   }
 
   // Cursor fields are only used for cursor-based pagination

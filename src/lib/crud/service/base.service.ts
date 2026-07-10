@@ -8,6 +8,7 @@ import opentelemetry, { Counter, Histogram } from "@opentelemetry/api";
 import { ErrorCodes, HttpException } from "@/utils";
 import { snakeCase } from "@/lib/crud/utils/snake-case";
 import { ICrudContext } from "@/lib/crud/utils/context";
+import { DEFAULT_ROW_LIMIT } from "@/lib/crud/utils/crud-consts";
 
 function encodeCursor(sortValue: string, id: string): string {
   return Buffer.from(`${sortValue}|||${id}`).toString("base64url");
@@ -131,7 +132,7 @@ export class BaseService<
 
   async listCursor(ctx: ICrudContext, query: Query<Entity> = {}): Promise<CursorPaginationResult<Entity>> {
     return this.track("listCursor", { query }, async () => {
-      const { after, before, limit = 20, sortField = "id", sortDir = "ASC", ...restQuery } = query;
+      const { after, before, limit = DEFAULT_ROW_LIMIT, sortField = "id", sortDir = "ASC", ...restQuery } = query;
 
       if (after && before) {
         throw new HttpException(400, "Cannot use both 'after' and 'before' cursors", ErrorCodes.CLIENT_ERROR);
