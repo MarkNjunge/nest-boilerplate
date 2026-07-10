@@ -5,6 +5,7 @@ import { AuthValidator, AuthModes, AUTH_MODE_KEY } from "@/guards/auth.validator
 import { AppAlsService, ALS_AUTH_USER, ALS_AUTH_ADMIN } from "@/als/app-als.service";
 import { AuthenticatedUser } from "@/models/auth/auth";
 import { ErrorCodes, HttpException } from "@/utils";
+import { SKIP_AUTH_KEY } from "@/guards/skip-auth.decorator";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -17,13 +18,11 @@ export class AuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request: FastifyRequest = context.switchToHttp().getRequest();
 
-    if (
-      [
-        "/",
-        "/ready",
-        "/live"
-      ].includes(request.url)
-    ) {
+    const skipAuth = this.reflector.getAllAndOverride<boolean | undefined>(SKIP_AUTH_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (skipAuth === true) {
       return true;
     }
 

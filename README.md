@@ -87,36 +87,19 @@ configuration.
 
 A simple authentication pattern is implemented using a modular service-based approach:
 
-- **AuthModule** (`src/modules/auth/auth.module.ts`) - Global module providing auth services
-- **AuthService** (`src/modules/auth/auth.service.ts`) - Validates Bearer tokens; implements `validateUser()` for user tokens and `validateAdmin()` for admin tokens
-- **AuthGuard** (`src/guards/auth.guard.ts`) - Applied globally; extracts the Bearer token, validates it via `AuthService`, and stores the result in the request context (ALS)
+- **AuthGuard** (`src/guards/auth.guard.ts`) - Applied globally; extracts the Bearer token, validates it via `AuthValidator`, and stores the result in the request context (ALS)
+- **AuthValidator** (`src/guards/auth.validator.ts`) - Abstract class used by `AuthGuard` to validate tokens.
+- **AuthService** (`src/modules/auth/auth.service.ts`) - Validates tokens.
 
 All routes require a valid Bearer token except `/`, `/ready`, and `/live`.
 
 To implement authentication, extend `AuthValidator` in `AuthService`:
 - `validateUser(token)` — return an `AuthenticatedUser` (containing `userId`) for valid user tokens, or `null` to reject
-- `validateAdmin(token)` — return `true` for valid admin tokens, or `false` to reject. By default this checks against `auth.adminKey` in config.
+- `validateAdmin(token)` — return `true` for valid admin tokens, or `false` to reject. By default, this checks against `auth.adminKey` in config.
 
 ### Auth Modes
 
-The auth mode for a controller can be configured via the `auth` option:
-
-```typescript
-// Default: all routes require user auth
-CrudController(Entity, CreateDto, UpdateDto)
-
-// Admin auth required for all routes (uses validateAdmin instead of validateUser)
-CrudController(Entity, CreateDto, UpdateDto, { auth: { mode: "ADMIN" } })
-
-// Public reads, user auth required for writes
-CrudController(Entity, CreateDto, UpdateDto, { auth: { publicReads: true } })
-
-// Public reads, admin auth required for writes
-CrudController(Entity, CreateDto, UpdateDto, { auth: { publicReads: true, mode: "ADMIN" } })
-
-// Auth disabled entirely (no guard applied)
-CrudController(Entity, CreateDto, UpdateDto, { auth: false })
-```
+Auth modes are **arbitrary** metadata that control what kind of authentication a route requires. It is used by `AuthGuard`.
 
 The `@AuthMode` decorator can also be applied directly to individual controller methods:
 
@@ -127,6 +110,8 @@ import { AuthMode } from "@/guards/auth.validator";
 @Delete("/:id")
 deleteById(...) { ... }
 ```
+
+The crud library has its own pattern for auth modes. See `src/lib/crud/README.md`.
 
 ### Accessing the Authenticated User
 
@@ -395,104 +380,6 @@ Regular errors and unhandled exceptions are also caught and returned as a 500 re
   "traceId": "d3cb1b2b3388e3b1"
 }
 ```
-
-### Query Parsing
-
-URL query to DB query parsing is available.
-
-Example:
-
-```
-select=title,comments.content,comments.user.username
-include=stock
-filter=(postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)
-sort=(averageRating,ASC):(price,DESC)
-limit=10
-offset=20
-```
-
-#### Select & Include
-
-`select` will limit the fields returned; `include` will fetch relations. These two can be combined to significantly
-reduce the data that is read.
-
-For example, `select=title,content,comments.content,comments.user.username&include=comments,comments.user`:
-
-```json
-[
-  {
-    "title": "Getting Started with Machine Learning",
-    "content": "ML is transforming tech. Here are the basics to get you started on your journey.",
-    "comments": [
-      {
-        "content": "Great introduction! Very helpful for beginners.",
-        "user": {
-          "username": "Sarah"
-        }
-      },
-      {
-        "content": "Thanks for sharing. Which ML library do you recommend?",
-        "user": {
-          "username": "Emma"
-        }
-      }
-    ]
-  }
-]
-```
-
-To select fields from a relation itself (not just the root entity), use dot notation in `select` for each level, and list every relation path in `include`:
-
-```
-select=id,comments.id,comments.user.username
-include=comments,comments.user
-```
-
-This selects only `id` at the root, the `id` of each loaded comment, and the `username` of each comment's user:
-
-```json
-[
-  {
-    "id": "post_01jt...",
-    "comments": [
-      {
-        "id": "com_01jt...",
-        "user": {
-          "username": "Sarah"
-        }
-      }
-    ]
-  }
-]
-```
-
-Non-selected fields at every level (e.g. `title`, `content`, `email`, `createdAt`) are omitted from the response.
-
-> **Note:** The root entity's `id` is automatically included when `include` is used. However, the `id` of each
-> intermediate relation must be selected explicitly — for example, `comments.user.username` requires `comments.id`
-> in `select`, otherwise TypeORM cannot link the nested records.
-
-#### Paging
-
-Paging can be done using `limit` and `offset`.
-
-#### Filters
-
-Filters take the format `(column,operand,value,secondValue)`.  
-`value` and `secondValue` are optional and only used where relevant (e.g. `isnull` & `between`).
-
-Multiple filters can be specified using a colon `:` as the delimiter.
-
-Available operands:  
-`eq, ne, like, ilike, gt, lt, gte, lte, in, notin, isnull, isnotnull, between, notbetween, any, none, contains, containedby, raw`
-
-See [query.spec.ts](src/lib/crud/testing/specs/query.spec.ts)
-and [typeorm-query-mapper.spec.ts](src/lib/crud/testing/specs/typeorm-query-mapper.spec.ts) for examples.
-
-#### Sort Order
-
-Sort order takes the format `(column,direction)` where direction can be `ASC` or `DESC`.  
-Multiple orderings can be specified using a colon `:` as the delimiter.
 
 ### Swagger
 
