@@ -57,9 +57,16 @@ async function bootstrap(): Promise<void> {
   app.use(globalMiddleware);
   app.use(appAlsMiddleware);
 
-  // const dbService = app.get<DbService>(DbService);
-  // Catch this to allow the application to start when the db is unreachable
-  // await dbService.migrateLatest();
+  const dbService = app.get<DbService>(DbService);
+  try {
+    await dbService.testConnection();
+    if (config.db.runMigrations) {
+      await dbService.migrateLatest();
+    }
+  } catch (e: any) {
+    e.message = `DB error: ${e.message}`;
+    throw e;
+  }
 
   const cacheService = app.get<CacheService>(CacheService);
   try {
@@ -75,6 +82,9 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(config.port, "0.0.0.0");
   logger.info(`App running at http://127.0.0.1:${config.port}`);
+
+  dbService.seedData()
+    .catch(e => logger.error(`Error seeding data: ${e.message}`, {}, e));
 }
 
 async function enablePlugins(app: NestFastifyApplication): Promise<void> {

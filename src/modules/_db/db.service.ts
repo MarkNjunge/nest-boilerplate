@@ -1,20 +1,29 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { User } from "@/models/user/user";
 import { Category } from "@/models/category/category";
 import { Post } from "@/models/post/post";
 import { Comment } from "@/models/comment/comment";
+import { Logger } from "@/logging/Logger";
 
 @Injectable()
-export class DbService {
+export class DbService implements OnModuleDestroy {
+  private logger = new Logger("DbService");
+
   constructor(private dataSource: DataSource) {
-    setTimeout(() => {
-      void this.seedData();
-    }, 1000);
   }
 
   async testConnection() {
     await this.dataSource.query("SELECT 1");
+  }
+
+  async migrateLatest() {
+    this.logger.info("Running migrations...");
+    await this.dataSource.runMigrations();
+  }
+
+  async onModuleDestroy() {
+    await this.dataSource.destroy();
   }
 
   async seedData() {

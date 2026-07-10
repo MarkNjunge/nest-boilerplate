@@ -28,7 +28,7 @@ export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
   logging: true,
   entities: ["dist/src/models/**/*.js"],
   subscribers: [],
-  migrationsRun: config.db.runMigrations,
+  migrationsRun: false, // Controlled in main.ts
   migrations: ["dist/src/db/migrations/*.js"],
   migrationsTableName: "migrations",
   poolSize: config.db.poolSize,
