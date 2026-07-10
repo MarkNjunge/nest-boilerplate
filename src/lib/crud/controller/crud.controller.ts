@@ -25,7 +25,7 @@ import {
   parseRawQuery,
   BaseRawQuery,
   FilteredRawQuery
-} from "@/lib/crud/query/query";
+} from "@/lib/crud/query";
 import { AuthGuard } from "@/guards/auth.guard";
 import { AUTH_MODE_KEY } from "@/guards/auth.validator";
 import { ErrorCodes, HttpException } from "@/utils";

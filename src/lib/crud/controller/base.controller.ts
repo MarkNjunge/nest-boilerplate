@@ -22,8 +22,8 @@ import {
   BaseRawQuery,
   FilteredOnlyRawQuery,
   FilteredRawQuery
-} from "@/lib/crud/query/query";
-import { CursorPaginationResult, PageInfo } from "@/lib/crud/query/cursor-pagination";
+} from "@/lib/crud/query";
+import { CursorPaginationResult, PageInfo } from "@/lib/crud/query";
 import { HttpException } from "@/utils";
 import { ReqCtx } from "@/decorators/request-context.decorator";
 import { ICrudContext } from "@/lib/crud/utils/context";

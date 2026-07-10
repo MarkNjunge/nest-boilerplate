@@ -624,8 +624,11 @@ src/lib/crud/
 │   ├── user-scoped.entity.ts    # Entity base with userId for per-user isolation
 │   └── id.ts                    # ULID generation utilities
 ├── query/
-│   ├── cursor-pagination.ts     # Cursor-based pagination
-│   ├── query.ts                 # Query parameter types
+│   ├── index.ts                 # Barrel exports
+│   ├── query.type.ts            # Types: Filter, Sort, Select, Include, Query
+│   ├── query.dto.ts             # DTOs for raw query parameters
+│   ├── query.parser.ts          # Parsing raw query strings into Query objects
+│   ├── query.validator.ts       # Validation decorators (IsValidFilter, IsValidSort)
 │   └── typeorm-query-mapper.ts  # Query → TypeORM conversion
 ├── service/
 │   ├── base.service.ts          # Read-only service base

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-spread */
 import { EntityManager, Equal, FindOneOptions, MoreThan, LessThan, ObjectLiteral, Repository } from "typeorm";
 import { mapQueryToTypeorm } from "@/lib/crud/query/typeorm-query-mapper";
-import { Query } from "@/lib/crud/query/query";
-import { CursorPaginationResult } from "@/lib/crud/query/cursor-pagination";
+import { Query } from "@/lib/crud/query";
+import { CursorPaginationResult } from "@/lib/crud/query";
 import { Logger } from "@/logging/Logger";
 import opentelemetry, { Counter, Histogram } from "@opentelemetry/api";
 import { ErrorCodes, HttpException } from "@/utils";

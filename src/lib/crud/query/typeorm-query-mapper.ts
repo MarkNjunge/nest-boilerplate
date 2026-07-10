@@ -1,5 +1,5 @@
 import * as typeorm from "typeorm";
-import { Filter, FilterOp, Query } from "@/lib/crud/query/query";
+import { Filter, FilterOp, Query } from "@/lib/crud/query/query.type";
 
 export function mapFilterOp(op: FilterOp, value: any, secondValue?: any) {
   switch (op) {

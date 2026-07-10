@@ -1,6 +1,6 @@
 import { Equal, ObjectLiteral, Repository } from "typeorm";
 import { parseFilter } from "@/lib/crud/query/typeorm-query-mapper";
-import { Filter, Query } from "@/lib/crud/query/query";
+import { Filter, Query } from "@/lib/crud/query";
 import { BaseService, ServiceOptions } from "@/lib/crud/service/base.service";
 import { BaseEntity } from "@/lib/crud/entity/base.entity";
 import { genId } from "@/lib/crud/entity/id";
