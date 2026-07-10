@@ -2,9 +2,10 @@ import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { createClient, RedisClientType, OpenTelemetry } from "redis";
 import { config } from "@/config";
 import { Logger } from "@/logging/Logger";
+import { ICacheService } from "@/lib/crud/cache/i-cache.service";
 
 @Injectable()
-export class CacheService implements OnModuleDestroy {
+export class CacheService implements ICacheService,OnModuleDestroy {
   private client: RedisClientType;
   private prefix = config.redis.keyPrefix;
 

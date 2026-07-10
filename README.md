@@ -34,8 +34,8 @@ npm run start:prod
   for a single call (public feeds, admin actions).
 - **Database** - TypeORM with migrations, a full CRUD service/controller inheritance layer, and a codegen
   tool to scaffold new resources.
-- **Caching** - Redis-backed `CacheService` with key prefixing, JSON serialization, and a
-  generation-based invalidation pattern demonstrated on the `CategoryService`.
+- **Caching** - Redis-backed `CacheService` with key prefixing, JSON serialization, and
+  generation-based invalidation for CRUD services via `CrudCacheService`.
 - **Query Parsing** - URL query parameters mapped to DB queries, supporting field selection, filtering, sorting,
   pagination, and relation loading.
 - **Transactions** - Reusable transaction wrapper for atomic multi-entity operations with configurable isolation levels.
@@ -145,37 +145,14 @@ OpenTelemetry metrics instrumentation.
 
 Optional command logging is available via `config.redis.logCommands`.
 
-All methods gracefully handle Redis errors 
-- `get`s return `null` on failure
-- `set`s returns `false`,
-- `incr` returns `0`.
+All methods gracefully handle Redis errors.
 
 The service implements `OnModuleDestroy` to cleanly close the Redis connection on shutdown.
 
-### Cache Invalidation Pattern
+### CRUD Caching
 
-The `CategoryService` ([src/modules/category/category.service.ts](src/modules/category/category.service.ts))
-demonstrates a **generation-based invalidation** strategy:
-
-1. **Generation counter** — A Redis key (`categories:gen`) stores a monotonically incrementing integer. Every write
-   operation increments it via `incr`, which instantly invalidates all list/cursor/aggregate caches that embed the
-   generation in their key.
-
-2. **Per-ID caches** — Individual entity caches (keyed `categories:{id}`) are explicitly deleted on mutation.
-
-3. **Cache keys** embed the generation and a hash of the query so that different queries don't collide and a single
-   `incr` invalidates all query-based caches at once:
-   ```
-   categories:list:{gen}:{sha1(query)}
-   categories:get:{gen}:{sha1(query)}
-   categories:list_cursor:{gen}:{sha1(query)}
-   ```
-
-4. **Write-through invalidation** — Every mutating method (`create`, `createBulk`, `upsert`, `upsertBulk`, `update`,
-   `updateIndexed`, `deleteById`, `deleteIndexed`) calls `invalidateCache(ctx, affectedIds)` after the DB operation,
-   incrementing the generation and removing the affected per-ID entries.
-
-All cached entries use a configurable TTL (300 seconds in the example) as a safety net against stale data.
+For caching CRUD read operations with automatic write-through invalidation, the `CrudCacheService` in the CRUD library
+handles this. See [CrudCacheService](src/lib/crud/README.md#crudcacheservice) for full documentation.
 
 ## Database
 

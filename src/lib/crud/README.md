@@ -196,6 +196,118 @@ export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto>
 }
 ```
 
+## CrudCacheService
+
+`CrudCacheService` extends `CrudService` with Redis-backed caching for read operations and automatic write-through
+cache invalidation. It uses a **generation-based invalidation** strategy.
+
+### ICacheService Interface
+
+`CrudCacheService` depends on an `ICacheService` implementation (see [ICacheService](cache/i-cache.service.ts)):
+
+The project provides a Redis-based implementation via `CacheService` in [`src/modules/_cache/cache.service.ts`](../../modules/_cache/cache.service.ts).
+
+### Usage
+
+Extend `CrudCacheService` instead of `CrudService`, provide an `ICacheService`, and implement `cacheNs()`:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { CrudCacheService } from "@/lib/crud/service/crud-cache.service";
+import { CacheService } from "@/modules/_cache/cache.service";
+import { Category, CategoryCreateDto, CategoryUpdateDto } from "@/models/category/category";
+
+@Injectable()
+export class CategoryService extends CrudCacheService<Category, CategoryCreateDto, CategoryUpdateDto> {
+  constructor(
+    @InjectRepository(Category) repo: Repository<Category>,
+    cacheService: CacheService,
+  ) {
+    super("Category", repo, cacheService, { userScoped: false });
+  }
+
+  cacheNs(ctx: ICrudContext): string {
+    return "categories";
+  }
+}
+```
+
+The only additional requirement is `cacheNs(ctx)` — a method that returns the namespace prefix for all cache keys
+(e.g. `"categories"`). This is typically a static identifier for the resource.
+
+For user scoped entities, ensure the `user_id` from `ctx` is used.
+
+### How It Works
+
+#### Read Caching
+
+Read operations (`list`, `get`, `getById`, `listCursor`) check Redis before hitting the database. On a cache miss,
+the result is fetched from the database and stored in Redis with a configurable TTL.
+
+#### Generation-Based Invalidation
+
+Instead of tracking and deleting every individual query cache on each write, the service uses a **generation counter**:
+
+1. A Redis key (`{cacheNs}:gen`) stores a monotonically incrementing integer.
+2. Query-based cache keys embed this generation:
+   ```
+   {cacheNs}:list:{gen}:{sha1(query)}
+   {cacheNs}:get:{gen}:{sha1(query)}
+   {cacheNs}:list_cursor:{gen}:{sha1(query)}
+   ```
+3. On any write operation, the generation is incremented via `incr`, instantly invalidating all query-based caches
+   without needing to enumerate them.
+
+#### Per-ID Caches
+
+Individual entity caches (keyed `{cacheNs}:{id}`) are explicitly deleted on mutation, since they are not tied to the
+generation counter.
+
+#### Write-Through Invalidation
+
+Every mutating method calls `invalidateCache(ctx, affectedIds)` after the database operation:
+
+| Method            | Invalidation                                  |
+|-------------------|-----------------------------------------------|
+| `create`          | increments generation                         |
+| `createBulk`      | increments generation                         |
+| `upsert`          | increments generation + deletes per-ID cache  |
+| `upsertBulk`      | increments generation + deletes per-ID caches |
+| `update`          | increments generation + deletes per-ID cache  |
+| `updateIndexed`   | increments generation + deletes per-ID caches |
+| `deleteById`      | increments generation + deletes per-ID cache  |
+| `deleteIndexed`   | increments generation + deletes per-ID caches |
+
+### Configuration
+
+| Property    | Default    | Description                         |
+|-------------|------------|-------------------------------------|
+| `CACHE_TTL` | `300` (5m) | TTL in seconds for cached entries   |
+
+Override `CACHE_TTL` in your subclass to adjust the TTL:
+
+```typescript
+export class CategoryService extends CrudCacheService<Category, ...> {
+  protected CACHE_TTL = 600; // 10 minutes
+}
+```
+
+All cached entries use a TTL as a safety net against stale data in case a generation increment is missed.
+
+### Metrics
+
+`CrudCacheService` emits OpenTelemetry counters via `crud_cache_operations_total` with the following attributes:
+
+- `entity` — the resource name (e.g. `"Category"`)
+- `operation` — the method name in snake_case (e.g. `"list"`, `"get_by_id"`)
+- `result` — `"hit"` or `"miss"`
+
+### Example: CategoryService
+
+See [CategoryService](../../modules/category/category.service.ts) for a complete working example.
+
 ## BaseController
 
 Provides read-only HTTP endpoints.
@@ -630,9 +742,12 @@ src/lib/crud/
 │   ├── query.parser.ts          # Parsing raw query strings into Query objects
 │   ├── query.validator.ts       # Validation decorators (IsValidFilter, IsValidSort)
 │   └── typeorm-query-mapper.ts  # Query → TypeORM conversion
+├── cache/
+│   └── i-cache.service.ts      # ICacheService interface
 ├── service/
 │   ├── base.service.ts          # Read-only service base
-│   └── crud.service.ts          # Full CRUD service
+│   ├── crud.service.ts          # Full CRUD service
+│   └── crud-cache.service.ts    # Full CRUD service with caching
 ├── transaction/
 │   └── transaction.service.ts   # Transaction wrapper
 ├── testing/                     # Test utilities and specs
@@ -651,6 +766,7 @@ src/lib/crud/
 8. **Exclude unnecessary routes** - Use the `exclude` option to minimize API surface
 9. **Configure auth per controller** - Use `auth: { mode: "ADMIN" }` or `auth: { publicReads: true }` to fit the resource's access model
 10. **Add custom methods** - Extend base classes with domain-specific logic
+11. **Enable caching** — Extend `CrudCacheService` instead of `CrudService` to add read caching and automatic write-through invalidation for frequently-read resources
 
 ## Common Patterns
 
