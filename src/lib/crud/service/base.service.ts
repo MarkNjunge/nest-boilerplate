@@ -144,15 +144,15 @@ export class BaseService<
 
       // Fetch limit + 1 to check for more pages
       const typeormOptions = mapQueryToTypeorm({ ...restQuery, limit: limit + 1 }, this.getUserId(ctx));
-      const baseWhere = typeormOptions.where ?? {};
+      const baseWhere: any = typeormOptions.where ?? {};
 
       if (sortField === "id") {
         // Default: sort by id only (cursor is the entity id)
         if (after) {
-          typeormOptions.where = { ...baseWhere, id: MoreThan(after) } as any;
+          typeormOptions.where = { ...baseWhere, id: MoreThan(after) };
           typeormOptions.order = { id: "ASC" } as any;
         } else if (before) {
-          typeormOptions.where = { ...baseWhere, id: LessThan(before) } as any;
+          typeormOptions.where = { ...baseWhere, id: LessThan(before) };
           typeormOptions.order = { id: "DESC" } as any;
         } else {
           typeormOptions.order = { id: "ASC" } as any;
@@ -200,16 +200,89 @@ export class BaseService<
         return encodeCursor(sortStr, (item as any).id as string);
       };
 
+      // Accurate boundary checks: hasMore tells us about one direction;
+      // the opposite direction requires a separate boundary query.
+      let hasNextPage = false;
+      let hasPreviousPage = false;
+
+      if (items.length > 0) {
+        if (before) {
+          // Backward pagination: hasMore detects items before this page
+          hasPreviousPage = hasMore;
+          hasNextPage = await this.checkBoundary(
+            items[items.length - 1],
+            baseWhere,
+            sortField,
+            sortDir,
+            "next"
+          );
+        } else {
+          // Forward / initial pagination: hasMore detects items after this page
+          hasNextPage = hasMore;
+          hasPreviousPage = await this.checkBoundary(
+            items[0],
+            baseWhere,
+            sortField,
+            sortDir,
+            "previous"
+          );
+        }
+      }
+
       return {
         data: items,
         pageInfo: {
-          hasNextPage: before ? true : hasMore,
-          hasPreviousPage: after ? true : Boolean(before && hasMore),
+          hasNextPage,
+          hasPreviousPage,
           startCursor: items[0] ? makeCursor(items[0]) : null,
           endCursor: items[items.length - 1] ? makeCursor(items[items.length - 1]) : null
         }
       };
     });
+  }
+
+  /**
+   * Performs a boundary existence check for accurate hasNextPage / hasPreviousPage.
+   * Queries for a single record in the given direction from the provided item,
+   * using the same composite-key logic as the main cursor query.
+   */
+  private async checkBoundary(
+    item: Entity,
+    baseWhere: any,
+    sortField: string,
+    sortDir: string,
+    direction: "next" | "previous"
+  ): Promise<boolean> {
+    if (sortField === "id") {
+      const op = direction === "next" ? MoreThan : LessThan;
+      const found = await this.repository.findOne({
+        where: { ...baseWhere, id: op((item as any).id) },
+        select: { id: true } as any,
+      });
+      return found !== null;
+    }
+
+    // Custom sort field: build composite where clause
+    const sortValue = (item as any)[sortField];
+    let primaryOp: any;
+    let secondaryOp: any;
+
+    if (sortDir === "ASC") {
+      primaryOp = direction === "next" ? MoreThan : LessThan;
+      secondaryOp = direction === "next" ? MoreThan : LessThan;
+    } else {
+      primaryOp = direction === "next" ? LessThan : MoreThan;
+      secondaryOp = direction === "next" ? LessThan : MoreThan;
+    }
+
+    const found = await this.repository.findOne({
+      where: [
+        { ...baseWhere, [sortField]: primaryOp(sortValue) },
+        { ...baseWhere, [sortField]: Equal(sortValue), id: secondaryOp((item as any).id) },
+      ] as any,
+      select: { id: true } as any,
+    });
+    return found !== null;
   }
 
 }
