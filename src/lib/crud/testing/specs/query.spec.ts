@@ -51,6 +51,14 @@ describe("Query", () => {
 
       expect(actual).toEqual({ limit: 20 });
     });
+
+    it("can validate offset is a number", () => {
+      expect(() => parseRawQuery({ offset: "abc" })).toThrow("abc is not a valid number");
+    });
+
+    it("can validate limit is a number", () => {
+      expect(() => parseRawQuery({ limit: "xyz" })).toThrow("xyz is not a valid number");
+    });
   });
 
   describe("validateSort", () => {

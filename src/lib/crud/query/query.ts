@@ -427,11 +427,17 @@ export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = 
 
     if (listQuery.offset) {
       query.offset = parseInt(listQuery.offset);
+      if (Number.isNaN(query.offset)) {
+        throw new HttpException(400, `${listQuery.offset} is not a valid number`, ErrorCodes.CLIENT_ERROR);
+      }
     }
   }
 
   if (rawQuery.limit) {
     query.limit = parseInt(rawQuery.limit);
+    if (Number.isNaN(query.limit)) {
+      throw new HttpException(400, `${rawQuery.limit} is not a valid number`, ErrorCodes.CLIENT_ERROR);
+    }
   } else {
     query.limit = 20;
   }
