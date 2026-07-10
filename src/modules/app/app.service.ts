@@ -27,11 +27,11 @@ export class AppService {
     return `Hello ${traceId}!`;
   }
 
-  ready(): ApiResponseDto {
+  live(): ApiResponseDto {
     return { message: "OK" };
   }
 
-  async live(): Promise<{ ok: boolean; [key: string]: any }> {
+  async ready(): Promise<{ ok: boolean; [key: string]: any }> {
     const response = {
       ok: true,
       message: "OK",

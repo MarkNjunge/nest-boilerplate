@@ -18,16 +18,16 @@ export class AppController {
     return this.appService.getHello(ctx);
   }
 
-  @Get("/ready")
-  @SkipAuth()
-  ready() {
-    return this.appService.ready();
-  }
-
   @Get("/live")
   @SkipAuth()
-  async live(@Res({ passthrough: true }) res: FastifyReply) {
-    const liveRes = await this.appService.live();
+  live() {
+    return this.appService.live();
+  }
+
+  @Get("/ready")
+  @SkipAuth()
+  async ready(@Res({ passthrough: true }) res: FastifyReply) {
+    const liveRes = await this.appService.ready();
     if (!liveRes.ok) {
       res.status(500);
     }
