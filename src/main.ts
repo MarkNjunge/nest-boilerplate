@@ -1,5 +1,6 @@
 import "@/config/env-loader";
 import "@/utils/instrumentation";
+import { flushInstrumentation } from "@/utils/instrumentation";
 import { config, bool, initializeConfig } from "./config";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
@@ -141,6 +142,7 @@ const shutdown = async (signal: string) => {
   if (app) {
     await app.close();
   }
+  await flushInstrumentation();
   process.exit(0);
 };
 // eslint-disable-next-line @typescript-eslint/no-misused-promises

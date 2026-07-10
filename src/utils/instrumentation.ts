@@ -15,6 +15,9 @@ import { Logger } from "@/logging/Logger";
 
 const logger = new Logger("Instrumentation");
 
+let sdkInstance: NodeSDK | null = null;
+let loggerProviderInstance: LoggerProvider | null = null;
+
 function initInstrumentation() {
   if (config.instrumentation.enabled.toString() === "true") {
     const signals = {
@@ -92,20 +95,29 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   // Logs
   if (signals.logs) {
     const logExporter = new OTLPLogExporter({ url: config.instrumentation.logs.url });
-    const loggerProvider = new LoggerProvider({
+    loggerProviderInstance = new LoggerProvider({
       resource,
       processors: [
         new BatchLogRecordProcessor(logExporter)
       ]
     });
-    logsAPI.logs.setGlobalLoggerProvider(loggerProvider);
+    logsAPI.logs.setGlobalLoggerProvider(loggerProviderInstance);
   }
 
-  const sdk = new NodeSDK(configuration);
-
-  sdk.start();
+  sdkInstance = new NodeSDK(configuration);
+  sdkInstance.start();
   console.log(`Initialized instrumentation: ${JSON.stringify(signals)}`);
 }
 
 // Must be initialized at import time, before @nestjs/platform-fastify
 initInstrumentation();
+
+export async function flushInstrumentation() {
+  if (sdkInstance) {
+    await sdkInstance.shutdown();
+  }
+
+  if (loggerProviderInstance) {
+    await loggerProviderInstance.forceFlush();
+  }
+}
