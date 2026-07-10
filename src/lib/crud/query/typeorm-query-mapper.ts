@@ -108,23 +108,7 @@ export function mapQueryToTypeorm<T extends Record<string, any> = any>(options: 
     }
   }
 
-  const relations: Record<string, any> = {};
-
-  options.include?.forEach(field => {
-    const parts = (field as string).split(".");
-    let current = relations;
-
-    parts.forEach((part, index) => {
-      if (index === parts.length - 1) {
-        current[part] = true;
-      } else {
-        if (!current[part] || typeof current[part] !== "object") {
-          current[part] = {};
-        }
-        current = current[part];
-      }
-    });
-  });
+  const relations: Record<string, any> = (options.include as Record<string, any>) ?? {};
 
   // TODO Inject in nested relations
   // Always inject id

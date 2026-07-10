@@ -32,7 +32,7 @@ export class CrudService<
 
   // Re-fetch entities if select/include options are supplied
   private async refetchWithQuery(ctx: ICrudContext, ids: string[], query?: Query<Entity>): Promise<Entity[] | null> {
-    if (!query || (!query.select && (!query.include || query.include.length === 0))) {
+    if (!query || (!query.select && (!query.include || Object.keys(query.include).length === 0))) {
       return null;
     }
     return this.list(ctx, {

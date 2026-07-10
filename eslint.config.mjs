@@ -19,7 +19,8 @@ export default defineConfig([
         overrides: { "|": "before" }
       }],
       "@typescript-eslint/prefer-for-of": "off",
-      "@typescript-eslint/no-non-null-assertion": "off"
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-unsafe-function-type": "off"
     }
   },
 ]);

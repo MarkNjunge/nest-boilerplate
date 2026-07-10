@@ -187,7 +187,7 @@ describe("Base Service", () => {
         address: { building: { suite: "A01" } }
       });
 
-      const result = await service.list(ctx, { include: ["address.building"] });
+      const result = await service.list(ctx, { include: { address: { building: true } } });
 
       expect(result).toHaveLength(1);
       expect(result[0].username).toBe("john");
@@ -237,7 +237,7 @@ describe("Base Service", () => {
       });
 
       const result = await service.getById(ctx,saved.id, {
-        include: ["address.building"]
+        include: { address: { building: true } }
       });
 
       expect(result).not.toBeNull();

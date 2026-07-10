@@ -136,7 +136,6 @@ export type Sort<T = any> = {
  * - Other objects → nested `Select<V>` | `boolean`
  * - Primitives → `boolean`
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type SelectValue<V> = V extends Function ?
   never :
   V extends Promise<infer I> ?
@@ -189,20 +188,20 @@ export class BaseRawQuery {
   @IsOptional()
   select?: string;
 
-  @ApiProperty({ required: false, description: "Example: comments" })
+  @ApiProperty({ required: false, description: "Example: comments,comments.user" })
   @IsOptional()
   include?: string;
 }
 
 export class FilteredOnlyRawQuery {
-  @ApiProperty({ required: false, description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)" })
+  @ApiProperty({ required: false, description: "Example: (postId,eq,post_abc):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)" })
   @IsOptional()
   @IsValidFilter()
   filter?: string;
 }
 
 export class FilteredRawQuery extends BaseRawQuery {
-  @ApiProperty({ required: false, description: "Example: (postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)" })
+  @ApiProperty({ required: false, description: "Example: (postId,eq,post_abc):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200)" })
   @IsOptional()
   @IsValidFilter()
   filter?: string;
@@ -257,9 +256,47 @@ export class RestrictedCursorRawQuery extends BaseRawQuery {
 
 export type RawQuery = ListRawQuery;
 
+/**
+ * Resolves to an includable type for a single property value type.
+ * Uses a bare type parameter to force distributive conditional evaluation
+ * over union types (e.g., Entity | undefined).
+ *
+ * Only object (relation) types are allowed — include does not work on direct columns.
+ *
+ * - Functions → `never` (excluded, e.g. class methods like `toString`)
+ * - Promises → unwrap and recurse (handles lazy-loaded relations)
+ * - Arrays → unwrap element type and recurse
+ * - Date, Uint8Array → `never` (scalars, not relations)
+ * - Other objects → nested `Include<V>` | `boolean`
+ * - Primitives → `never` (not relations)
+ */
+type IncludeValue<V> = V extends Function ?
+  never :
+  V extends Promise<infer I> ?
+    IncludeValue<I> | boolean :
+    V extends readonly (infer I)[] ?
+      IncludeValue<I> | boolean :
+      V extends Date | Uint8Array ?
+        never :
+        V extends object ?
+          Include<V> | boolean :
+          never;
+
+// Shallow, non-recursive check: is this key's type an object (potential relation)?
+type IsRelation<T, K extends keyof T> =
+  NonNullable<T[K]> extends Function ? false :
+    NonNullable<T[K]> extends Date | Uint8Array ? false :
+      NonNullable<T[K]> extends object ? true :
+        false;
+
+export type Include<T = any> = {
+  [P in keyof T as P extends "toString" ? never : IsRelation<T, P> extends true ? P : never]?:
+  IncludeValue<NonNullable<T[P]>>
+};
+
 export interface Query<T extends Record<string, any> = any> {
   select?: Select<T>;
-  include?: string[] | (keyof T)[];
+  include?: Include<T>;
   filter?: Filter<T>;
   sort?: Sort<T>;
   limit?: number;
@@ -356,7 +393,25 @@ export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = 
   }
 
   if (rawQuery.include) {
-    query.include = rawQuery.include.split(",").map(s => s.trim());
+    const includeFields = rawQuery.include.split(",").map(s => s.trim());
+
+    query.include = includeFields.reduce<any>((acc, field) => {
+      const parts = field.split(".");
+      let current = acc;
+
+      parts.forEach((part, index) => {
+        if (index === parts.length - 1) {
+          current[part] = true;
+        } else {
+          if (!current[part] || typeof current[part] !== "object") {
+            current[part] = {};
+          }
+          current = current[part];
+        }
+      });
+
+      return acc;
+    }, {});
   }
 
   if (rawQuery.filter) {

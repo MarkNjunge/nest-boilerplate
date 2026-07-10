@@ -12,7 +12,7 @@ describe("Query", () => {
     it("can parse", () => {
       const reqQuery: RawQuery = {
         select: "title,comments.content,comments.user.username",
-        include: "stock",
+        include: "stock,comments.user,agent.organization.owner",
         filter: "(postId,eq,post_):(createdAt,lt,2025-11-04T06:55:40.549Z):(price,between,120,200):(tags,in,tagA|tagB|tagC)",
         limit: "10",
         offset: "20",
@@ -29,7 +29,7 @@ describe("Query", () => {
             }
           }
         },
-        include: ["stock"],
+        include: { stock: true, comments: { user: true }, agent: { organization: { owner: true } } },
         filter: {
           eq: [{ key: "postId", value: "post_" }],
           lt: [{ key: "createdAt", value: "2025-11-04T06:55:40.549Z" }],

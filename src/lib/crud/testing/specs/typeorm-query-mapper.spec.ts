@@ -128,7 +128,7 @@ describe("TypeORM Query Mapper", () => {
 
       const actual = mapQueryToTypeorm<User>({
         select: { username: true },
-        include: ["profile", "address.building"],
+        include: { profile: true, address: { building: true } },
         sort: {
           createdAt: "DESC"
         },
@@ -549,7 +549,7 @@ describe("TypeORM Query Mapper", () => {
 
       const options = mapQueryToTypeorm<SelectChild>({
         select: { title: true, parent: { name: true } },
-        include: ["parent"],
+        include: { parent: true },
       });
       const results = await childRepo.find(options);
 
