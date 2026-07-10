@@ -1,5 +1,5 @@
 import request from "supertest";
-import { testApiHost, randomString } from "../util";
+import { testApiHost, testAdminKey, randomString } from "../util";
 
 describe("CRUD", () => {
   let userId: string;
@@ -13,7 +13,7 @@ describe("CRUD", () => {
     const res = await request(testApiHost)
       .post("/users")
       .send(userDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${testAdminKey}`);
     userId = res.body.id;
   });
 
@@ -630,7 +630,7 @@ describe("CRUD", () => {
       const catRes = await request(testApiHost)
         .post("/categories")
         .send({ name: randomString(6) })
-        .set("Authorization", "Bearer api-key");
+        .set("Authorization", `Bearer ${testAdminKey}`);
       const categoryId = catRes.body.id;
 
       // Create a post with the category, scoped to the user created in beforeAll

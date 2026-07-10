@@ -1,5 +1,5 @@
 import request from "supertest";
-import { testApiHost, randomString } from "../util";
+import { testApiHost, randomString, testAdminKey } from "../util";
 
 describe("Nesting", () => {
   it("GET /posts with select and include", async () => {
@@ -10,7 +10,7 @@ describe("Nesting", () => {
         email: `${randomString(6)}@mail.com`,
         profile: { bio: "nesting-test" }
       })
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${testAdminKey}`);
     const userId = userRes.body.id;
 
     const postDto = {
@@ -56,7 +56,7 @@ describe("Nesting", () => {
     const userRes = await request(testApiHost)
       .post("/users")
       .send(userDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${testAdminKey}`);
     const userId = userRes.body.id;
 
     // Create a post
@@ -132,7 +132,7 @@ describe("Nesting", () => {
     const userRes = await request(testApiHost)
       .post("/users")
       .send(userDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${testAdminKey}`);
     const userId = userRes.body.id;
 
     // Create a post

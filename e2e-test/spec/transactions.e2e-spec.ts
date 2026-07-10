@@ -1,5 +1,5 @@
 import request from "supertest";
-import { testApiHost, randomString } from "../util";
+import { testApiHost, randomString, testAdminKey } from "../util";
 
 describe("Transactions", () => {
   let userId: string;
@@ -13,7 +13,7 @@ describe("Transactions", () => {
     const res = await request(testApiHost)
       .post("/users")
       .send(userDto)
-      .set("Authorization", "Bearer api-key");
+      .set("Authorization", `Bearer ${testAdminKey}`);
     userId = res.body.id;
   });
 
