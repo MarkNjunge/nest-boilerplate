@@ -20,13 +20,13 @@ export class CacheService implements ICacheService,OnModuleDestroy {
     });
 
     this.client.on("connect", () => {
-      this.logger.debug("Redis is connecting...");
+      this.logger.info("Redis is connecting...");
     });
     this.client.on("ready", () => {
-      this.logger.debug("Redis is ready");
+      this.logger.info("Redis is ready");
     });
     this.client.on("end", () => {
-      this.logger.debug("Redis is closed");
+      this.logger.info("Redis is closed");
     });
     this.client.on("error", e => {
       if (e.errors != null) {
@@ -55,6 +55,13 @@ export class CacheService implements ICacheService,OnModuleDestroy {
 
   async onModuleDestroy() {
     await this.client.quit();
+  }
+
+  async testConnection() {
+    if (!this.client.isReady) {
+      throw new Error("Redis is not ready");
+    }
+    await this.client.ping();
   }
 
   private pkey(key: string): string {
