@@ -1,4 +1,3 @@
-version: "3"
 services:
   grafana:
     image: grafana/grafana:12.0.2
@@ -22,7 +21,7 @@ services:
       - "9091:9090"
     volumes:
       - ./config/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
-      - nb_prometheus:/prometheus
+#      - nb_prometheus:/prometheus # Disabled to easily validate changes
     command:
       [
         "--log.level=debug",
@@ -37,7 +36,7 @@ services:
     command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./config/tempo/tempo.yaml:/etc/tempo.yaml
-      - nb_tempo:/var/tempo
+#      - nb_tempo:/var/tempo # Disabled to easily validate changes
   loki:
     image: grafana/loki:3.5
     container_name: nb-loki
@@ -45,7 +44,7 @@ services:
     command: -config.file=/etc/loki-config.yaml
     volumes:
       - ./config/loki/loki-config.yaml:/etc/loki-config.yaml
-      - nb_loki:/etc/loki
+#      - nb_loki:/etc/loki # Disabled to easily validate changes
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.129.1
     container_name: nb-otel-collector

@@ -18,6 +18,12 @@
     "retryDelay": 3000,
     "queryTimeout": 30000
   },
+  "redis": {
+    "url": "redis://localhost:6379",
+    "connectTimeout": 5000,
+    "logCommands": true,
+    "keyPrefix": "nb:"
+  },
   "swagger": {
     "enabled": true,
     "endpoint": "docs"

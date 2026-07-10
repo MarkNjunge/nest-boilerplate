@@ -17,6 +17,12 @@
     "retryDelay": "DB_RETRY_DELAY",
     "queryTimeout": "DB_QUERY_TIMEOUT"
   },
+  "redis": {
+    "url": "REDIS_URL",
+    "connectTimeout": "REDIS_CONNECT_TIMEOUT",
+    "logCommands": "REDIS_LOG_COMMANDS",
+    "keyPrefix": "REDIS_KEY_PREFIX"
+  },
   "swagger": {
     "enabled": "SWAGGER_ENABLED",
     "endpoint": "SWAGGER_ENDPOINT"

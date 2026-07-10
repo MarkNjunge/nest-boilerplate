@@ -1,5 +1,10 @@
-version: "3"
 services:
+  redis:
+    # 8.8.0
+    image: redis@sha256:2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32
+    container_name: nest-bp-e2e_redis
+    logging:
+      driver: none
   postgres:
     # 18.3
     image: postgres@sha256:a9abf4275f9e99bff8e6aed712b3b7dfec9cac1341bba01c1ffdfce9ff9fc34a
@@ -30,10 +35,14 @@ services:
       dockerfile: e2e.Dockerfile
     container_name: nest-bp-e2e_app
     image: nest-bp-e2e
+    logging:
+      driver: none
     depends_on:
       - postgres
+      - redis
     expose:
       - 3000
     environment:
       - PORT=3000
       - DB_URL=postgres://postgres:postgres@nest-bp-e2e_pgsql:5432/nest-bp-e2e
+      - REDIS_URL=redis://nest-bp-e2e_redis:6379

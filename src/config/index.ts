@@ -12,6 +12,12 @@ export interface Config {
     adminKey: string;
   };
   db: Db;
+  redis: {
+    url: string;
+    connectTimeout: number;
+    logCommands: boolean;
+    keyPrefix: string;
+  };
   swagger: Swagger;
   rateLimit: RateLimit;
   cors: Cors;

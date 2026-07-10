@@ -8,6 +8,10 @@ receivers:
 
 processors:
   batch:
+  attributes/delete_pid: # new processor
+    actions:
+      - key: process_pid
+        action: delete
 
 exporters:
   otlp:
@@ -48,8 +52,8 @@ service:
       exporters: [otlp]
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [prometheusremotewrite]
+      processors: [batch,attributes/delete_pid]
+      exporters: [prometheus,prometheusremotewrite]
     logs:
       receivers: [otlp]
       processors: [batch]

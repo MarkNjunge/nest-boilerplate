@@ -12,6 +12,7 @@ import { UserProfileModule } from "@/modules/user-profile/user-profile.module";
 import { CategoryModule } from "@/modules/category/category.module";
 import { PostModule } from "@/modules/post/post.module";
 import { CommentModule } from "@/modules/comment/comment.module";
+import { CacheModule } from "@/modules/_cache/cache.module";
 
 const modules: DynamicModule[] = [];
 const providers: Provider[] = [];
@@ -35,6 +36,7 @@ if (bool(config.rateLimit.enabled)) {
   imports: [
     ...modules,
     DbModule,
+    CacheModule,
     AppAlsModule,
     AuthModule,
     UserModule,

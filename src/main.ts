@@ -20,6 +20,7 @@ import { FileHandler } from "@/utils/file-handler";
 import { AppAlsService } from "@/als/app-als.service";
 import { appAlsMiddleware } from "@/als/als.middleware";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
+import { CacheService } from "@/modules/_cache/cache.service";
 
 initializeWinston();
 const logger = new Logger("Application");
@@ -59,6 +60,18 @@ async function bootstrap(): Promise<void> {
   // const dbService = app.get<DbService>(DbService);
   // Catch this to allow the application to start when the db is unreachable
   // await dbService.migrateLatest();
+
+  const cacheService = app.get<CacheService>(CacheService);
+  try {
+    await cacheService.connect();
+  } catch (e: any) {
+    if (e.errors != null) {
+      e.message = e.errors.map((err: Error) => err.message).join(", ");
+    }
+
+    e.message = `Redis connection error: ${e.message}`;
+    throw e;
+  }
 
   await app.listen(config.port, "0.0.0.0");
   logger.info(`App running at http://127.0.0.1:${config.port}`);
