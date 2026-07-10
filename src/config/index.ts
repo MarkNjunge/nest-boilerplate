@@ -60,6 +60,7 @@ interface Db {
   connectTimeoutMS: number;
   retryAttempts: number;
   retryDelay: number;
+  queryTimeout: number;
 }
 
 interface Swagger {

@@ -36,7 +36,10 @@ export const dbOptions: TypeOrmModuleOptions | DataSourceOptions = {
   connectTimeoutMS: config.db.connectTimeoutMS,
   retryAttempts: config.db.retryAttempts,
   retryDelay: config.db.retryDelay,
-  namingStrategy: new CustomNamingStrategy()
+  namingStrategy: new CustomNamingStrategy(),
+  extra: {
+    statement_timeout: config.db.queryTimeout
+  }
 };
 
 export default new DataSource(dbOptions as DataSourceOptions);

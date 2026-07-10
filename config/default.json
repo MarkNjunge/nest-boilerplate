@@ -15,7 +15,8 @@
     "runMigrations": true,
     "connectTimeoutMS": 5000,
     "retryAttempts": 10,
-    "retryDelay": 3000
+    "retryDelay": 3000,
+    "queryTimeout": 30000
   },
   "swagger": {
     "enabled": true,

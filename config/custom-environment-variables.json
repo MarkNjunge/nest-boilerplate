@@ -14,7 +14,8 @@
     "runMigrations": "DB_RUN_MIGRATIONS",
     "connectTimeoutMS": "DB_CONNECT_TIMEOUT",
     "retryAttempts": "DB_RETRY_ATTEMPT",
-    "retryDelay": "DB_RETRY_DELAY"
+    "retryDelay": "DB_RETRY_DELAY",
+    "queryTimeout": "DB_QUERY_TIMEOUT"
   },
   "swagger": {
     "enabled": "SWAGGER_ENABLED",
