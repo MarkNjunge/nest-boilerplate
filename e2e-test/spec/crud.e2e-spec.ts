@@ -623,4 +623,70 @@ describe("CRUD", () => {
       expect(response.body).toHaveProperty("updatedAt");
     });
   });
+
+  describe("Complex select & include (multi-relation, deep nesting)", () => {
+    it("GET /posts with select=title,category.name,user.username,user.profile.bio & include=category,user,user.profile", async () => {
+      // Create a category (admin auth required for writes)
+      const catRes = await request(testApiHost)
+        .post("/categories")
+        .send({ name: randomString(6) })
+        .set("Authorization", "Bearer api-key");
+      const categoryId = catRes.body.id;
+
+      // Create a post with the category, scoped to the user created in beforeAll
+      const createDto = {
+        title: randomString(6),
+        content: `${randomString(6)} content`,
+        categoryId
+      };
+      const createResult = await request(testApiHost)
+        .post("/posts")
+        .send(createDto)
+        .set("Authorization", `Bearer ${userId}`);
+      const postId = createResult.body.id;
+
+      // Query with complex multi-relation select & include
+      const response = await request(testApiHost)
+        .get("/posts")
+        .query({
+          select: "title,category.name,user.username,user.profile.bio",
+          include: "category,user,user.profile",
+          filter: `(id,eq,${postId})`
+        })
+        .set("Authorization", `Bearer ${userId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(1);
+
+      const post = response.body[0];
+
+      // Selected root field should be present
+      expect(post.title).toBe(createDto.title);
+
+      // Non-selected root fields should be absent
+      expect(post).not.toHaveProperty("content");
+      expect(post).not.toHaveProperty("createdAt");
+
+      // Direct relation: category.name should be present
+      expect(post.category).toBeDefined();
+      expect(post.category.name).toBe(catRes.body.name);
+      // Non-selected category fields should be absent
+      expect(post.category).not.toHaveProperty("parentId");
+      expect(post.category).not.toHaveProperty("createdAt");
+
+      // Direct relation: user.username should be present
+      expect(post.user).toBeDefined();
+      expect(post.user.username).toBeDefined();
+      // Non-selected user fields should be absent
+      expect(post.user).not.toHaveProperty("email");
+      expect(post.user).not.toHaveProperty("createdAt");
+
+      // Deeply nested relation: user.profile.bio should be present
+      expect(post.user.profile).toBeDefined();
+      expect(post.user.profile.bio).toBe("crud-test");
+      // Non-selected profile fields should be absent
+      expect(post.user.profile).not.toHaveProperty("userId");
+      expect(post.user.profile).not.toHaveProperty("createdAt");
+    });
+  });
 });

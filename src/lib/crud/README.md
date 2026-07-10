@@ -457,6 +457,23 @@ GET /posts?select=id,comments.id,comments.user.username&include=comments,comment
 > The root `id` is auto-injected when `include` is used. Intermediate relation IDs (e.g. `comments.id`) must be
 > selected explicitly so TypeORM can link nested records.
 
+**Complex multi-relation select & include** (multiple relations, deeply nested fields, and relation traversal through multiple levels):
+
+```
+GET /posts?select=title,category.name,user.username,user.profile.bio&include=category,user,user.profile
+```
+
+This query:
+- Selects the root field `title` from the Post entity
+- Selects `name` from the direct `category` relation
+- Selects `username` from the direct `user` relation
+- Selects `bio` from the deeply nested `user.profile` relation (User → UserProfile)
+- Includes all three relations: `category`, `user`, and `user.profile` (the `user.profile` include is required to traverse through `user` into its `profile` sub-relation)
+
+> **Rule of thumb:** every dot-separated path in `select` (e.g. `user.profile.bio`) must have its corresponding
+> relation chain listed in `include` (e.g. `user,user.profile`). Top-level relation names like `category` require their
+> own `include` entry regardless of nesting depth.
+
 **Filter by field:**
 ```
 GET /users?filter=(username,eq,john)
