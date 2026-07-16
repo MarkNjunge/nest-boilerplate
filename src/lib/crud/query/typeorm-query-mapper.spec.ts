@@ -4,7 +4,7 @@ import { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { Column, DataSource, Entity, JoinColumn, ManyToOne, OneToMany, Repository } from "typeorm";
 import { config } from "@/config";
 import { BaseEntity } from "@/lib/crud/entity/base.entity";
-import { createTestContainer } from "@/lib/crud/testing/test.utils";
+import { createPostgresTestContainer } from "@/lib/crud/testing/test.utils";
 
 interface Building {
   suite: string;
@@ -81,7 +81,7 @@ describe("TypeORM Query Mapper", () => {
   let childRepo: Repository<SelectChild>;
 
   beforeAll(async () => {
-    const { opts, ...rest } = await createTestContainer();
+    const { opts, ...rest } = await createPostgresTestContainer();
     container = rest.container;
 
     dataSource = new DataSource({

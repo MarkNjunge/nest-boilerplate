@@ -8,7 +8,7 @@ import { config } from "@/config";
 import { AddressTestEntity } from "@/lib/crud/testing/test-entities/address-test.entity";
 import { BuildingTestEntity } from "@/lib/crud/testing/test-entities/building-test.entity";
 import { PostTestEntity, PostTestCreateDto } from "@/lib/crud/testing/test-entities/post-test.entity";
-import { createTestContainer } from "@/lib/crud/testing/test.utils";
+import { createPostgresTestContainer } from "@/lib/crud/testing/test.utils";
 import { ICrudContext } from "@/lib/crud";
 
 const ctx: ICrudContext = { traceId: "test" };
@@ -24,7 +24,7 @@ describe("Base Service", () => {
   let crudService: CrudService<UserTestEntity, UserTestCreateDto>;
 
   beforeAll(async () => {
-    const { opts, ...rest } = await createTestContainer();
+    const { opts, ...rest } = await createPostgresTestContainer();
     container = rest.container;
 
     dataSource = new DataSource({

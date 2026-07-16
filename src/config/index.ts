@@ -53,6 +53,7 @@ export interface Config {
   };
   integrationTest: {
     pgImage: string;
+    redisImage: string;
     logQueries: boolean;
   };
 }

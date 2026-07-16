@@ -71,7 +71,10 @@
     }
   },
   "integrationTest": {
-    "pgImage": "postgres:18.0",
+    "pgImage_": "postgres:18.0-alpine3.22",
+    "pgImage": "postgres@sha256:48c8ad3a7284b82be4482a52076d47d879fd6fb084a1cbfccbd551f9331b0e40",
+    "redisImage_": "redis:8.8.0-alpine3.23",
+    "redisImage": "redis@sha256:9d317178eceac8454a2284a9e6df2466b93c745529947f0cd42a0fa9609d7005",
     "logQueries": false
   }
 }

@@ -48,6 +48,7 @@
     "@opentelemetry/sdk-metrics": "^2.7.0",
     "@opentelemetry/sdk-node": "^0.215.0",
     "@opentelemetry/semantic-conventions": "^1.40.0",
+    "@testcontainers/redis": "^12.0.4",
     "chokidar": "^5.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",

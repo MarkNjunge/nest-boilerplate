@@ -42,10 +42,16 @@ export abstract class CrudCacheService<
 
   abstract cacheNs(ctx: ICrudContext): string;
 
+  /**
+   * Generation key. Used to invalidate old caches by incrementing this number.
+   */
   genKey(ctx: ICrudContext) {
     return `${this.cacheNs(ctx)}:gen`;
   }
 
+  /**
+   * Cache key for records based on id
+   */
   idKey(ctx: ICrudContext, id: string): string {
     return `${this.cacheNs(ctx)}:${id}`;
   }
