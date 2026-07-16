@@ -14,7 +14,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
     "start:e2e": "nest start -b swc",
-    "codegen": "cross-env NODE_OPTIONS='--import tsx' node_modules/plop/bin/plop.js --plopfile=plopfile.ts",
+    "codegen": "cross-env NODE_OPTIONS='--import tsx' node_modules/plop/bin/plop.js --plopfile=src/lib/crud/plopfile.ts",
     "migration": "cross-env NODE_OPTIONS='--import tsx' node scripts/migration.ts",
     "lint": "eslint \"{src,apps,libs,test,scripts}/**/*.{ts,js}\"",
     "lint:fix": "eslint \"{src,apps,libs,test,scripts}/**/*.{ts,js}\" --fix",

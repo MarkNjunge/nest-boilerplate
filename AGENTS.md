@@ -74,6 +74,7 @@ config/
 | `config/default.json` | Default configuration values |
 | `src/config/secrets-manager.ts` | Async secrets loading (customize for your secrets backend) |
 | `src/config/index.ts` | Config initialization and secrets merging |
+| `src/lib/crud/plopfile.ts`             | Code generation configuration |
 
 ## Adding New Features
 

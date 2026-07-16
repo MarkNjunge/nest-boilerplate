@@ -1,5 +1,10 @@
 import { Actions, NodePlopAPI } from "plop";
 import { plural } from "pluralize";
+import * as path from "path";
+
+function resolveProjectPath(src: string): string {
+  return path.resolve(__dirname, "../../../", src);
+}
 
 export default function (plop: NodePlopAPI) {
   plop.setHelper("dbPrefix", (txt: string) => txt.toLowerCase().substring(0, 3) + "_");
@@ -10,6 +15,8 @@ export default function (plop: NodePlopAPI) {
       .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
       .toLowerCase()
   );
+
+  console.log(`The project root is '${resolveProjectPath(".")}'`);
 
   plop.setGenerator("Data Model", {
     description: "Data model logic",
@@ -34,7 +41,7 @@ export default function (plop: NodePlopAPI) {
           { name: "Read-only (list, get, count only)", value: "base" },
         ],
         default: "crud",
-        when: (answers) => answers.wantService,
+        when: answers => answers.wantService,
       },
       {
         type: "confirm",
@@ -43,54 +50,58 @@ export default function (plop: NodePlopAPI) {
         default: true,
       },
     ],
-    actions: (data) => {
+    actions: data => {
       if (!data) {
         throw new Error("data is undefined");
       }
 
-      const actions: Actions = [{
+      const actions: Actions = [];
+
+      console.log(resolveProjectPath("src/models/{{kebabCase name}}/{{kebabCase name}}.ts"));
+      // Create the entity
+      actions.push({
         type: "add",
-        path: "src/models/{{kebabCase name}}/{{kebabCase name}}.ts",
+        path: resolveProjectPath("src/models/{{kebabCase name}}/{{kebabCase name}}.ts"),
         templateFile: "plop-templates/entity.hbs",
         abortOnFail: true,
-      }];
+      });
 
       // Add the model to db.module.ts
       actions.push({
         type: "append",
-        path: "src/modules/_db/db.module.ts",
-        pattern: `import { TypeOrmModule } from "@nestjs/typeorm";`,
-        template: `import { {{pascalCase name}} } from "@/models/{{kebabCase name}}/{{kebabCase name}}";`,
+        path: resolveProjectPath("src/modules/_db/db.module.ts"),
+        pattern: "import { TypeOrmModule } from \"@nestjs/typeorm\";",
+        template: "import { {{pascalCase name}} } from \"@/models/{{kebabCase name}}/{{kebabCase name}}\";",
         abortOnFail: true,
       });
 
       actions.push({
         type: "append",
-        path: "src/modules/_db/db.module.ts",
-        pattern: `TypeOrmModule.forFeature([`,
-        template: `      {{pascalCase name}},`,
+        path: resolveProjectPath("src/modules/_db/db.module.ts"),
+        pattern: "TypeOrmModule.forFeature([",
+        template: "      {{pascalCase name}},",
         abortOnFail: true,
       });
 
       if (data.wantService) {
-        const serviceTemplate = data.serviceType === "base"
-          ? "plop-templates/base-service.hbs"
-          : "plop-templates/crud-service.hbs";
+        const serviceTemplate = data.serviceType === "base" ?
+          "plop-templates/base-service.hbs" :
+          "plop-templates/crud-service.hbs";
         actions.push({
           type: "add",
-          path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.service.ts",
+          path: resolveProjectPath("src/modules/{{kebabCase name}}/{{kebabCase name}}.service.ts"),
           templateFile: serviceTemplate,
           abortOnFail: true,
         });
       }
 
       if (data.wantController) {
-        const controllerTemplate = data.serviceType === "base"
-          ? "plop-templates/base-controller.hbs"
-          : "plop-templates/crud-controller.hbs";
+        const controllerTemplate = data.serviceType === "base" ?
+          "plop-templates/base-controller.hbs" :
+          "plop-templates/crud-controller.hbs";
         actions.push({
           type: "add",
-          path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.controller.ts",
+          path: resolveProjectPath("src/modules/{{kebabCase name}}/{{kebabCase name}}.controller.ts"),
           templateFile: controllerTemplate,
           abortOnFail: true,
         });
@@ -99,7 +110,7 @@ export default function (plop: NodePlopAPI) {
       if (data.wantService || data.wantController) {
         actions.push({
           type: "add",
-          path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts",
+          path: resolveProjectPath("src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts"),
           templateFile: "plop-templates/module.hbs",
           abortOnFail: true,
         });
@@ -107,34 +118,34 @@ export default function (plop: NodePlopAPI) {
         // Add the module to app.module.ts
         actions.push({
           type: "append",
-          path: "src/modules/app/app.module.ts",
-          pattern: `import { DbModule } from "@/modules/_db/db.module";`,
-          template: `import { {{pascalCase name}}Module } from "@/modules/{{kebabCase name}}/{{kebabCase name}}.module";`,
+          path: resolveProjectPath("src/modules/app/app.module.ts"),
+          pattern: "import { DbModule } from \"@/modules/_db/db.module\";",
+          template: "import { {{pascalCase name}}Module } from \"@/modules/{{kebabCase name}}/{{kebabCase name}}.module\";",
           abortOnFail: true,
         });
 
         actions.push({
           type: "append",
-          path: "src/modules/app/app.module.ts",
-          pattern: `    DbModule,`,
-          template: `    {{pascalCase name}}Module,`,
+          path: resolveProjectPath("src/modules/app/app.module.ts"),
+          pattern: "    DbModule,",
+          template: "    {{pascalCase name}}Module,",
           abortOnFail: true,
         });
 
         if (data.wantController) {
           actions.push({
             type: "append",
-            path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts",
-            pattern: `import { TypeOrmModule } from "@nestjs/typeorm";`,
-            template: `import { {{pascalCase name}}Controller } from "@/modules/{{kebabCase name}}/{{kebabCase name}}.controller";`,
+            path: resolveProjectPath("src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts"),
+            pattern: "import { TypeOrmModule } from \"@nestjs/typeorm\";",
+            template: "import { {{pascalCase name}}Controller } from \"@/modules/{{kebabCase name}}/{{kebabCase name}}.controller\";",
             abortOnFail: true,
           });
 
           actions.push({
             type: "modify",
-            path: "src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts",
+            path: resolveProjectPath("src/modules/{{kebabCase name}}/{{kebabCase name}}.module.ts"),
             pattern: /(controllers:\s*\[\s*\])/g,
-            template: `controllers: [{{pascalCase name}}Controller]`,
+            template: "controllers: [{{pascalCase name}}Controller]",
             abortOnFail: true,
           });
         }
