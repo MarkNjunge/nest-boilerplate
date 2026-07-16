@@ -63,20 +63,17 @@ config/
 
 ## Important Files
 
-| File | Purpose |
-|------|---------|
-| `src/main.ts` | Bootstrap, middleware, Swagger setup |
-| `src/modules/app/app.module.ts` | Root module, import all feature modules here |
-| `src/modules/_db/db.module.ts` | TypeORM config, entity exports |
-| `src/filters/all-exceptions.filter.ts` | Global exception handling |
-| `src/guards/auth.guard.ts` | Bearer token authentication |
-| `plopfile.ts` | Code generation configuration |
-| `config/default.json` | Default configuration values |
-| `src/config/secrets-manager.ts` | Async secrets loading (customize for your secrets backend) |
-| `src/config/index.ts` | Config initialization and secrets merging |
-| `src/lib/crud/plopfile.ts`             | Code generation configuration |
+| File                                   | Purpose                                      |
+|----------------------------------------|----------------------------------------------|
+| `src/main.ts`                          | Bootstrap, middleware, Swagger setup         |
+| `src/modules/app/app.module.ts`        | Root module, import all feature modules here |
+| `src/modules/_db/db.module.ts`         | TypeORM config, entity exports               |
+| `src/filters/all-exceptions.filter.ts` | Global exception handling                    |
+| `src/guards/auth.guard.ts`             | Bearer token authentication                  |
+| `src/lib/crud/plopfile.ts`             | Code generation configuration                |
+| `config/default.json`                  | Default configuration values                 |
 
-## Adding New Features
+## Adding Data Models
 
 ### Using Code Generation (Recommended)
 
@@ -94,28 +91,8 @@ After generation:
 
 ### Manual Creation
 
-1. **Entity** (`src/models/{name}/{name}.entity.ts`):
-    - Extend `BaseEntity` from `@/lib/crud`
-    - Implement `idPrefix()` returning a 3-4 char prefix (e.g., `"usr_"`)
-    - Add `@Entity("table_name")` decorator
-
-2. **DTOs** (same file or separate):
-    - Create `Create{Name}Dto` with `class-validator` decorators
-    - Create `Update{Name}Dto` with optional fields
-
-3. **Service** (`src/modules/{name}/{name}.service.ts`):
-    - Extend `CrudService<Entity, CreateDto, UpdateDto>`
-    - Inject repository via `@InjectRepository(Entity)`
-
-4. **Controller** (`src/modules/{name}/{name}.controller.ts`):
-    - Extend `CrudController<Entity, CreateDto, UpdateDto>`
-    - Add `@Controller("{route}")` and `@ApiTags("{Tag}")`
-
-5. **Module** (`src/modules/{name}/{name}.module.ts`):
-    - Import in `AppModule` at `src/modules/app/app.module.ts`
-    - Add entity to `DbModule` exports at `src/modules/_db/db.module.ts`
-
-6. **Migration**: Generate after entity changes
+Read `src/lib/crud/plopfile.ts` and the `src/lib/crud/plop-templates/` directory to understand what files are needed 
+and how they are structured. Use that as the source of truth when creating a new data model manually.
 
 ## Common Tasks
 

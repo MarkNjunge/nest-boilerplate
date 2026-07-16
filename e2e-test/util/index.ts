@@ -1,5 +1,5 @@
-export const testApiHost = process.env.HOST ?? "http://localhost:3000";
-export const testAdminKey = process.env.ADMIN_KEY ?? "api-key";
+export const testApiHost = process.env.TEST_API_HOST ?? "http://localhost:3000";
+export const testAdminKey = process.env.TEST_ADMIN_KEY ?? "api-key";
 
 export function randomString(length: number) {
   let result = "";

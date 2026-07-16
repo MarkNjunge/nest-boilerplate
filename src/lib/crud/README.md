@@ -7,26 +7,67 @@ It provides base classes for entities, services, and controllers that enable rap
 
 The CRUD layer uses inheritance to separate read and write operations:
 
+### Folder Structure
+
+```
+src/lib/crud/
+├── controller/
+│   ├── base.controller.ts           # Read-only controller base
+│   ├── crud.controller.ts           # Full CRUD controller
+│   └── controller-exclude.spec.ts   # Route exclusion tests
+├── entity/
+│   ├── base.entity.ts               # Entity base with id, timestamps
+│   ├── user-scoped.entity.ts        # Entity base with userId for per-user isolation
+│   └── id.ts                        # ULID generation utilities
+├── query/
+│   ├── index.ts                     # Barrel exports
+│   ├── query.type.ts                # Types: Filter, Sort, Select, Include, Query
+│   ├── query.dto.ts                 # DTOs for raw query parameters
+│   ├── query.parser.ts              # Parsing raw query strings into Query objects
+│   ├── query.validator.ts           # Validation decorators (IsValidFilter, IsValidSort)
+│   └── typeorm-query-mapper.ts      # Query → TypeORM conversion
+├── cache/
+│   └── i-cache.service.ts           # ICacheService interface
+├── service/
+│   ├── base.service.ts              # Read-only service base
+│   ├── crud.service.ts              # Full CRUD service
+│   └── crud-cache.service.ts        # Full CRUD service with caching
+├── transaction/
+│   └── transaction.service.ts       # Transaction wrapper
+├── testing/                         # Test utilities and specs
+├── plopfile.ts                      # Code generation configuration
+├── plop-templates/                  # Code generation templates
+├── utils/                           # Internal utilities (context, crypto, constants, etc.)
+└── index.ts                         # Public exports
+```
+
+### Entities
+
+- **BaseEntity** - Provides `id` generation (ULID with prefix), `createdAt`, and `updatedAt` timestamps. The base type for all resources.
+- **UserScopedEntity** - Extends `BaseEntity` with a `userId` column and `@ManyToOne` relation to the project's `User` model. 
+  Services automatically filter all queries by the authenticated user's ID.
+
 ### Services
 
-- **BaseService** - Read-only operations: `count`, `list`, `get`, `getById`
-- **CrudService extends BaseService** - Adds write operations: `create`, `createBulk`, `update`, `upsert`, `deleteById`, etc.
+- **BaseService** - Read-only operations
+- **CrudService** - Extends BaseService with write operations
+- **CrudCacheService** - Extends CrudService with automatic caching
 
 ### Controllers
 
-- **BaseController** - Read-only endpoints (auth configurable via `options.auth`)
-- **CrudController extends BaseController** - Adds write endpoints (auth configurable via `options.auth`)
+- **BaseController** - Read-only endpoints
+- **CrudController extends BaseController** - Adds write endpoints
 
 Use `BaseService`/`BaseController` for read-only access, `CrudService`/`CrudController` for full CRUD.
 
-## BaseEntity
+## Entities
+
+### BaseEntity
 
 All entities should extend `BaseEntity` which provides:
 - `id`: ULID-based string with entity-specific prefix
 - `createdAt`: Auto-managed creation timestamp
 - `updatedAt`: Auto-managed update timestamp
-
-### Example
 
 ```typescript
 import { Entity, Column } from "typeorm";
@@ -34,23 +75,21 @@ import { BaseEntity } from "@/lib/crud";
 
 @Entity("users")
 export class User extends BaseEntity {
-  idPrefix(): string {
-    return "usr_";
-  }
-
   @Column()
   username: string;
 
   @Column()
   email: string;
+  
+  idPrefix(): string {
+    return "usr_";
+  }
 }
 ```
 
-**Important**: Every entity MUST implement `idPrefix()` to return a 3-4 character prefix (e.g., `"usr_"`, `"post_"`, `"cmt_"`).
+### UserScopedEntity
 
-## UserScopedEntity
-
-Extends `BaseEntity` for resources that belong to a specific user. Adds a `userId` column and a `@ManyToOne` relation
+Extends `BaseEntity` for resources that belong to a specific user. It adds a `userId` column and a `@ManyToOne` relation
 to the project's `User` model. Services automatically filter all queries by the authenticated user's ID and inject it on create.
 
 The relation target is resolved lazily via a static `_userType` field so the library has no hard import on the project's `User`.
@@ -65,6 +104,9 @@ import { User } from "@/models/user/user";
 export class Post extends UserScopedEntity<User> {
   static { UserScopedEntity._userType = User; }
 
+  @Column()
+  title: string;
+
   getUserType() {
     return User;
   }
@@ -72,68 +114,38 @@ export class Post extends UserScopedEntity<User> {
   idPrefix(): string {
     return "post_";
   }
-
-  @Column()
-  title: string;
 }
 ```
 
-The corresponding service requires no extra configuration — user scoping is on by default:
-
-```typescript
-@Injectable()
-export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
-  constructor(@InjectRepository(Post) repo: Repository<Post>) {
-    super("Post", repo); // userScoped: true by default
-  }
-}
-```
-
-For global resources that should not be filtered by user (e.g. `User`, `Category`), pass `{ userScoped: false }`:
-
-```typescript
-super("User", repo, { userScoped: false });
-```
-
-To bypass scoping for a **single call** (e.g. a public feed or an admin action) without changing the service
-constructor, pass `userScoped: false` in the context:
-
-```typescript
-// Public feed — list all posts regardless of author
-const feed = await this.postService.list({ ...ctx, userScoped: false }, query);
-
-// Admin — fetch any user's post by ID
-const post = await this.postService.getById({ ...ctx, userScoped: false }, id);
-```
-
-Authorization for who may make these calls is enforced by the guard layer, not the service.
-
-**Do not include `userId` in Create DTOs** for user-scoped entities — it is injected automatically from the
+**Do not include `userId` in Create DTOs** for user-scoped entities - it is injected automatically from the
 authenticated user's context and any value provided in the request body is ignored.
 
-## BaseService
+## Services
+
+### ServiceOptions
+
+Services accept a `ServiceOptions` object in the constructor:
+
+| Option       | Type      | Default | Description                                                                                                                                              |
+|--------------|-----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `userScoped` | `boolean` | `true`  | When `true`, all queries are automatically filtered by the authenticated user's `userId`. Set to `false` for global resources (e.g. `User`, `Category`). |
+
+### ICrudContext
+
+All service methods accept an `ICrudContext` as their first argument:
+
+| Field        | Type                 | Description                                                                                                    |
+|--------------|----------------------|----------------------------------------------------------------------------------------------------------------|
+| `traceId`    | `string`             | Request trace ID for logging/debugging                                                                         |
+| `user`       | `{ userId: string }` | Authenticated user; required when scoping is active                                                            |
+| `userScoped` | `boolean`            | Per-call override; when `false`, bypasses user filtering for that call regardless of the service-level default |
+
+### BaseService
 
 Provides read-only operations for entities. All methods accept an `ICrudContext` as their first argument, which carries
 the authenticated user's ID used for user-scoped filtering.
 
-### Constructor
-
-```typescript
-super(name: string, repository: Repository<Entity>, options?: ServiceOptions)
-```
-
-`ServiceOptions`:
-- `userScoped?: boolean` — defaults to `true`. When `true`, all queries are automatically filtered by the authenticated
-  user's `userId`. Set to `false` for global resources (e.g. `User`, `Category`).
-
-`ICrudContext`:
-- `traceId: string` — request trace ID
-- `user?: { userId: string }` — authenticated user; required when scoping is active
-- `userScoped?: boolean` — per-call override; when `false`, bypasses user filtering for that call regardless of the
-  service-level default
-
-### Methods
-
+#### Methods
 - `count(ctx: ICrudContext, query?: Query): Promise<number>` - Count entities matching query
 - `list(ctx: ICrudContext, query?: Query): Promise<Entity[]>` - List entities with filtering, sorting, pagination
 - `get(ctx: ICrudContext, query: Query): Promise<Entity | null>` - Get first entity matching query
@@ -141,7 +153,22 @@ super(name: string, repository: Repository<Entity>, options?: ServiceOptions)
 - `listCursor(ctx: ICrudContext, query?: Query): Promise<CursorPaginationResult<Entity>>` - Cursor-based pagination
 - `withTransaction(manager: EntityManager): this` - Create transaction-scoped clone
 
-### Example
+#### Pagination Limits
+
+List and cursor endpoints enforce a default limit of `20` and a maximum limit of `99` via `DEFAULT_ROW_LIMIT` and 
+`MAX_ROW_LIMIT` in `crud-consts.ts`.
+
+These limits only apply to query-based operations — internal service calls (e.g. calls to `list()` from within another service method) are not capped.
+
+#### Metrics
+
+`BaseService` emits OpenTelemetry counters and histograms via `crud_operations_total` and `crud_operation_duration_seconds` with the following attributes:
+
+- `entity` — the resource name (e.g. `"User"`)
+- `operation` — the method name in snake_case (e.g. `"list"`, `"get_by_id"`)
+- `status` — `"success"` or `"failure"`
+
+#### Example
 
 ```typescript
 import { Injectable } from "@nestjs/common";
@@ -162,12 +189,14 @@ export class UserService extends BaseService<User> {
 }
 ```
 
-## CrudService
+### CrudService
 
-Extends `BaseService` with write operations. When `userScoped` is true (the default), `userId` is automatically
+Extends `BaseService` with write operations.
+
+When `userScoped` is `true` (the default), `userId` is automatically
 injected from context on create and all updates/deletes are scoped to the current user.
 
-### Additional Methods
+#### Methods
 
 - `create(ctx: ICrudContext, dto: CreateDto): Promise<Entity>` - Create entity; injects `userId` from context
 - `createBulk(ctx: ICrudContext, dtos: CreateDto[]): Promise<Entity[]>` - Create multiple entities
@@ -178,7 +207,13 @@ injected from context on create and all updates/deletes are scoped to the curren
 - `deleteById(ctx: ICrudContext, id: string): Promise<number>` - Delete by ID (scoped to user); returns affected count
 - `deleteIndexed(ctx: ICrudContext, filter: Filter): Promise<number>` - Delete matching records
 
-### Example
+#### Metrics
+
+`CrudService` inherits the `BaseService` metrics (`crud_operations_total`, `crud_operation_duration_seconds`) with the 
+same attributes. All write methods (create, update, delete, etc.) are tracked with the operation name in 
+snake_case and `status` set to `"success"` or `"failure"`.
+
+#### Example
 
 ```typescript
 import { Injectable } from "@nestjs/common";
@@ -191,23 +226,27 @@ import { Post, PostCreateDto, PostUpdateDto } from "@/models/post/post";
 @Injectable()
 export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
   constructor(@InjectRepository(Post) repo: Repository<Post>) {
-    super("Post", repo); // userScoped: true by default
+    super("Post", repo);
   }
 }
 ```
 
-## CrudCacheService
+### CrudCacheService
 
-`CrudCacheService` extends `CrudService` with Redis-backed caching for read operations and automatic write-through
-cache invalidation. It uses a **generation-based invalidation** strategy.
+Extends `CrudService` with caching for read operations and automatic cache invalidation.
 
-### ICacheService Interface
+It uses a **generation-based invalidation** strategy.
+
+> **⚠️ Warning:** Bypassing the service and modifying the database directly (e.g. via the repository or raw queries) 
+> will lead to a stale cache. Always use service methods to ensure proper cache invalidation, or clear the cache by calling invalidateCache().
+
+#### ICacheService Interface
 
 `CrudCacheService` depends on an `ICacheService` implementation (see [ICacheService](cache/i-cache.service.ts)):
 
 The project provides a Redis-based implementation via `CacheService` in [`src/modules/_cache/cache.service.ts`](../../modules/_cache/cache.service.ts).
 
-### Usage
+#### Usage
 
 Extend `CrudCacheService` instead of `CrudService`, provide an `ICacheService`, and implement `cacheNs()`:
 
@@ -234,23 +273,23 @@ export class CategoryService extends CrudCacheService<Category, CategoryCreateDt
 }
 ```
 
-The only additional requirement is `cacheNs(ctx)` — a method that returns the namespace prefix for all cache keys
+The only additional requirement is `cacheNs(ctx)` - a method that returns the namespace prefix for all cache keys
 (e.g. `"categories"`). This is typically a static identifier for the resource.
 
-For user scoped entities, ensure the `user_id` from `ctx` is used.
+**Important:** For user scoped entities, ensure the `user_id` from `ctx` is used.
 
-### How It Works
+#### How It Works
 
-#### Read Caching
+##### Read Caching
 
 Read operations (`list`, `get`, `getById`, `listCursor`) check Redis before hitting the database. On a cache miss,
-the result is fetched from the database and stored in Redis with a configurable TTL.
+the result is fetched from the database and stored in cache with a configurable TTL, if it is not null.
 
-#### Generation-Based Invalidation
+##### Invalidation
 
 Instead of tracking and deleting every individual query cache on each write, the service uses a **generation counter**:
 
-1. A Redis key (`{cacheNs}:gen`) stores a monotonically incrementing integer.
+1. A cache key (`{cacheNs}:gen`) stores a monotonically incrementing integer.
 2. Query-based cache keys embed this generation:
    ```
    {cacheNs}:list:{gen}:{sha1(query)}
@@ -260,14 +299,8 @@ Instead of tracking and deleting every individual query cache on each write, the
 3. On any write operation, the generation is incremented via `incr`, instantly invalidating all query-based caches
    without needing to enumerate them.
 
-#### Per-ID Caches
-
 Individual entity caches (keyed `{cacheNs}:{id}`) are explicitly deleted on mutation, since they are not tied to the
 generation counter.
-
-#### Write-Through Invalidation
-
-Every mutating method calls `invalidateCache(ctx, affectedIds)` after the database operation:
 
 | Method            | Invalidation                                  |
 |-------------------|-----------------------------------------------|
@@ -280,46 +313,71 @@ Every mutating method calls `invalidateCache(ctx, affectedIds)` after the databa
 | `deleteById`      | increments generation + deletes per-ID cache  |
 | `deleteIndexed`   | increments generation + deletes per-ID caches |
 
-### Configuration
+#### Configuration
 
 | Property    | Default    | Description                         |
 |-------------|------------|-------------------------------------|
 | `CACHE_TTL` | `300` (5m) | TTL in seconds for cached entries   |
 
-Override `CACHE_TTL` in your subclass to adjust the TTL:
+Override `CACHE_TTL` in your subclass to adjust the TTL
 
-```typescript
-export class CategoryService extends CrudCacheService<Category, ...> {
-  protected CACHE_TTL = 600; // 10 minutes
-}
-```
-
-All cached entries use a TTL as a safety net against stale data in case a generation increment is missed.
-
-### Metrics
+#### Metrics
 
 `CrudCacheService` emits OpenTelemetry counters via `crud_cache_operations_total` with the following attributes:
 
-- `entity` — the resource name (e.g. `"Category"`)
-- `operation` — the method name in snake_case (e.g. `"list"`, `"get_by_id"`)
-- `result` — `"hit"` or `"miss"`
+- `entity` - the resource name (e.g. `"Category"`)
+- `operation` - the method name in snake_case (e.g. `"list"`, `"get_by_id"`)
+- `result` - `"hit"` or `"miss"`
 
-### Example: CategoryService
+### User Scoping
 
-See [CategoryService](../../modules/category/category.service.ts) for a complete working example.
+User scoping is on by default
 
-## BaseController
+```typescript
+@Injectable()
+export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
+  constructor(@InjectRepository(Post) repo: Repository<Post>) {
+    super("Post", repo); // userScoped: true by default
+  }
+}
+```
+
+For global resources that should not be filtered by user (e.g. `User`, `Category`), pass `{ userScoped: false }`:
+
+```typescript
+super("User", repo, { userScoped: false });
+```
+
+To bypass scoping for a **single call** (e.g. a public feed or an admin action) without changing the service
+constructor, pass `userScoped: false` in the context:
+
+```typescript
+// Public feed - list all posts regardless of author
+const feed = await this.postService.list({ ...ctx, userScoped: false }, query);
+
+// Admin - fetch any user's post by ID
+const post = await this.postService.getById({ ...ctx, userScoped: false }, id);
+```
+
+**Important:** Authorization for who may make these calls is enforced by the guard layer in the app, not the service.
+
+## Controllers
+
+### BaseController
 
 Provides read-only HTTP endpoints.
 
-### Routes
+#### Routes
 
-- `GET /count` - Count entities
-- `GET /` - List entities with query support
-- `GET /first` - Get first entity matching query
-- `GET /:id` - Get entity by ID
+| Method | Route     | Name         | Description                                |
+|--------|-----------|--------------|--------------------------------------------|
+| GET    | `/count`  | `count`      | Count entities                             |
+| GET    | `/`       | `list`       | List entities with query support           |
+| GET    | `/first`  | `get`        | Get first entity matching query            |
+| GET    | `/cursor` | `listCursor` | Cursor-based paginated list                |
+| GET    | `/:id`    | `getById`    | Get entity by ID                           |
 
-### Example
+#### Example
 
 ```typescript
 import { Controller } from "@nestjs/common";
@@ -339,23 +397,28 @@ export class UserController extends BaseController(User) {
 }
 ```
 
-The `service` getter is required — the base controller accesses `this.service` to delegate to the service layer. The `super()` call takes no arguments.
+The `service` getter is required - the base controller accesses `this.service` to delegate to the service layer. The `super()` call takes no arguments.
 
-## CrudController
+> **Note:** `BaseController` accepts an optional second generic type parameter for the service type. This allows you to use a `CrudService` (which extends `BaseService`) as the backing service while only exposing read routes via the API — useful when you want to expose only reads publicly but use write methods internally (e.g. in other services or via transactions).
+
+### CrudController
 
 Extends `BaseController` with write endpoints. Auth is required by default (configurable via `options.auth`).
 
-`createDtoType` and `updateDtoType` are **required** — they are used for Swagger documentation and request validation.
+#### Routes
 
-### Additional Routes
+| Method | Route   | Name            | Description                                      |
+|--------|---------|-----------------|--------------------------------------------------|
+| POST   | `/`     | `create`        | Create entity                                    |
+| POST   | `/bulk` | `createBulk`    | Create multiple entities                         |
+| PUT    | `/`     | `upsert`        | Create or update entity (upsert)                 |
+| PUT    | `/bulk` | `upsertBulk`    | Bulk upsert (create or update multiple entities) |
+| PATCH  | `/`     | `updateIndexed` | Update entities matching a filter                |
+| PATCH  | `/:id`  | `update`        | Update entity by ID                              |
+| DELETE | `/`     | `deleteIndexed` | Delete entities matching a filter                |
+| DELETE | `/:id`  | `deleteById`    | Delete entity by ID                              |
 
-- `POST /` - Create entity
-- `POST /bulk` - Create multiple entities
-- `PUT /` - Upsert entity
-- `PATCH /:id` - Update entity
-- `DELETE /:id` - Delete entity
-
-### Example
+#### Example
 
 ```typescript
 import { Controller } from "@nestjs/common";
@@ -375,61 +438,42 @@ export class UserController extends CrudController(User, UserCreateDto, UserUpda
 }
 ```
 
-## Route Exclusion
+### Route Exclusion
 
 Both `BaseController` and `CrudController` accept an optional `options` parameter to exclude specific routes:
 
 ```typescript
-// BaseController — exclude specific read-only routes
+// BaseController - exclude specific read-only routes
 BaseController(User, { exclude: ["listCursor"] })
 
-// CrudController — exclude any base or crud route
+// CrudController - exclude any base or crud route
 CrudController(User, UserCreateDto, UserUpdateDto, {
   exclude: ["deleteById", "createBulk"]
 })
 ```
 
-### Available Route Names
-
-**BaseController routes:**
-- `count` - GET /count
-- `list` - GET /
-- `get` - GET /first
-- `listCursor` - GET /cursor (cursor-based pagination)
-- `getById` - GET /:id
-
-**CrudController routes (in addition to Base routes):**
-- `create` - POST /
-- `createBulk` - POST /bulk
-- `upsert` - PUT /
-- `upsertBulk` - PUT /bulk
-- `update` - PATCH /:id
-- `updateIndexed` - PATCH /
-- `deleteById` - DELETE /:id
-- `deleteIndexed` - DELETE /
-
 Excluded methods are removed from the controller prototype, so NestJS never registers them as routes.
 
-## Auth Configuration
+### Auth Configuration
 
 The `options` object accepts an `auth` field to control how authentication is applied:
 
-| Value                                  | Behaviour                                               |
-|----------------------------------------|---------------------------------------------------------|
-| _(omitted)_                            | All routes require user auth (default)                  |
-| `{ mode: "ADMIN" }`                    | All routes require admin auth                           |
-| `{ publicReads: true }`                | Read routes are public; write routes require user auth  |
-| `{ publicReads: true, mode: "ADMIN" }` | Read routes are public; write routes require admin auth |
-| `false`                                | Auth guard is not applied to any route                  |
+| Value                                  | Behaviour                                                      |
+|----------------------------------------|----------------------------------------------------------------|
+| _(omitted)_                            | (default) All routes require auth. No auth mode is specified.  |
+| `{ mode: "ADMIN" }`                    | All routes require `ADMIN` mode auth                           |
+| `{ publicReads: true }`                | Read routes are public; write routes require auth              |
+| `{ publicReads: true, mode: "ADMIN" }` | Read routes are public; write routes require `ADMIN` mode auth |
+| `false`                                | Auth guard is not applied to any route                         |
 
 ```typescript
-// Default — all routes require user auth
+// Default - all routes require user auth
 CrudController(Post, PostCreateDto, PostUpdateDto)
 
 // Admin-only (e.g. user management)
 CrudController(User, UserCreateDto, UserUpdateDto, { auth: { mode: "ADMIN" } })
 
-// Public catalogue — anyone can read, only admins can write
+// Public catalogue - anyone can read, only admins can write
 CrudController(Category, CategoryCreateDto, CategoryUpdateDto, {
   auth: { publicReads: true, mode: "ADMIN" }
 })
@@ -438,7 +482,8 @@ CrudController(Category, CategoryCreateDto, CategoryUpdateDto, {
 BaseController(Announcement, { auth: false })
 ```
 
-When `publicReads: true` is set on a `CrudController`, read routes (inherited from `BaseController`) have no guard, while write routes have the guard applied at the method level. This means `ctx.user` may be `undefined` on read handlers — design accordingly.
+When `publicReads: true` is set on a `CrudController`, read routes (inherited from `BaseController`) have no guard, 
+while write routes have the guard applied at the method level. This means `ctx.user` may be `undefined` on read handlers - design accordingly.
 
 ## Transactions
 
@@ -446,9 +491,9 @@ The `TransactionService` provides a reusable wrapper around TypeORM's transactio
 
 ### Key Features
 
-- **Isolation Levels**: Support for `READ UNCOMMITTED`, `READ COMMITTED`, `REPEATABLE READ`, `SERIALIZABLE`
-- **Automatic Rollback**: TypeORM automatically rolls back on errors
 - **Service Reuse**: Use `withTransaction(manager)` to create transaction-scoped service clones
+- **Automatic Rollback**: TypeORM automatically rolls back on errors
+- **Isolation Levels**: Support for `READ UNCOMMITTED`, `READ COMMITTED`, `REPEATABLE READ`, `SERIALIZABLE`
 
 ### Example
 
@@ -515,13 +560,17 @@ export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto>
 
 The CRUD layer includes a powerful query parsing system that converts URL parameters into TypeORM queries.
 
-### Supported Parameters
+### Query Parameters
 
-- `select=field1,field2` - Field selection
-- `include=relation1,relation2` - Eager load relations
-- `filter=(field,operator,value):(field2,operator,value2)` - Filtering
-- `sort=(field,ASC):(field2,DESC)` - Sorting. Supports dot-notation for nested relation fields, e.g. `(user.name,ASC)`
-- `limit=10&offset=0` - Pagination
+| Parameter | Description                                                                                                                      |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------|
+| `select`  | Comma-separated field names to return (supports dot-notation for nested relations, e.g. `title,comments.content,user.username`)  |
+| `include` | Comma-separated relation names to eager-load (supports dot-notation for nested relations, e.g. `comments,user,user.profile`)     |
+| `filter`  | Filter expressions in `(field,operator,value)` format, colon-separated for multiple filters                                      |
+| `sort`    | Sort expressions in `(field,direction)` format, colon-separated for multiple columns; supports dot-notation for nested relations |
+| `limit`   | Number of results to return (default: `20`, max: `99`)                                                                           |
+| `offset`  | Number of results to skip (offset pagination only)                                                                               |
+
 
 ### Filter Operators
 
@@ -543,7 +592,7 @@ The CRUD layer includes a powerful query parsing system that converts URL parame
 - `none` - PostgreSQL NONE
 - `contains` - Array contains
 - `containedby` - Array contained by
-- `raw` - Raw SQL (use with caution)
+- `raw` - Raw SQL (use with caution). Not available via API.
 
 ### Example Queries
 
@@ -626,18 +675,6 @@ GET /posts?select=title,content,author.username&include=author&filter=(published
 Cursor pagination is suited for infinite-scroll feeds and large datasets where offset pagination degrades in 
 performance or stability.
 
-Unlike offset-based pagination, cursor pagination is immune to rows being inserted or deleted between pages.
-
-### When to use cursor vs offset pagination
-
-|                                      | Offset | Cursor |
-|--------------------------------------|--------|--------|
-| Arbitrary page jump                  | ✓      | ✗      |
-| Stable results under inserts/deletes | ✗      | ✓      |
-| Scalable to large datasets           | ✗      | ✓      |
-
-### Endpoint
-
 ```
 GET /{resource}/cursor
 ```
@@ -646,14 +683,14 @@ GET /{resource}/cursor
 
 | Param       | Type            | Default | Description                                                     |
 |-------------|-----------------|---------|-----------------------------------------------------------------|
-| `after`     | string          | —       | Return items **greater than** this cursor                       |
-| `before`    | string          | —       | Return items **less than** this cursor                          |
+| `after`     | string          | -       | Return items **greater than** this cursor                       |
+| `before`    | string          | -       | Return items **less than** this cursor                          |
 | `sortField` | string          | `id`    | Field to sort and paginate by. id is still used a a tie-breaker |
 | `sortDir`   | `ASC` \| `DESC` | `ASC`   | Sort direction for the ORDER BY                                 |
 | `limit`     | number          | 20      | Max items per page (max 99)                                     |
-| `select`    | string          | —       | Field selection (same as list endpoint)                         |
-| `include`   | string          | —       | Relation loading (same as list endpoint)                        |
-| `filter`    | string          | —       | Filtering (same as list endpoint)                               |
+| `select`    | string          | -       | Field selection (same as list endpoint)                         |
+| `include`   | string          | -       | Relation loading (same as list endpoint)                        |
+| `filter`    | string          | -       | Filtering (same as list endpoint)                               |
 
 `after` and `before` cannot be combined. `offset` and `sort` are not available on this endpoint.
 
@@ -665,8 +702,8 @@ GET /{resource}/cursor
 
 ### Cursor format
 
-- **Default (`sortField=id`):** cursor is the entity ID string, e.g. `usr_01jt...`
-- **Custom `sortField`:** cursor is an opaque base64url string encoding both the sort value and entity ID. Treat it as opaque — do not parse it.
+- **With default `sortField`(`id`):** cursor is the entity ID string, e.g. `usr_01jt...`
+- **With custom `sortField`:** cursor is an base64url string encoding both the sort value and entity ID. Treat it as opaque - do not parse it.
 
 ### Response shape
 
@@ -686,12 +723,32 @@ GET /{resource}/cursor
 
 **First page (default sort by id ASC):**
 ```
-GET /posts?limit=10
+GET /posts/cursor?limit=10
+
+{
+  "data": [],
+  "pageInfo": {
+    "hasNextPage": true,
+    "hasPreviousPage": false,
+    "startCursor": "post_247wh",
+    "endCursor": "post_p1mn7"
+  }
+}
 ```
 
-**Next page using endCursor:**
+**Next page using `endCursor`:**
 ```
-GET /posts/cursor?after=post_01jt...&limit=10
+GET /posts/cursor?limit=10&after=post_p1mn7
+
+{
+  "data": [],
+  "pageInfo": {
+    "hasNextPage": true,
+    "hasPreviousPage": true,
+    "startCursor": "post_45qcy",
+    "endCursor": "post_hq6t2"
+  }
+}
 ```
 
 **Sort by createdAt DESC (newest first):**
@@ -699,7 +756,7 @@ GET /posts/cursor?after=post_01jt...&limit=10
 GET /posts/cursor?sortField=createdAt&sortDir=DESC&limit=10
 ```
 
-**Next page with DESC sort — use `before` with endCursor:**
+**Next page with DESC sort - use `before` with endCursor:**
 ```
 GET /posts/cursor?sortField=createdAt&sortDir=DESC&before=<endCursor>&limit=10
 ```
@@ -709,64 +766,69 @@ GET /posts/cursor?sortField=createdAt&sortDir=DESC&before=<endCursor>&limit=10
 GET /posts/cursor?select=title,content&filter=(published,eq,true)&sortField=createdAt&sortDir=DESC&limit=5
 ```
 
-**Example response:**
-```json
-{
-  "data": [
-    { "id": "post_01jt...", "title": "Hello World", "createdAt": "2025-04-28T10:00:00Z" }
-  ],
-  "pageInfo": {
-    "hasNextPage": true,
-    "hasPreviousPage": false,
-    "startCursor": "post_01jt...",
-    "endCursor": "cG9zdF8wMWp0Li4u"
-  }
-}
+## Testing
+
+### Unit & Integration Tests
+
+The CRUD library includes an exhaustive test suite covering every component in isolation and in combination. Tests are 
+co-located with source files as `*.spec.ts` and use Jest with [testcontainers](https://testcontainers.com/) for PostgreSQL-backed integration scenarios.
+
+Key test areas:
+
+- **Query parser** — Validates parsing, validation, and TypeORM mapping for every filter operator, sort direction, 
+  field selection, and relation loading combination.
+- **Services** — Covers all BaseService, CrudService, and CrudCacheService methods including user scoping, cursor 
+  pagination, transactions, and cache hit/miss scenarios.
+- **Controllers** — Tests route exclusion, auth configuration, and HTTP layer integration for both BaseController and CrudController.
+
+Run with:
+
+```bash
+npm run test
 ```
 
-## File Structure
+### End-to-End Tests
 
-```
-src/lib/crud/
-├── controller/
-│   ├── base.controller.ts       # Read-only controller base
-│   └── crud.controller.ts       # Full CRUD controller
-├── entity/
-│   ├── base.entity.ts           # Entity base with id, timestamps
-│   ├── user-scoped.entity.ts    # Entity base with userId for per-user isolation
-│   └── id.ts                    # ULID generation utilities
-├── query/
-│   ├── index.ts                 # Barrel exports
-│   ├── query.type.ts            # Types: Filter, Sort, Select, Include, Query
-│   ├── query.dto.ts             # DTOs for raw query parameters
-│   ├── query.parser.ts          # Parsing raw query strings into Query objects
-│   ├── query.validator.ts       # Validation decorators (IsValidFilter, IsValidSort)
-│   └── typeorm-query-mapper.ts  # Query → TypeORM conversion
-├── cache/
-│   └── i-cache.service.ts      # ICacheService interface
-├── service/
-│   ├── base.service.ts          # Read-only service base
-│   ├── crud.service.ts          # Full CRUD service
-│   └── crud-cache.service.ts    # Full CRUD service with caching
-├── transaction/
-│   └── transaction.service.ts   # Transaction wrapper
-├── testing/                     # Test utilities and specs
-└── index.ts                     # Public exports
+The E2E test suite is **exhaustive**, covering every layer of the CRUD system, the query parser, cache invalidation, 
+and transactional behaviour in a real Docker environment.
+
+A Docker Compose stack creates isolated PostgreSQL and Redis containers, builds the application, and runs the 
+test suite against the live server.
+
+Test Files:
+
+- `spec/crud.e2e-spec.ts` — **Full CRUD lifecycle**: create, list, get, update (patch), delete, bulk/create-bulk, upsert, bulk-upsert, `updateIndexed`, `deleteIndexed`; field selection (`select`) and relation loading (`include`) on both reads and writes; error cases (validation, missing auth, missing filter); complex multi-relation nested queries
+- `spec/pagination.e2e-spec.ts` — **Cursor-based pagination**: `after` / `before` cursors, filter + limit, page info (`hasNextPage`, `hasPreviousPage`, `startCursor`, `endCursor`), mutual-exclusion of `after` and `before`
+- `spec/transactions.e2e-spec.ts` — **Atomic transactions**: multi-entity create with rollback on failure, verification that both entities persist on success and neither persists on failure
+- `spec/nesting.e2e-spec.ts` — **Nested select & include**: one-to-many relations (`comments`), deeply nested relations (`comments.user`), relation-only fields (`id`, `comments.id`, `comments.user.username`)
+- `spec/caching.e2e-spec.ts` — **Generation-based cache invalidation**: verifies that every write operation (create, createBulk, upsert, upsertBulk, update, updateIndexed, deleteById, deleteIndexed) bumps the generation and invalidates list, get (`/first`), and cursor caches; also verifies per-ID cache deletion
+
+All tests use [supertest](https://www.npmjs.com/package/supertest) and run against a real PostgreSQL and Redis instance. Each test file creates isolated test users and data to avoid cross-contamination.
+
+Running E2E Tests:
+
+```bash
+# Run e2e tests in Docker (isolated stack, no local deps required)
+npm run test:e2e
+
+# Run e2e tests locally (requires a running app instance)
+# Set TEST_API_HOST (default http://localhost:3000) and TEST_ADMIN_KEY to configure
+npm run test:e2e:local
 ```
 
 ## Best Practices
 
-1. **Extend UserScopedEntity<User> for user-owned resources** — Add `static { UserScopedEntity._userType = User; }` and `getUserType()` to wire the relation lazily
+1. **Extend UserScopedEntity<User> for user-owned resources** - Add `static { UserScopedEntity._userType = User; }` and `getUserType()` to wire the relation lazily
 2. **Extend BaseEntity for global resources** - Use with `{ userScoped: false }` in the service constructor
-3. **Never put userId in Create DTOs** - For user-scoped entities it is injected from context automatically
+3. **Never put userId in Create/Update DTOs** - For user-scoped entities it is injected from context automatically
 4. **Implement idPrefix()** - Required for all entities (3-4 characters)
 5. **Use BaseService for read-only** - Prevents accidental mutations
 6. **Use CrudService for full CRUD** - Get all CRUD operations automatically
-7. **Leverage transactions** - Use `TransactionService` for multi-entity operations
-8. **Exclude unnecessary routes** - Use the `exclude` option to minimize API surface
-9. **Configure auth per controller** - Use `auth: { mode: "ADMIN" }` or `auth: { publicReads: true }` to fit the resource's access model
-10. **Add custom methods** - Extend base classes with domain-specific logic
-11. **Enable caching** — Extend `CrudCacheService` instead of `CrudService` to add read caching and automatic write-through invalidation for frequently-read resources
+7. **Enable caching** - Extend `CrudCacheService` instead of `CrudService` to add read caching and automatic invalidation for frequently-read resources
+8. **Leverage transactions** - Use `TransactionService` for multi-entity operations
+9. **Exclude unnecessary routes** - Use the `exclude` option to minimize API surface
+10. **Configure auth per controller** - Use `auth: { mode: "ADMIN" }` or `auth: { publicReads: true }` to fit the resource's access model
+11. **Add custom methods** - Extend base classes with domain-specific logic
 
 ## Common Patterns
 
@@ -775,14 +837,26 @@ src/lib/crud/
 For resources shared across all users (e.g. categories, tags), where reads are public and writes require admin auth:
 
 ```typescript
-// Service — explicitly opt out of user scoping
+// Entity - extends BaseEntity
+@Entity({ name: "categories" })
+export class Category extends BaseEntity {
+  @ApiProperty()
+  @Column()
+  name: string;
+
+  idPrefix(): string {
+    return "cat_";
+  }
+}
+
+// Service - explicitly opt out of user scoping
 export class CategoryService extends CrudService<Category, CategoryCreateDto, CategoryUpdateDto> {
   constructor(@InjectRepository(Category) repo: Repository<Category>) {
     super("Category", repo, { userScoped: false });
   }
 }
 
-// Controller — public reads, admin-only writes
+// Controller - public reads, admin-only writes
 @Controller("categories")
 export class CategoryController extends CrudController(Category, CategoryCreateDto, CategoryUpdateDto, {
   auth: { publicReads: true, mode: "ADMIN" }
@@ -802,10 +876,7 @@ export class CategoryController extends CrudController(Category, CategoryCreateD
 For resources owned by a user (e.g. posts, orders). Extends `UserScopedEntity<User>` and uses the default `userScoped: true`:
 
 ```typescript
-// Entity
-import { User } from "@/models/user/user";
-import { UserScopedEntity } from "@/lib/crud/entity/user-scoped.entity";
-
+// Entity - Extends UserScopedEntity
 @Entity("posts")
 export class Post extends UserScopedEntity<User> {
   static { UserScopedEntity._userType = User; }
@@ -817,7 +888,7 @@ export class Post extends UserScopedEntity<User> {
   title: string;
 }
 
-// Service — user scoping is on by default
+// Service - user scoping is on by default
 export class PostService extends CrudService<Post, PostCreateDto, PostUpdateDto> {
   constructor(@InjectRepository(Post) repo: Repository<Post>) {
     super("Post", repo);
@@ -843,7 +914,7 @@ The Create DTO must **not** include `userId`:
 export class PostCreateDto {
   @IsNotEmpty()
   title: string;
-  // no userId — it is injected from the authenticated user's context
+  // no userId - it is injected from the authenticated user's context
 }
 ```
 

@@ -9,6 +9,23 @@ and more.
 
 ## Quick Start
 
+### Pre-requisites
+
+- [Node.js](https://nodejs.org/) (v24+)
+- PostgreSQL (or use the Docker Compose setup below)
+- Redis (or use the Docker Compose setup below)
+
+For a first start, the easiest way is to use Docker Compose, which starts both PostgreSQL and Redis:
+
+```bash
+docker compose up -d db redis
+```
+
+Then create a `local.json` in `config/` with your database and Redis URLs (or set the `DB_URL` and `REDIS_URL`
+environment variables).
+
+### Install & Run
+
 ```bash
 npm install
 ```
@@ -89,21 +106,24 @@ configuration.
 
 A simple authentication pattern is implemented using a modular service-based approach:
 
-- **AuthGuard** (`src/guards/auth.guard.ts`) - Applied globally; extracts the Bearer token, validates it via `AuthValidator`, and stores the result in the request context (ALS)
+- **AuthGuard** (`src/guards/auth.guard.ts`) - Applied globally; extracts the Bearer token, validates it via
+  `AuthValidator`, and stores the result in the request context (ALS)
 - **AuthValidator** (`src/guards/auth.validator.ts`) - Abstract class used by `AuthGuard` to validate tokens.
 - **AuthService** (`src/modules/auth/auth.service.ts`) - Validates tokens.
 
 All routes require a valid Bearer token except `/`, `/ready`, and `/live`.
 
-To implement authentication, extend `AuthValidator` in `AuthService`:
+To implement authentication, extend the `AuthService`:
 - `validateUser(token)` — return an `AuthenticatedUser` (containing `userId`) for valid user tokens, or `null` to reject
-- `validateAdmin(token)` — return `true` for valid admin tokens, or `false` to reject. By default, this checks against `auth.adminKey` in config.
+- `validateAdmin(token)` — return `true` for valid admin tokens, or `false` to reject. By default, this checks against
+  `auth.adminKey` in config.
 
 ### Auth Modes
 
-Auth modes are **arbitrary** metadata that control what kind of authentication a route requires. It is used by `AuthGuard`.
+Auth modes are **arbitrary** metadata that control what kind of authentication a route requires. It is used by
+`AuthGuard`.
 
-The `@AuthMode` decorator can also be applied directly to individual controller methods:
+The `@AuthMode` decorator can be applied directly to individual controller methods:
 
 ```typescript
 import { AuthMode } from "@/guards/auth.validator";
@@ -134,26 +154,6 @@ The `IReqCtx` interface provides:
 - `user?: AuthenticatedUser` - Authenticated user info (set for user-mode auth)
 - `isAdmin?: boolean` - Set to `true` when the request was authenticated via admin mode
 
-## Caching
-
-A Redis-backed caching layer is provided via [CacheService](src/modules/_cache/cache.service.ts).
-
-### CacheService
-
-`CacheService` wraps a Redis client with automatic key prefixing (configured via `config.redis.keyPrefix`) and
-OpenTelemetry metrics instrumentation.
-
-Optional command logging is available via `config.redis.logCommands`.
-
-All methods gracefully handle Redis errors.
-
-The service implements `OnModuleDestroy` to cleanly close the Redis connection on shutdown.
-
-### CRUD Caching
-
-For caching CRUD read operations with automatic write-through invalidation, the `CrudCacheService` in the CRUD library
-handles this. See [CrudCacheService](src/lib/crud/README.md#crudcacheservice) for full documentation.
-
 ## Database
 
 [TypeORM](https://typeorm.io) is used for the database.
@@ -174,7 +174,9 @@ Alternatively, empty migration files can be created using:
 npm run migration create migration_name
 ```
 
-When the server starts, migrations will run automatically, or you can run them manually:
+When the server starts, migrations will run automatically, controlled by the config `db.runMigrations`;
+
+Alternatively, they can be run outside server startup:
 
 ```bash
 npm run migration up
@@ -207,14 +209,17 @@ The database layer uses inheritance to separate read and write operations:
   Pass `userScoped: false` in `ICrudContext` to bypass scoping for a single call (e.g. a public feed or admin action).
 - [CrudService](src/lib/crud/service/crud.service.ts) - Extends BaseService with write operations (`create`, `update`,
   `delete`, etc.). Automatically injects `userId` from context on create and scopes updates/deletes to the current user.
+- [CrudCacheService](src/lib/crud/service/crud-cache.service.ts) - Extends CrudService with automatic caching. See
+  [CrudCacheService docs](src/lib/crud/README.md#crudcacheservice) for full documentation.
 
 **Controllers:**
 
 - [BaseController](src/lib/crud/controller/base.controller.ts) - Read-only endpoints
-- [CrudController](src/lib/crud/controller/crud.controller.ts) - Extends BaseController with write endpoints (auth
-  required)
+- [CrudController](src/lib/crud/controller/crud.controller.ts) - Extends BaseController with write endpoints
 
 Use `BaseService`/`BaseController` for read-only access, `CrudService`/`CrudController` for full CRUD.
+
+#### Codegen
 
 A generator can be used to scaffold the CRUD layer:
 
@@ -244,7 +249,7 @@ routes:
 BaseController(entityType, { exclude: ["listCursor"] })
 
 // CrudController - skip any base or crud route
-CrudController(entityType, CreateDto, UpdateDto, { exclude: ["deleteById", "createBulk"] })
+CrudController(entityType, CreateDto, UpdateDto, { exclude: ["listCursor", "createBulk"] })
 ```
 
 Excluded methods are removed from the controller prototype, so NestJS never registers them as routes.
@@ -277,7 +282,8 @@ CrudController(entityType, CreateDto, UpdateDto, { auth: { publicReads: true, mo
 Use `TransactionService.run()` combined with `withTransaction(manager)` on any `BaseService`/`CrudService` subclass:
 
 ```typescript
-async createPostWithComment(dto: CreatePostWithCommentDto): Promise<Post> {
+async
+createPostWithComment(dto: CreatePostWithCommentDto): Promise<Post> {
   return this.transactionService.run(async manager => {
     const txPostService = this.withTransaction(manager);
     const txCommentService = this.commentService.withTransaction(manager);
@@ -293,17 +299,109 @@ async createPostWithComment(dto: CreatePostWithCommentDto): Promise<Post> {
 `withTransaction(manager)` returns a lightweight clone of the service that uses a transaction-scoped repository. All
 existing service methods work on the clone without modification. On error, the transaction is automatically rolled back.
 
-#### Isolation Levels
-
-An optional isolation level can be specified:
-
-```typescript
-this.transactionService.run(callback, { isolationLevel: "SERIALIZABLE" });
-```
-
 Available levels: `READ UNCOMMITTED`, `READ COMMITTED`, `REPEATABLE READ`, `SERIALIZABLE`.
 
+## Caching
+
+A Redis-backed caching layer is provided via [CacheService](src/modules/_cache/cache.service.ts).
+
+### CacheService
+
+`CacheService` wraps a Redis client with automatic key prefixing (configured via `config.redis.keyPrefix`) and
+OpenTelemetry metrics instrumentation.
+
+Optional command logging is available via `config.redis.logCommands`.
+
+All methods gracefully handle Redis errors.
+
+The service implements `OnModuleDestroy` to cleanly close the Redis connection on shutdown.
+
+### CRUD Caching
+
+For caching CRUD read operations with automatic invalidation, the `CrudCacheService` in the CRUD library
+handles this. See [CrudCacheService](src/lib/crud/README.md#crudcacheservice) for full documentation.
+
 ## API & Documentation
+
+### Query Parsing
+
+The CRUD layer exposes a query system that converts standard URL query parameters into TypeORM database queries. This
+system is available on all list and cursor endpoints.
+
+> For the full implementation details and advanced usage,
+> see [src/lib/crud/README.md](src/lib/crud/README.md#query-system).
+
+#### Query Parameters
+
+| Parameter | Description                                                                                                                      |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------|
+| `select`  | Comma-separated field names to return (supports dot-notation for nested relations, e.g. `title,comments.content,user.username`)  |
+| `include` | Comma-separated relation names to eager-load (supports dot-notation for nested relations, e.g. `comments,user,user.profile`)     |
+| `filter`  | Filter expressions in `(field,operator,value)` format, colon-separated for multiple filters                                      |
+| `sort`    | Sort expressions in `(field,direction)` format, colon-separated for multiple columns; supports dot-notation for nested relations |
+| `limit`   | Number of results to return (default: `20`, max: `99`)                                                                           |
+| `offset`  | Number of results to skip (offset pagination only)                                                                               |
+
+#### Filter Syntax
+
+Filters use the format `(field,operator,value)`. Multiple filters are separated by colons:
+
+```
+filter=(title,eq,Hello World):(createdAt,gt,2025-01-01)
+```
+
+Array-style operators (`in`, `notin`) use a pipe separator for values:
+
+```
+filter=(id,in,id1|id2|id3)
+```
+
+For range operators (`between`, `notbetween`), a second value is implied:
+
+```
+filter=(price,between,100,500)
+```
+
+Supported filter operators: `eq`, `ne`, `like`, `ilike`, `gt`, `lt`, `gte`, `lte`, `in`, `notin`, `isnull`, `isnotnull`, 
+`between`, `notbetween`, `any`, `none`, `contains`, `containedby`.
+
+#### Examples
+
+**Basic list with field selection:**
+
+```
+GET /posts?select=title,content&limit=10
+```
+
+**Filter by field:**
+
+```
+GET /posts?filter=(title,eq,Hello)
+```
+
+**Filter with in operator:**
+
+```
+GET /posts?filter=(id,in,post_01|post_02|post_03)
+```
+
+**Sort by multiple fields:**
+
+```
+GET /posts?sort=(createdAt,DESC):(title,ASC)
+```
+
+**Nested relation selection:**
+
+```
+GET /posts?select=title,comments.content,comments.user.username&include=comments,comments.user
+```
+
+**Combined filter + sort + pagination:**
+
+```
+GET /posts?filter=(published,eq,true)&sort=(createdAt,DESC)&limit=15&offset=30
+```
 
 ### File Upload
 
@@ -317,8 +415,17 @@ See [AppController](src/modules/app/app.controller.ts) for a sample implementati
 
 ### Rate Limiting
 
-A rate limiter is configured using [@nestjs/throttler](https://github.com/nestjs/throttler).  
-It defaults to 100 requests per minute (configurable in [default.json](./config/default.json)).
+A rate limiter is configured using [@nestjs/throttler](https://github.com/nestjs/throttler).
+
+The implementation is left as the default. See [Nestjs Docs](https://docs.nestjs.com/security/rate-limiting).
+
+**Config:**
+
+| Key                    | Description                  | Default |
+|------------------------|------------------------------|---------|
+| `rateLimit.enabled`    | Enable/disable rate limiting | `true`  |
+| `rateLimit.max`        | Max requests per time window | `100`   |
+| `rateLimit.timeWindow` | Time window in seconds       | `60`    |
 
 ### Request Body Validation
 
@@ -374,6 +481,8 @@ uses [class-transformer](https://www.npmjs.com/package/class-transformer).
 
 ### Errors & Exception Handling
 
+All request exceptions are caught by [all-exceptions.filter.ts](`src/filters/all-exceptions.filter.ts`).
+
 Exceptions should be thrown using the **custom** [HttpException](src/utils/HttpException.ts) class.
 
 ```typescript
@@ -407,7 +516,14 @@ Regular errors and unhandled exceptions are also caught and returned as a 500 re
 
 Swagger documentation is automatically generated from the routes.
 
-By default it is available at http://127.0.0.1:3000/docs
+By default, it is available at http://127.0.0.1:3000/docs
+
+**Config:**
+
+| Key                | Description            | Default |
+|--------------------|------------------------|---------|
+| `swagger.enabled`  | Enable/disable Swagger | `true`  |
+| `swagger.endpoint` | Swagger UI path        | `docs`  |
 
 ## Observability
 
@@ -469,7 +585,8 @@ in [redact.ts](src/utils/redact.ts).
 
 Node's built-in `AsyncLocalStorage` is used to maintain request state via a custom `AppAlsModule`.
 
-The request ID is the trace ID if observability is enabled, otherwise it's a random string prefixed with `ctx_`. It can be accessed by injecting `AppAlsService`.
+The request ID is the trace ID if observability is enabled, otherwise it's a random string prefixed with `ctx_`. It can
+be accessed by injecting `AppAlsService`.
 
 ```typescript
 class Service {
@@ -512,9 +629,24 @@ class Controller {
 
 ### Health Check
 
-Health check endpoints are set up at `/ready` and `/live`.
+Health check endpoints are set up at `/live` and `/ready`.
 
-`/live: ok`
+#### `/live`
+
+A simple liveness check that always returns `200 OK` (provided the server is running).
+
+```json
+{
+  "message": "OK"
+}
+```
+
+#### `/ready`
+
+A readiness check that verifies connectivity to PostgreSQL and Redis. Returns `200` if all services are reachable, or
+`500` if any check fails.
+
+`/ready: ok`
 
 ```json
 {
@@ -523,11 +655,15 @@ Health check endpoints are set up at `/ready` and `/live`.
   "db": {
     "ok": true,
     "message": "Database OK"
+  },
+  "redis": {
+    "ok": true,
+    "message": "Redis OK"
   }
 }
 ```
 
-`/live: not ok`
+`/ready: not ok`
 
 ```json
 {
@@ -536,6 +672,10 @@ Health check endpoints are set up at `/ready` and `/live`.
   "db": {
     "ok": false,
     "message": "connect ECONNREFUSED 127.0.0.1:5432"
+  },
+  "redis": {
+    "ok": false,
+    "message": "connect ECONNREFUSED 127.0.0.1:6379"
   }
 }
 ```
@@ -598,21 +738,32 @@ See [Logging](#logging) for how to log.
 
 ### Unit & Integration Tests
 
-There exist unit tests for various functions, and integration tests for DB operations.
+Unit tests exercise individual functions, classes, and utilities in isolation. They are co-located alongside their source files as `*.spec.ts`.
+
+Tests use [Jest](https://jestjs.io/) with `ts-jest`.
+
+CRUD library tests (`src/lib/crud/**/*.spec.ts`) are documented separately in the [CRUD Layer docs](src/lib/crud/README.md#unit--integration-tests).
+
+Running Tests:
 
 ```bash
-npm run test
+npm run test          # Run all unit tests (Jest, verbose output)
+npm run test:watch    # Run in watch mode (re-runs on file change)
+npm run test:cov      # Run with coverage report
 ```
 
 ### End-to-End Tests
 
-A Docker container is created to run end-to-end tests. See [docker-compose-e2e.yml](./docker-compose-e2e.yml).
+CRUD layer E2E tests are documented in the [CRUD Layer docs](src/lib/crud/README.md#end-to-end-tests).
+
+Running E2E Tests:
 
 ```bash
-# e2e tests (docker)
+# Run e2e tests in Docker (isolated stack, no local deps required)
 npm run test:e2e
 
-# e2e tests (locally)
+# Run e2e tests locally (requires a running app instance)
+# Set TEST_API_HOST (default http://localhost:3000) and TEST_ADMIN_KEY to configure
 npm run test:e2e:local
 ```
 
