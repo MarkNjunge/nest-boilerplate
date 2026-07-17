@@ -21,7 +21,6 @@ import { TransactionService } from "@/lib/crud";
   ],
   providers: [DbService, TransactionService],
   exports: [
-    TypeOrmModule.forRoot(),
     TypeOrmModule.forFeature([
       User,
       UserProfile,
