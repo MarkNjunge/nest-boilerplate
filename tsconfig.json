@@ -23,6 +23,7 @@
     "src/**/*",
     "e2e-test/**/*",
     "scripts/**/*",
+    "load-test/**/*",
     "eslint.config.mjs",
     "jest.config.mjs"
   ],

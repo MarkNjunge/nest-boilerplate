@@ -9,10 +9,8 @@ function getArg(flag: string, defaultValue: string): string {
   return idx !== -1 && args[idx + 1] ? args[idx + 1] : defaultValue;
 }
 
-const jsonPath = resolve(getArg("--json", "./report.json"));
-const outputPath = resolve(getArg("--output", "./report.html"));
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
+const jsonPath = resolve(getArg("--json", "./load-test/report.json"));
+const outputPath = resolve(getArg("--output", "./load-test/report.html"));
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const templatePath = resolve(scriptDir, "template.html");
 

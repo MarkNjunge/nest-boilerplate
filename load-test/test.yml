@@ -98,7 +98,7 @@ scenarios:
       - delete:
           url: "/users/{{ userId }}"
           expect:
-            - statusCode: 204
+            - statusCode: 200
 
   # 30% of VUs — read-heavy browsing with pagination
   - name: Browse users

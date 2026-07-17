@@ -5,11 +5,10 @@ Load tests using [Artillery](https://www.artillery.io/).
 ## Running
 
 ```bash
-npm install
-npm run test:validation
+npm run load-test:validation
 ```
 
-After the test completes, an HTML report is automatically generated at `report.html`.
+After the test completes, an HTML report is automatically generated at `load-test/report.html`.
 
 ### Environment Variables
 
@@ -20,22 +19,23 @@ After the test completes, an HTML report is automatically generated at `report.h
 | `LOAD_TYPE`| `validation`             | Environment profile name |
 
 ```bash
-API_HOST=https://staging.example.com API_KEY=secret npm run test:spike
+API_HOST=https://staging.example.com API_KEY=secret npm run load-test:spike
 ```
 
 ## Scripts
 
-| Script              | Description                                                                       |
-|---------------------|-----------------------------------------------------------------------------------|
-| `test`              | Run load test (uses `LOAD_TYPE` env, default `validation`) and generates a report |
-| `test:validation`   | Quick validation run (10s, 2 req/s)                                               |
-| `test:spike`        | Spike test — ramp to 150 req/s                                                    |
-| `test:soak`         | Soak test — 10min steady state at 50 req/s                                        |
-| `test:crud-only`    | Run only the "User CRUD lifecycle" scenario                                       |
-| `test:browse-only`  | Run only the "Browse users" scenario                                              |
-| `test:search-only`  | Run only the "User search" scenario                                               |
-| `report`            | Generate `report.html` from `report.json`                                         |
-| `template:dev`      | Live-reload server for developing the report template                             |
+| Script                       | Description                                                                       |
+|------------------------------|-----------------------------------------------------------------------------------|
+| `load-test`                  | Run load test (uses `LOAD_TYPE` env, default `validation`) and generates a report |
+| `load-test:report`           | Generate `report.html` from `report.json`                                         |
+| `load-test:validation`       | Quick validation run (10s, 2 req/s)                                               |
+| `load-test:spike`            | Spike test — ramp to 150 req/s                                                    |
+| `load-test:soak`             | Soak test — 10min steady state at 50 req/s                                        |
+| `load-test:scenario`         | Run a single scenario by name (set `SCENARIO` env)                                |
+| `load-test:crud-only`        | Run only the "User CRUD lifecycle" scenario                                       |
+| `load-test:browse-only`      | Run only the "Browse users" scenario                                              |
+| `load-test:search-only`      | Run only the "User search" scenario                                               |
+| `load-test:template:dev`     | Live-reload server for developing the report template                             |
 
 ## Environments
 
@@ -103,8 +103,8 @@ After each test run, Artillery writes `report.json`. The `report` script runs `g
 ### Generating manually
 
 ```bash
-npm run report                                          # default: report.json → report.html
-npm run report -- --json custom.json --output out.html  # custom paths
+npm run load-test:report                                          # default: load-test/report.json → load-test/report.html
+npm run load-test:report -- --json custom.json --output out.html  # custom paths
 ```
 
 ### Developing the template
@@ -112,10 +112,10 @@ npm run report -- --json custom.json --output out.html  # custom paths
 The template falls back to fetching `report.json` via `fetch()` when no data is injected, so it can be served directly for development.
 
 ```bash
-npm run template:dev
+npm run load-test:template:dev
 ```
 
-This starts a live-reload server. Edit `template.html` and the browser refreshes automatically. Requires a `report.json` file in the directory (run a test first or use an existing one).
+This starts a live-reload server. Edit `load-test/template.html` and the browser refreshes automatically. Requires a `load-test/report.json` file (run a test first or use an existing one).
 
 ## Extending
 
@@ -136,18 +136,18 @@ environments:
         arrivalRate: 200
 ```
 
-2. Optionally add a convenience script to `package.json`:
+2. Optionally add a convenience script to root `package.json`:
 
 ```json
-"test:stress": "LOAD_TYPE=stress npm test"
+"load-test:stress": "cross-env LOAD_TYPE=stress npm run load-test"
 ```
 
 3. Run it:
 
 ```bash
-npm run test:stress
+npm run load-test:stress
 # or
-LOAD_TYPE=stress npm test
+cross-env LOAD_TYPE=stress npm run load-test
 ```
 
 ### Adding a scenario
@@ -188,10 +188,10 @@ Then reference it in the scenario:
         url: "/endpoint?param={{ myVar }}"
 ```
 
-3. Optionally add a script to run the scenario in isolation:
+3. Optionally add a script to run the scenario in isolation in root `package.json`:
 
 ```json
-"test:health-only": "SCENARIO='Health check' npm run test:scenario"
+"load-test:health-only": "cross-env SCENARIO='Health check' npm run load-test:scenario"
 ```
 
 ## Processor
