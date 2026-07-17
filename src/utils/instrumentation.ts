@@ -98,7 +98,7 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
     loggerProviderInstance = new LoggerProvider({
       resource,
       processors: [
-        new BatchLogRecordProcessor(logExporter)
+        new BatchLogRecordProcessor({ exporter: logExporter })
       ]
     });
     logsAPI.logs.setGlobalLoggerProvider(loggerProviderInstance);
