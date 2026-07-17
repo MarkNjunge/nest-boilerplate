@@ -15,9 +15,6 @@ export default defineConfig([
       "@stylistic/lines-between-class-members": "off",
       "@typescript-eslint/prefer-regexp-exec": "off",
       "@typescript-eslint/no-unused-vars": "off",
-      "@stylistic/operator-linebreak": ["warn", "after", {
-        overrides: { "|": "before" }
-      }],
       "@typescript-eslint/prefer-for-of": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-unsafe-function-type": "off"
