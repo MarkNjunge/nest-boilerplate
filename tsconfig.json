@@ -23,7 +23,8 @@
     "src/**/*",
     "e2e-test/**/*",
     "scripts/**/*",
-    "eslint.config.mjs"
+    "eslint.config.mjs",
+    "jest.config.mjs"
   ],
   "exclude": [
     "node_modules",

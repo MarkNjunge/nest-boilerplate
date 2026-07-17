@@ -21,9 +21,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "docker compose -f docker-compose-e2e.yml up --abort-on-container-exit --exit-code-from test",
+    "test:e2e": "docker compose -f docker-compose-e2e.yml up --no-attach redis --no-attach postgres --no-attach app --abort-on-container-exit --exit-code-from test",
     "posttest:e2e": "docker compose -f docker-compose-e2e.yml down --rmi all",
-    "test:e2e:local": "jest --verbose --config e2e-test/jest-e2e.json"
+    "test:e2e:local": "jest --verbose --config e2e-test/jest-e2e.config.mjs"
   },
   "dependencies": {
     "@fastify/helmet": "^13.1.0",
@@ -93,37 +93,5 @@
     "tsx": "^4.23.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.64.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".spec.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": [
-        "ts-jest",
-        {
-          "diagnostics": {
-            "ignoreCodes": [
-              151001
-            ]
-          }
-        }
-      ]
-    },
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "setupFiles": [
-      "../e2e-test/util/logging.ts"
-    ],
-    "moduleNameMapper": {
-      "@/(.*)": [
-        "<rootDir>/$1"
-      ]
-    },
-    "testTimeout": 30000
   }
 }
