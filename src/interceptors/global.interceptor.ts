@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Observable } from "rxjs";
-import { tap } from "rxjs/operators";
+import { map } from "rxjs/operators";
 import { Reflector } from "@nestjs/core";
 import { ClassConstructor } from "class-transformer";
 import { ResponseUtils } from "@/utils";
@@ -38,7 +38,7 @@ export class GlobalInterceptor implements NestInterceptor {
     return next
       .handle()
       .pipe(
-        tap(data => {
+        map(data => {
           // Cleanup any files uploaded
           FileHandler.deleteRequestFiles(request);
 

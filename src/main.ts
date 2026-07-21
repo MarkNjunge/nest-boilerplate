@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import "@/config/env-loader";
 import "@/utils/instrumentation";
 import { flushInstrumentation } from "@/utils/instrumentation";
