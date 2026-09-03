@@ -35,10 +35,27 @@ export class CrudService<
     if (!query || (!query.select && (!query.include || Object.keys(query.include).length === 0))) {
       return null;
     }
-    return this.list(ctx, {
-      ...query,
+    return this.refetchByIds(ctx, ids, query);
+  }
+
+  // Re-fetch entities written by an operation. The caller's pagination is dropped:
+  // writes are not paginated, so applying limit/offset here would hide rows that
+  // were actually written.
+  protected async refetchByIds(ctx: ICrudContext, ids: string[], query?: Query<Entity>): Promise<Entity[]> {
+    const rest: Query<Entity> = { ...query };
+    delete rest.limit;
+    delete rest.offset;
+
+    return this.refetchList(ctx, {
+      ...rest,
       filter: { in: [{ key: "id", value: ids as any }] }
     });
+  }
+
+  // Read used by post-write re-fetches. Overridden by caching subclasses to bypass
+  // the read cache, since the re-fetch runs before cache invalidation.
+  protected async refetchList(ctx: ICrudContext, query: Query<Entity>): Promise<Entity[]> {
+    return this.list(ctx, query);
   }
 
   async create(ctx: ICrudContext, data: Create, query?: Query<Entity>): Promise<Entity> {
@@ -105,10 +122,7 @@ export class CrudService<
       });
       const upsertRes = await this.repository.upsert(entities as any[], { conflictPaths: ["id"] });
 
-      return this.list(ctx, {
-        ...query,
-        filter: { in: [{ key: "id", value: upsertRes.identifiers.map(i => i.id) as any }] }
-      });
+      return this.refetchByIds(ctx, upsertRes.identifiers.map(i => i.id as string), query);
     });
   }
 
@@ -126,13 +140,13 @@ export class CrudService<
       }
       await this.repository.update(whereClause, updateData);
 
-      const refetched = await this.refetchWithQuery(ctx, [id], query);
-      return refetched?.[0] ?? await this.getById(ctx, id);
+      const refetched = await this.refetchByIds(ctx, [id], query);
+      return refetched[0] ?? null;
     });
   }
 
   async updateIndexed(ctx: ICrudContext, filter: Filter<Entity>, data: Update, query?: Query<Entity>, options?: { silent?: boolean }): Promise<Entity[]> {
-    return this.track("updateIndexed", { filter: data }, async () => {
+    return this.track("updateIndexed", { filter, data }, async () => {
       const userId = this.getUserId(ctx);
       let filterConditions = parseFilter(filter);
       if (userId) {
@@ -147,10 +161,7 @@ export class CrudService<
       const updateRes = await this.repository.update(filterConditions, updateData, { returning: ["id"] });
 
       const ids: string[] = updateRes.raw.map((r: Partial<Entity>) => r.id);
-      return this.list(ctx, {
-        ...query,
-        filter: { in: [{ key: "id", value: ids as any }] }
-      });
+      return this.refetchByIds(ctx, ids, query);
     });
   }
 

@@ -147,6 +147,15 @@ export abstract class CrudCacheService<
     return result;
   }
 
+  /**
+   * Post-write re-fetches must not read through the cache: they run before
+   * invalidateCache, so a cached entry under the current generation would return
+   * pre-write rows.
+   */
+  protected async refetchList(ctx: ICrudContext, query: Query<Entity>): Promise<Entity[]> {
+    return super.list(ctx, query);
+  }
+
   async create(ctx: ICrudContext, data: Create, query?: Query<Entity>): Promise<Entity> {
     const result = await super.create(ctx, data, query);
     await this.invalidateCache(ctx);

@@ -235,6 +235,22 @@ describe("CrudCacheService", () => {
   });
 
   describe("invalidation", () => {
+    it("write results are read past the cache, not from it", async () => {
+      const created = await service.create(ctx, { username: "john", email: "john@example.com" });
+
+      await service.getById(ctx, created.id); // populate the per-id cache with the pre-write row
+
+      const updated = await service.update(ctx, created.id, { username: "john_updated" });
+      expect(updated?.username).toBe("john_updated");
+
+      const [reIndexed] = await service.updateIndexed(
+        ctx,
+        { eq: [{ key: "id", value: created.id }] },
+        { username: "john_reindexed" }
+      );
+      expect(reIndexed.username).toBe("john_reindexed");
+    });
+
     it("increments the generation key on create", async () => {
       const genKey = service.genKey(ctx);
       expect(await cacheService.get(genKey)).toBeNull();
@@ -296,6 +312,28 @@ describe("CrudCacheService", () => {
 
       expect(await cacheService.getJSON(service.idKey(ctx, a.id))).toBeNull();
       expect(await cacheService.getJSON(service.idKey(ctx, b.id))).toBeNull();
+    });
+
+    it("deletes per-id caches for every row updated by updateIndexed", async () => {
+      const created = await service.createBulk(ctx, Array.from({ length: 25 }, (_, i) => ({
+        username: `u${i}`,
+        email: `u${i}@a.com`
+      })));
+
+      await Promise.all(created.map(u => service.getById(ctx, u.id)));
+
+      // A controller-shaped query must not limit which per-id caches get invalidated.
+      await service.updateIndexed(
+        ctx,
+        { like: [{ key: "email", value: "%@a.com" }] },
+        { username: "updated" },
+        { limit: 20 }
+      );
+
+      const remaining = await Promise.all(
+        created.map(u => cacheService.getJSON(service.idKey(ctx, u.id)))
+      );
+      expect(remaining.every(v => v === null)).toBe(true);
     });
 
     it("deletes per-id caches on deleteIndexed", async () => {

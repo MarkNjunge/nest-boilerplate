@@ -142,6 +142,17 @@ describe("CRUD Service", () => {
       const count = await userRepository.count();
       expect(count).toBe(2);
     });
+
+    it("returns every upserted row, ignoring the query's pagination", async () => {
+      const data = Array.from({ length: 25 }, (_, i) => ({
+        username: `u${i}`,
+        email: `u${i}@a.com`
+      }));
+
+      const result = await service.upsertBulk(ctx, data, { limit: 20, offset: 10 });
+
+      expect(result).toHaveLength(25);
+    });
   });
 
   describe("update", () => {
@@ -200,6 +211,24 @@ describe("CRUD Service", () => {
       expect(allUsers[0].username).toBe("bob"); // bob@b.com unchanged
       expect(allUsers[1].username).toBe("updated"); // jane@a.com
       expect(allUsers[2].username).toBe("updated"); // john@a.com
+    });
+
+    it("returns every updated row, ignoring the query's pagination", async () => {
+      await service.createBulk(ctx, Array.from({ length: 25 }, (_, i) => ({
+        username: `u${i}`,
+        email: `u${i}@a.com`
+      })));
+
+      // Controllers always supply a limit (DEFAULT_ROW_LIMIT when the client omits one).
+      // The update itself is not paginated, so neither is its result.
+      const result = await service.updateIndexed(ctx,
+        { like: [{ key: "email", value: "%@a.com" }] },
+        { username: "updated" },
+        { limit: 20, offset: 10 }
+      );
+
+      expect(result.length).toBe(25);
+      expect(await userRepository.countBy({ username: "updated" })).toBe(25);
     });
 
     it("does nothing when no matches found", async () => {
