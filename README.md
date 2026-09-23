@@ -723,6 +723,8 @@ See [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentat
 metrics.
 
 ```typescript
+import opentelemetry from "@opentelemetry/api";
+
 const meter = opentelemetry.metrics.getMeter("UserService");
 const getUserCounter = this.meter.createCounter("get_user");
 getUserCounter.add(1, { user_id: id });
