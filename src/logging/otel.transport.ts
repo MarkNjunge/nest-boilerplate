@@ -2,6 +2,7 @@ import Transport from "winston-transport";
 import * as logsAPI from "@opentelemetry/api-logs";
 import { SeverityNumber } from "@opentelemetry/api-logs";
 import { Config } from "@/config";
+import { TRACE_CONTEXT } from "@/logging/Logger";
 
 const npmLevels: Record<string, number> = {
   error: SeverityNumber.ERROR,
@@ -88,16 +89,19 @@ export class OtelTransport extends Transport {
         }
       }
     }
+    // Pass the Context captured synchronously at the log call site explicitly,
+    // instead of letting emit() fall back to context.active() - by flush time
+    // (winston queues under load) that ambient context may belong to a
+    // different, currently-active request.
+    const capturedContext = info[TRACE_CONTEXT];
+
     this.logger.emit({
       body: info.message,
       severityNumber: getSeverityNumber(info.level),
       severityText: info.level,
-      attributes: {
-        ...attributes,
-        // trace_id is not reliable under load, whereas traceId is
-        trace_id: attributes.traceId,
-      },
-      timestamp: new Date(info.timestamp)
+      attributes,
+      timestamp: new Date(info.timestamp),
+      ...(capturedContext ? { context: capturedContext } : {}),
     });
   }
 }

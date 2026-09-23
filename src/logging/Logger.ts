@@ -10,6 +10,12 @@ import { appAls, ALS_REQ_TIME, ALS_AUTH_USER } from "@/als/app-als.service";
 import opentelemetry from "@opentelemetry/api";
 import { AuthenticatedUser } from "@/models/auth/auth";
 
+// Carries the OTel Context captured synchronously at the log call site through
+// winston's buffered/queued pipeline, so the OtelTransport can pass it explicitly
+// to Logger.emit() instead of relying on context.active() at flush time (which,
+// under load, may run in a different request's async context).
+export const TRACE_CONTEXT = Symbol.for("app.logging.traceContext");
+
 export class ILogMeta {
   // A tag indicating what this error relates to. Usually based on the stack.
   tag?: string;
@@ -98,7 +104,13 @@ export class Logger {
 
   private getLogObject(message: string, meta: ILogMeta): LogObject {
     const tag = meta.tag ?? this.name;
-    const activeSpan = opentelemetry.trace.getActiveSpan();
+    // Captured synchronously, in the same call stack as the code that triggered
+    // this log - the only place guaranteed to have the correct, per-request
+    // context. Do not read context.active() again later (e.g. in a transport);
+    // by the time a buffered/queued logger like winston flushes, the ambient
+    // context may belong to a different request.
+    const activeContext = opentelemetry.context.active();
+    const activeSpan = opentelemetry.trace.getSpan(activeContext);
     const traceId = meta.traceId ?? appAls.getStore()?.id ?? activeSpan?.spanContext().traceId ?? "00000";
     const user = appAls.getStore()?.[ALS_AUTH_USER];
     const obj: LogObject = {
@@ -111,7 +123,9 @@ export class Logger {
       }),
     };
 
-    return redact(obj);
+    const redacted = redact(obj) as LogObject;
+    (redacted as unknown as Record<symbol, unknown>)[TRACE_CONTEXT] = activeContext;
+    return redacted;
   }
 }
 

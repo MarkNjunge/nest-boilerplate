@@ -62,12 +62,15 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
             return httpUrlIgnore.length > 0 ? httpUrlIgnoreRx.test(request.url!) : false;
           }
         },
-        "@opentelemetry/instrumentation-winston": {
-          // Doesn't work. The logger sets it manually.
-          disableLogCorrelation: false,
-          // Doesn't work even if false.
-          disableLogSending: true,
-        },
+        // Log correlation is handled manually by capturing the active Context
+        // at the log call site (src/logging/Logger.ts) and passing it explicitly
+        // to Logger.emit() (src/logging/otel.transport.ts). This instrumentation's
+        // own correlation patches Logger.prototype.write and reads context.active()
+        // at winston's internal flush time, which is unreliable under load since
+        // winston's write queue can back up and flush later, in a different
+        // request's async context. Log sending is also handled manually via
+        // OtelTransport, so this instrumentation has nothing correct left to do.
+        "@opentelemetry/instrumentation-winston": { enabled: false },
         "@opentelemetry/instrumentation-pg": { enabled: true },
         "@opentelemetry/instrumentation-dns": { enabled: false },
         "@opentelemetry/instrumentation-net": { enabled: false }
