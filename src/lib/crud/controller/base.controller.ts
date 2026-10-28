@@ -2,6 +2,7 @@ import { BaseService } from "@/lib/crud/service/base.service";
 import { ObjectLiteral } from "typeorm";
 import {
   Get,
+  NotFoundException,
   Param,
   Query,
   SetMetadata,
@@ -24,7 +25,6 @@ import {
   FilteredRawQuery
 } from "@/lib/crud/query";
 import { CursorPaginationResult, PageInfo } from "@/lib/crud/query";
-import { HttpException } from "@/utils";
 import { ReqCtx } from "@/decorators/request-context.decorator";
 import { ICrudContext } from "@/lib/crud/utils/context";
 import { AuthGuard } from "@/guards/auth.guard";
@@ -94,7 +94,7 @@ export function BaseController<
     async get(@ReqCtx() ctx: ICrudContext, @Query() query: FilteredRawQuery): Promise<Entity | null> {
       const result = await this.service.get(ctx, parseRawQuery(query));
       if (!result) {
-        throw new HttpException(404, "Entity not found");
+        throw new NotFoundException("Entity not found");
       }
       return result;
     }
@@ -127,7 +127,7 @@ export function BaseController<
     ): Promise<Entity | null> {
       const result = await this.service.getById(ctx, id, parseRawQuery(query));
       if (!result) {
-        throw new HttpException(404, `Entity ${id} not found`);
+        throw new NotFoundException(`Entity ${id} not found`);
       }
       return result;
     }

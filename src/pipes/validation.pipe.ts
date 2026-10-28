@@ -1,8 +1,8 @@
-import { PipeTransform, Injectable, ArgumentMetadata } from "@nestjs/common";
+import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from "@nestjs/common";
 import { validate, ValidationError } from "class-validator";
 import { plainToInstance } from "class-transformer";
 import { config } from "@/config";
-import { ErrorCodes, HttpException } from "@/utils";
+import { ErrorCodes } from "@/utils";
 import {
   BaseRawQuery,
   CursorRawQuery,
@@ -33,11 +33,9 @@ export class ValidationPipe implements PipeTransform {
     }
 
     const errorProperties = validationErrors.map(e => e.property).join(",");
-    throw new HttpException(
-      400,
-      `Validation errors with properties [${errorProperties}]`,
-      ErrorCodes.VALIDATION_ERROR,
-      validationErrors,
+    throw new BadRequestException(
+      { message: `Validation errors with properties [${errorProperties}]`, meta: validationErrors },
+      { errorCode: ErrorCodes.VALIDATION_ERROR },
     );
   }
 
@@ -57,7 +55,7 @@ export class ValidationPipe implements PipeTransform {
 
     // Incorrect Content-Type header was set, resulting in the data not being parsed
     if (typeof value != "object") {
-      throw new HttpException(400, "Invalid content type", ErrorCodes.CLIENT_ERROR);
+      throw new BadRequestException("Invalid content type", { errorCode: ErrorCodes.CLIENT_ERROR });
     }
 
     if (Array.isArray(value)) {

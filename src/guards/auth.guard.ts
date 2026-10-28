@@ -1,10 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { FastifyRequest } from "fastify";
 import { AuthValidator, AuthModes, AUTH_MODE_KEY } from "@/guards/auth.validator";
 import { AppAlsService, ALS_AUTH_USER, ALS_AUTH_ADMIN } from "@/als/app-als.service";
 import { AuthenticatedUser } from "@/models/auth/auth";
-import { ErrorCodes, HttpException } from "@/utils";
+import { ErrorCodes } from "@/utils";
 import { SKIP_AUTH_KEY } from "@/guards/skip-auth.decorator";
 
 @Injectable()
@@ -36,11 +36,7 @@ export class AuthGuard implements CanActivate {
     const token = match ? match[1] : null;
 
     if (!token) {
-      throw new HttpException(
-        401,
-        "Missing authentication",
-        ErrorCodes.MISSING_AUTHENTICATION,
-      );
+      throw new UnauthorizedException("Missing authentication", { errorCode: ErrorCodes.MISSING_AUTHENTICATION });
     }
 
     let valid: boolean;
@@ -57,11 +53,7 @@ export class AuthGuard implements CanActivate {
     }
 
     if (!valid) {
-      throw new HttpException(
-        401,
-        "Invalid authentication",
-        ErrorCodes.INVALID_AUTHENTICATION,
-      );
+      throw new UnauthorizedException("Invalid authentication", { errorCode: ErrorCodes.INVALID_AUTHENTICATION });
     }
 
     if (user != null) {

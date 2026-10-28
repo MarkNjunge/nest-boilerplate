@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import { ExceptionFilter, Catch, ArgumentsHost } from "@nestjs/common";
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Logger } from "@/logging/Logger";
 import { ApiErrorDto } from "@/models/_shared/ApiError.dto";
-import { ErrorCodes, getErrorCode, HttpException, parseStacktrace } from "@/utils";
+import { ErrorCodes, getErrorCode, parseStacktrace } from "@/utils";
 import { FileHandler } from "@/utils/file-handler";
 import { AppAlsService } from "@/als/app-als.service";
 import { QueryFailedError } from "typeorm";
@@ -19,7 +18,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     this.logger = new Logger("HttpExceptionFilter");
   }
 
-  catch(e: HttpException | Error, host: ArgumentsHost): void {
+  catch(e: Error, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();
@@ -48,13 +47,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    // Get the correct http status
-    const httpE = e as HttpException;
-    const { status, code, meta } = {
-      status: httpE.status ?? 500,
-      code: httpE.code ?? getErrorCode(httpE.status ?? 500),
-      meta: httpE.meta ?? undefined,
-    };
+    const { status, code, meta } = AllExceptionsFilter.getErrorDetails(e);
     response.statusCode = status;
 
     const traceId = this.alsService.getId();
@@ -74,5 +67,29 @@ export class AllExceptionsFilter implements ExceptionFilter {
     this.logger.logRoute(request, response, { ...apiError });
 
     void response.status(status).send(apiError);
+  }
+
+  /**
+   * Nest exceptions carry the status, an optional `errorCode`, and an optional `meta` in their response object.
+   * Other errors may set `status`, `code` and `meta` directly.
+   */
+  static getErrorDetails(e: Error): { status: number; code: string; meta?: any } {
+    if (e instanceof HttpException) {
+      const status = e.getStatus();
+      const body = e.getResponse();
+      return {
+        status,
+        code: e.errorCode ?? getErrorCode(status),
+        meta: typeof body === "object" ? (body as { meta?: any }).meta : undefined,
+      };
+    }
+
+    const err = e as Error & { status?: number; code?: string; meta?: any };
+    const status = err.status ?? 500;
+    return {
+      status,
+      code: err.code ?? getErrorCode(status),
+      meta: err.meta,
+    };
   }
 }

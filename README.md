@@ -483,10 +483,24 @@ uses [class-transformer](https://www.npmjs.com/package/class-transformer).
 
 All request exceptions are caught by [all-exceptions.filter.ts](`src/filters/all-exceptions.filter.ts`).
 
-Exceptions should be thrown using the **custom** [HttpException](src/utils/HttpException.ts) class.
+Throw NestJS's built-in exceptions (`NotFoundException`, `BadRequestException`, etc., or `HttpException` for other
+statuses). Set a stable error code with the `errorCode` option, using a value from
+[ErrorCodes](src/utils/error-codes.ts).
 
 ```typescript
-throw new HttpException(404, `User ${1} was not found`, ErrorCodes.INVALID_USER, { id: 1 });
+import { NotFoundException } from "@nestjs/common";
+import { ErrorCodes } from "@/utils";
+
+throw new NotFoundException("User 1 was not found", { errorCode: ErrorCodes.INVALID_USER });
+```
+
+To include extra details in `meta`, pass an object with `message` and `meta` as the first argument:
+
+```typescript
+throw new NotFoundException(
+  { message: "User 1 was not found", meta: { id: 1 } },
+  { errorCode: ErrorCodes.INVALID_USER },
+);
 ```
 
 ```json
@@ -500,6 +514,10 @@ throw new HttpException(404, `User ${1} was not found`, ErrorCodes.INVALID_USER,
   }
 }
 ```
+
+If `errorCode` is omitted, the code is derived from the status (e.g. `404` → `NotFound`, `401` →
+`InvalidAuthentication`, other `4xx` → `ClientError`). This also applies to exceptions thrown by NestJS itself, such as
+unknown routes or rate limiting.
 
 Regular errors and unhandled exceptions are also caught and returned as a 500 response.
 

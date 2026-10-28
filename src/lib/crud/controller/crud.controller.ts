@@ -1,9 +1,11 @@
 import { CrudService } from "@/lib/crud/service/crud.service";
 import { DeepPartial } from "typeorm";
 import {
+  BadRequestException,
   Body,
   Delete,
   HttpCode,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -28,7 +30,7 @@ import {
 } from "@/lib/crud/query";
 import { AuthGuard } from "@/guards/auth.guard";
 import { AUTH_MODE_KEY } from "@/guards/auth.validator";
-import { ErrorCodes, HttpException } from "@/utils";
+import { ErrorCodes } from "@/utils";
 import {
   BaseController,
   BaseRouteNames,
@@ -128,7 +130,7 @@ export function CrudController<
       @Body() dto: Update
     ): Promise<Entity[]> {
       if (!query.filter) {
-        throw new HttpException(400, "filter query is required", ErrorCodes.CLIENT_ERROR);
+        throw new BadRequestException("filter query is required", { errorCode: ErrorCodes.CLIENT_ERROR });
       }
 
       return this.service.updateIndexed(ctx, parseRawFilter(query.filter), dto, parseRawQuery(query));
@@ -147,7 +149,7 @@ export function CrudController<
     ): Promise<Entity> {
       const result = await this.service.update(ctx, id, dto, parseRawQuery(query));
       if (!result) {
-        throw new HttpException(404, `Entity ${id} not found`);
+        throw new NotFoundException(`Entity ${id} not found`);
       }
       return result;
     }
@@ -158,7 +160,7 @@ export function CrudController<
     @ApiResponse({ status: 200, type: DeletedDto })
     async deleteIndexed(@ReqCtx() ctx: ICrudContext, @Query() query: FilteredOnlyRawQuery,): Promise<DeletedDto> {
       if (!query.filter) {
-        throw new HttpException(400, "filter query is required", ErrorCodes.CLIENT_ERROR);
+        throw new BadRequestException("filter query is required", { errorCode: ErrorCodes.CLIENT_ERROR });
       }
 
       const affected = await this.service.deleteIndexed(ctx, parseRawFilter(query.filter));

@@ -4,7 +4,7 @@ import * as os from "os";
 import * as fs from "fs";
 import { UploadedFileDto } from "@/models/_shared/uploaded-file.dto";
 import { FastifyRequest } from "fastify";
-import { HttpException } from "@/utils/HttpException";
+import { PayloadTooLargeException } from "@nestjs/common";
 import { ErrorCodes } from "@/utils/error-codes";
 import { config } from "@/config";
 import * as util from "util";
@@ -38,7 +38,7 @@ export class FileHandler {
 
     if (truncated) {
       fs.unlinkSync(filepath);
-      throw new HttpException(413, `${part.fieldname} is too big`, ErrorCodes.FILE_TOO_LARGE);
+      throw new PayloadTooLargeException(`${part.fieldname} is too big`, { errorCode: ErrorCodes.FILE_TOO_LARGE });
     }
 
     return {

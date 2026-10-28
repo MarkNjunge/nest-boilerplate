@@ -53,7 +53,7 @@ src/
 ├── logging/                   # Winston logger
 ├── als/                       # Request context (trace IDs)
 ├── config/                    # Config loading and secrets manager
-└── utils/                     # HttpException, error codes, helpers
+└── utils/                     # Error codes, helpers
 
 config/
 ├── default.json                      # Default config values
@@ -204,7 +204,7 @@ async update(ctx: IReqCtx, id: string, dto: UrlUpdateDto): Promise<Url | null> {
   // Verify ownership / existence
   const existing = await this.getById(ctx, id);
   if (!existing) {
-    throw new HttpException(404, "Not found", ErrorCodes.LINK_NOT_FOUND);
+    throw new NotFoundException("Not found", { errorCode: ErrorCodes.LINK_NOT_FOUND });
   }
 
   // Custom business validation
@@ -306,7 +306,7 @@ async togglePremium(ctx: IReqCtx): Promise<TogglePremiumResponseDto> {
 // ❌ DON'T — redundant check
 const userId = ctx.user?.userId;
 if (!userId) {
-  throw new HttpException(401, "Not authenticated", ErrorCodes.MISSING_AUTHENTICATION);
+  throw new UnauthorizedException("Not authenticated", { errorCode: ErrorCodes.MISSING_AUTHENTICATION });
 }
 ```
 
@@ -373,14 +373,20 @@ methods, and the service passes the internal DTO to CRUD methods as needed.
 
 ### Error Handling
 
-Throw the custom HttpException class.
+Throw NestJS's built-in exceptions (`NotFoundException`, `BadRequestException`, `UnauthorizedException`, etc., or
+`HttpException` for other statuses) with an `errorCode` from `ErrorCodes`. To add `meta`, pass `{ message, meta }` as
+the first argument.
 
 ```typescript
-import { HttpException } from "@/utils/HttpException";
+import { NotFoundException } from "@nestjs/common";
 import { ErrorCodes } from "@/utils/error-codes";
 
-throw new HttpException(404, "User not found", ErrorCodes.INVALID_USER, { id });
+throw new NotFoundException("User not found", { errorCode: ErrorCodes.INVALID_USER });
+throw new NotFoundException({ message: "User not found", meta: { id } }, { errorCode: ErrorCodes.INVALID_USER });
 ```
+
+`AllExceptionsFilter` maps these to the standard error response (`status`, `message`, `code`, `traceId`, `meta`).
+When `errorCode` is omitted, the code is derived from the status.
 
 ### Logging
 
@@ -402,7 +408,7 @@ logger.info("Message", { data: { key: "value" } });
 
 1. **Don't use Express-specific code** — This uses Fastify, not Express
 2. **Always generate migrations** — Don't rely on `synchronize: true`
-3. **Use the custom HttpException** — Not the NestJS one, for consistent error format
+3. **Use NestJS exceptions with `errorCode`** — e.g. `new NotFoundException(msg, { errorCode: ErrorCodes.X })`; put extra details in `{ message, meta }`, not in the message string
 4. **Import from `@/`** — Use path aliases, not relative paths like `../../`
 5. **Add entities to DbModule** — New entities must be added to `src/modules/_db/db.module.ts`
 6. **Implement `idPrefix()`** — Required for all entities extending BaseEntity

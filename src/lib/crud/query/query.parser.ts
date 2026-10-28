@@ -1,4 +1,5 @@
-import { ErrorCodes, HttpException } from "@/utils";
+import { BadRequestException } from "@nestjs/common";
+import { ErrorCodes } from "@/utils";
 import { DEFAULT_ROW_LIMIT, MAX_ROW_LIMIT } from "@/lib/crud/utils/crud-consts";
 import { Filter, FilterOp, KeyValuePair, Query, Sort } from "@/lib/crud/query/query.type";
 import { CursorRawQuery, ListRawQuery } from "@/lib/crud/query/query.dto";
@@ -123,7 +124,7 @@ export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = 
     if (listQuery.offset) {
       query.offset = parseInt(listQuery.offset);
       if (Number.isNaN(query.offset)) {
-        throw new HttpException(400, `${listQuery.offset} is not a valid number`, ErrorCodes.CLIENT_ERROR);
+        throw new BadRequestException(`${listQuery.offset} is not a valid number`, { errorCode: ErrorCodes.CLIENT_ERROR });
       }
     }
   }
@@ -131,13 +132,13 @@ export function parseRawQuery(rawQuery: ListRawQuery | CursorRawQuery, cursor = 
   if (rawQuery.limit) {
     query.limit = parseInt(rawQuery.limit);
     if (Number.isNaN(query.limit)) {
-      throw new HttpException(400, `${rawQuery.limit} is not a valid number`, ErrorCodes.CLIENT_ERROR);
+      throw new BadRequestException(`${rawQuery.limit} is not a valid number`, { errorCode: ErrorCodes.CLIENT_ERROR });
     }
   } else {
     query.limit = DEFAULT_ROW_LIMIT;
   }
   if (query.limit > MAX_ROW_LIMIT) {
-    throw new HttpException(400, `Max query limit exceeded: ${query.limit} vs ${MAX_ROW_LIMIT}`, ErrorCodes.CLIENT_ERROR);
+    throw new BadRequestException(`Max query limit exceeded: ${query.limit} vs ${MAX_ROW_LIMIT}`, { errorCode: ErrorCodes.CLIENT_ERROR });
   }
 
   // Cursor fields are only used for cursor-based pagination

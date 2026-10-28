@@ -5,7 +5,8 @@ import { Query } from "@/lib/crud/query";
 import { CursorPaginationResult } from "@/lib/crud/query";
 import { Logger } from "@/logging/Logger";
 import opentelemetry, { Counter, Histogram } from "@opentelemetry/api";
-import { ErrorCodes, HttpException } from "@/utils";
+import { BadRequestException } from "@nestjs/common";
+import { ErrorCodes } from "@/utils";
 import { snakeCase } from "@/lib/crud/utils/snake-case";
 import { ICrudContext } from "@/lib/crud/utils/context";
 import { DEFAULT_ROW_LIMIT } from "@/lib/crud/utils/crud-consts";
@@ -135,7 +136,7 @@ export class BaseService<
       const { after, before, limit = DEFAULT_ROW_LIMIT, sortField = "id", sortDir = "ASC", ...restQuery } = query;
 
       if (after && before) {
-        throw new HttpException(400, "Cannot use both 'after' and 'before' cursors", ErrorCodes.CLIENT_ERROR);
+        throw new BadRequestException("Cannot use both 'after' and 'before' cursors", { errorCode: ErrorCodes.CLIENT_ERROR });
       }
 
       // id is required for proper pagination
