@@ -716,7 +716,7 @@ the [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentat
 HTTP metrics are automatically collected by `@opentelemetry/instrumentation-http`.
 
 ```
-sum by(http_route) (rate(nb_http_server_duration_milliseconds_count[1m]))
+sum by(http_route) (rate(nb_http_server_request_duration_seconds_count[1m]))
 ```
 
 See [OpenTelemetry docs](https://opentelemetry.io/docs/languages/js/instrumentation/#metrics) for how to create custom

@@ -1,6 +1,5 @@
 import Transport from "winston-transport";
-import * as logsAPI from "@opentelemetry/api-logs";
-import { SeverityNumber } from "@opentelemetry/api-logs";
+import { logs, Logger as OtelLogger, SeverityNumber } from "@opentelemetry/api";
 import { Config } from "@/config";
 import { TRACE_CONTEXT } from "@/logging/Logger";
 
@@ -48,12 +47,12 @@ function getSeverityNumber(level: string): SeverityNumber | undefined {
  */
 export class OtelTransport extends Transport {
 
-  private logger: logsAPI.Logger;
+  private logger: OtelLogger;
 
 
   constructor(protected readonly config: Config) {
     super({});
-    this.logger = logsAPI.logs.getLogger(config.appName);
+    this.logger = logs.getLogger(config.appName);
   }
 
   log(info: any, callback: () => void): void {

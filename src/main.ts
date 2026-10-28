@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import "@/config/env-loader";
 import "@/utils/instrumentation";
-import { flushInstrumentation } from "@/utils/instrumentation";
+import { flushInstrumentation, setHttpRouteHook } from "@/utils/instrumentation";
 import { config, bool, initializeConfig } from "./config";
 import { NestFactory, Reflector } from "@nestjs/core";
 import { Logger, initializeWinston } from "./logging/Logger";
@@ -48,6 +48,7 @@ async function bootstrap(): Promise<void> {
     },
   );
 
+  app.getHttpAdapter().getInstance().addHook("onRequest", setHttpRouteHook);
   await enablePlugins(app);
   initializeSwagger(app);
 

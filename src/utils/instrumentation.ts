@@ -1,22 +1,22 @@
 import { NodeSDK, NodeSDKConfiguration } from "@opentelemetry/sdk-node";
-import { diag, DiagConsoleLogger, DiagLogLevel, trace } from "@opentelemetry/api";
+import { context, diag, DiagConsoleLogger, DiagLogLevel, trace } from "@opentelemetry/api";
+import { getRPCMetadata, RPCType } from "@opentelemetry/core";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
-import { BatchLogRecordProcessor, LoggerProvider } from "@opentelemetry/sdk-logs";
-import * as logsAPI from "@opentelemetry/api-logs";
+import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { config } from "@/config";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
-import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace-node";
-import { resourceFromAttributes } from "@opentelemetry/resources";
+import { TraceIdRatioBasedSampler } from "@opentelemetry/sdk-trace";
+import { envDetector, hostDetector, resourceFromAttributes } from "@opentelemetry/resources";
+import { FastifyRequest } from "fastify";
 import { Logger } from "@/logging/Logger";
 
 const logger = new Logger("Instrumentation");
 
 let sdkInstance: NodeSDK | null = null;
-let loggerProviderInstance: LoggerProvider | null = null;
 
 function initInstrumentation() {
   if (config.instrumentation.enabled.toString() === "true") {
@@ -47,6 +47,9 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   const configuration: Partial<NodeSDKConfiguration> = {
     sampler: new TraceIdRatioBasedSampler(config.instrumentation.sampleRatio),
     resource,
+    // Defaults are env, process and host. process.* is left out to keep high-cardinality
+    // attributes (pid, command args) off every signal.
+    resourceDetectors: [envDetector, hostDetector],
     instrumentations: [
       getNodeAutoInstrumentations({
         "@opentelemetry/instrumentation-fs": { enabled: false },
@@ -96,15 +99,13 @@ function init(signals: { tracing: boolean; metrics: boolean; logs: boolean }) {
   }
 
   // Logs
+  // NodeSDK creates and registers the global LoggerProvider itself
   if (signals.logs) {
-    const logExporter = new OTLPLogExporter({ url: config.instrumentation.logs.url });
-    loggerProviderInstance = new LoggerProvider({
-      resource,
-      processors: [
-        new BatchLogRecordProcessor({ exporter: logExporter })
-      ]
-    });
-    logsAPI.logs.setGlobalLoggerProvider(loggerProviderInstance);
+    configuration.logRecordProcessors = [
+      new BatchLogRecordProcessor({
+        exporter: new OTLPLogExporter({ url: config.instrumentation.logs.url })
+      })
+    ];
   }
 
   sdkInstance = new NodeSDK(configuration);
@@ -119,8 +120,18 @@ export async function flushInstrumentation() {
   if (sdkInstance) {
     await sdkInstance.shutdown();
   }
+}
 
-  if (loggerProviderInstance) {
-    await loggerProviderInstance.forceFlush();
+/**
+ * Fastify onRequest hook that sets the matched route template (e.g. /users/:id) on the
+ * request's HTTP server span. instrumentation-http reads it when the response finishes
+ * and uses it for the span name and the http.route span/metric attribute.
+ */
+export function setHttpRouteHook(request: FastifyRequest, _reply: unknown, done: () => void): void {
+  const route = request.routeOptions.url;
+  const rpcMetadata = getRPCMetadata(context.active());
+  if (route && rpcMetadata?.type === RPCType.HTTP) {
+    rpcMetadata.route = route;
   }
+  done();
 }
