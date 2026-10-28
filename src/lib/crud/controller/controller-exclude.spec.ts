@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/dot-notation, @typescript-eslint/unbound-method */
+import { describe, expect, it } from "vitest";
 import "reflect-metadata";
 import { BaseController, BaseRouteNames } from "@/lib/crud/controller/base.controller";
 import { CrudController, CrudRouteNames } from "@/lib/crud/controller/crud.controller";

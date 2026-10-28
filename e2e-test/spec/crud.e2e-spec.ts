@@ -1,3 +1,4 @@
+import { beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
 import { testApiHost, testAdminKey, randomString } from "../util";
 

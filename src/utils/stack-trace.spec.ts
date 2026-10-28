@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { parseStacktrace } from "./stack-trace";
 
 describe("stack-trace", () => {

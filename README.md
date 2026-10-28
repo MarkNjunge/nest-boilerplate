@@ -760,14 +760,15 @@ See [Logging](#logging) for how to log.
 
 Unit tests exercise individual functions, classes, and utilities in isolation. They are co-located alongside their source files as `*.spec.ts`.
 
-Tests use [Jest](https://jestjs.io/) with `ts-jest`.
+Unit tests use [Vitest](https://vitest.dev/), with SWC for decorator metadata (see [vitest.config.mts](./vitest.config.mts)).
+Import test functions explicitly (`import { describe, expect, it, vi } from "vitest";`). E2E tests use Vitest too, with [e2e-test/vitest-e2e.config.mts](./e2e-test/vitest-e2e.config.mts).
 
 CRUD library tests (`src/lib/crud/**/*.spec.ts`) are documented separately in the [CRUD Layer docs](src/lib/crud/README.md#unit--integration-tests).
 
 Running Tests:
 
 ```bash
-npm run test          # Run all unit tests (Jest, verbose output)
+npm run test          # Run all unit tests (Vitest, verbose output)
 npm run test:watch    # Run in watch mode (re-runs on file change)
 npm run test:cov      # Run with coverage report
 ```

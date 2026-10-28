@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { validateFilter, validateSort } from "@/lib/crud/query";
 
 describe("Query Validator", () => {

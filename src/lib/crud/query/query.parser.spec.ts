@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { parseRawQuery, parseRawSort, Query, RawQuery } from "@/lib/crud/query";
 
 describe("Query", () => {

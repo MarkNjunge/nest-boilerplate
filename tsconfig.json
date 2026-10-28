@@ -17,7 +17,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": [
     "src/**/*",
@@ -25,7 +25,8 @@
     "scripts/**/*",
     "load-test/**/*",
     "eslint.config.mjs",
-    "jest.config.mjs"
+    "vitest.config.mts",
+    "e2e-test/vitest-e2e.config.mts"
   ],
   "exclude": [
     "node_modules",

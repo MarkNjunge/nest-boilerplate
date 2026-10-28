@@ -401,7 +401,8 @@ logger.info("Message", { data: { key: "value" } });
 
 - Unit tests live alongside source files as `*.spec.ts`
 - Use `@testcontainers/postgresql` for integration tests requiring a database
-- Mock dependencies using Jest's `jest.mock()`
+- Unit tests use Vitest: import `describe`, `it`, `expect`, `vi` from `"vitest"`
+- Mock dependencies using `vi.mock()` / `vi.spyOn()`
 - E2E tests live in `e2e-test/app.e2e-spec.ts`
 
 ## Pitfalls to Avoid

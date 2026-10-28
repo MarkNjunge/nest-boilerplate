@@ -771,7 +771,7 @@ GET /posts/cursor?select=title,content&filter=(published,eq,true)&sortField=crea
 ### Unit & Integration Tests
 
 The CRUD library includes an exhaustive test suite covering every component in isolation and in combination. Tests are 
-co-located with source files as `*.spec.ts` and use Jest with [testcontainers](https://testcontainers.com/) for PostgreSQL-backed integration scenarios.
+co-located with source files as `*.spec.ts` and use Vitest with [testcontainers](https://testcontainers.com/) for PostgreSQL-backed integration scenarios.
 
 Key test areas:
 

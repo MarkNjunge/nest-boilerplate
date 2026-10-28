@@ -1,3 +1,4 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { DataSource, Repository } from "typeorm";
 import { CrudCacheService } from "@/lib/crud/service/crud-cache.service";
 import { ICrudContext } from "@/lib/crud";
@@ -73,7 +74,7 @@ describe("CrudCacheService", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   // Cache hits return JSON-deserialized plain objects (with stringified dates),
@@ -87,7 +88,7 @@ describe("CrudCacheService", () => {
 
       const first = await service.list(ctx, {});
 
-      const findSpy = jest.spyOn(userRepository, "find");
+      const findSpy = vi.spyOn(userRepository, "find");
       const second = await service.list(ctx, {});
 
       expect(summarize(second)).toEqual(summarize(first));
@@ -113,7 +114,7 @@ describe("CrudCacheService", () => {
       expect(all).toHaveLength(2);
 
       // Different query → different cache key → DB hit, cached separately.
-      const findSpy = jest.spyOn(userRepository, "find");
+      const findSpy = vi.spyOn(userRepository, "find");
       const filtered = await service.list(ctx, {
         filter: { eq: [{ key: "username", value: "john" }] }
       });
@@ -138,7 +139,7 @@ describe("CrudCacheService", () => {
         filter: { eq: [{ key: "username", value: "john" }] }
       });
 
-      const findOneSpy = jest.spyOn(userRepository, "findOne");
+      const findOneSpy = vi.spyOn(userRepository, "findOne");
       const second = await service.get(ctx, {
         filter: { eq: [{ key: "username", value: "john" }] }
       });
@@ -154,7 +155,7 @@ describe("CrudCacheService", () => {
       });
       expect(first).toBeNull();
 
-      const findOneSpy = jest.spyOn(userRepository, "findOne");
+      const findOneSpy = vi.spyOn(userRepository, "findOne");
       const second = await service.get(ctx, {
         filter: { eq: [{ key: "username", value: "missing" }] }
       });
@@ -170,7 +171,7 @@ describe("CrudCacheService", () => {
 
       const first = await service.getById(ctx, created.id);
 
-      const findOneSpy = jest.spyOn(userRepository, "findOne");
+      const findOneSpy = vi.spyOn(userRepository, "findOne");
       const second = await service.getById(ctx, created.id);
 
       expect(second?.id).toBe(first?.id);
@@ -208,7 +209,7 @@ describe("CrudCacheService", () => {
 
       const first = await service.listCursor(ctx, { limit: 10 });
 
-      const findSpy = jest.spyOn(userRepository, "find");
+      const findSpy = vi.spyOn(userRepository, "find");
       const second = await service.listCursor(ctx, { limit: 10 });
 
       expect(summarize(second.data)).toEqual(summarize(first.data));
@@ -377,7 +378,7 @@ describe("CrudCacheService", () => {
       await postService.list(user1Ctx, {});
       await postService.list(user2Ctx, {});
 
-      const findSpy = jest.spyOn(postRepository, "find");
+      const findSpy = vi.spyOn(postRepository, "find");
 
       // user1's cached list should not include user2's post and should not hit the DB.
       const user1List = await postService.list(user1Ctx, {});
