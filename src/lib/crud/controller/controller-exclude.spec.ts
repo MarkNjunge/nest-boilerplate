@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable @typescript-eslint/dot-notation, @typescript-eslint/unbound-method */
 import "reflect-metadata";
 import { BaseController, BaseRouteNames } from "@/lib/crud/controller/base.controller";
 import { CrudController, CrudRouteNames } from "@/lib/crud/controller/crud.controller";

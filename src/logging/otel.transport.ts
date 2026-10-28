@@ -4,7 +4,7 @@ import { SeverityNumber } from "@opentelemetry/api-logs";
 import { Config } from "@/config";
 import { TRACE_CONTEXT } from "@/logging/Logger";
 
-const npmLevels: Record<string, number> = {
+const npmLevels: Record<string, SeverityNumber> = {
   error: SeverityNumber.ERROR,
   warn: SeverityNumber.WARN,
   info: SeverityNumber.INFO,
@@ -14,7 +14,7 @@ const npmLevels: Record<string, number> = {
   silly: SeverityNumber.TRACE,
 };
 
-const sysLoglevels: Record<string, number> = {
+const sysLoglevels: Record<string, SeverityNumber> = {
   emerg: SeverityNumber.FATAL3,
   alert: SeverityNumber.FATAL2,
   crit: SeverityNumber.FATAL,
@@ -25,7 +25,7 @@ const sysLoglevels: Record<string, number> = {
   debug: SeverityNumber.DEBUG,
 };
 
-const cliLevels: Record<string, number> = {
+const cliLevels: Record<string, SeverityNumber> = {
   error: SeverityNumber.ERROR,
   warn: SeverityNumber.WARN,
   help: SeverityNumber.INFO3,
